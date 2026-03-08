@@ -1,0 +1,51 @@
+# Enterprise DevEx Orchestrator
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environment
+.env
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Azure
+.azure/
+
+# Output
+out/
+demo-output/
+my-project/
+test-enterprise/
+test-inline/
+test-from-template/
+test-upgrade/
+my-test/
+
+# Ruff
+.ruff_cache/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Node (if Streamlit frontend added later)
+node_modules/

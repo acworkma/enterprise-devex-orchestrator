@@ -1,0 +1,193 @@
+{
+  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/specification/main/schema/mcp.schema.json",
+  "name": "enterprise-devex-orchestrator",
+  "version": "0.1.0",
+  "description": "Enterprise DevEx Orchestrator — transforms business intent into production-ready Azure workloads using GitHub Copilot SDK",
+  "servers": [
+    {
+      "name": "azure-validator",
+      "description": "Validates Azure Bicep templates and deployment configurations",
+      "transport": {
+        "type": "stdio",
+        "command": "python",
+        "args": ["-m", "src.orchestrator.tools.azure_validator"]
+      },
+      "tools": [
+        {
+          "name": "validate_bicep",
+          "description": "Validate a Bicep infrastructure-as-code template for syntax and semantic errors using az bicep build.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "template_path": {
+                "type": "string",
+                "description": "Path to the .bicep file to validate."
+              }
+            },
+            "required": ["template_path"]
+          }
+        },
+        {
+          "name": "validate_deployment",
+          "description": "Run az deployment group validate to check deployment feasibility against a live Azure subscription.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "resource_group": {
+                "type": "string",
+                "description": "Azure resource group name."
+              },
+              "template_path": {
+                "type": "string",
+                "description": "Path to the main Bicep template."
+              },
+              "parameters_path": {
+                "type": "string",
+                "description": "Path to parameters file (optional)."
+              }
+            },
+            "required": ["resource_group", "template_path"]
+          }
+        },
+        {
+          "name": "check_region_availability",
+          "description": "Check if an Azure resource type is available in a specific region.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "region": {
+                "type": "string",
+                "description": "Azure region, e.g. 'eastus2'."
+              },
+              "provider": {
+                "type": "string",
+                "description": "Resource provider namespace, e.g. 'Microsoft.App'."
+              },
+              "resource_type": {
+                "type": "string",
+                "description": "Resource type, e.g. 'containerApps'."
+              }
+            },
+            "required": ["region", "provider", "resource_type"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "policy-engine",
+      "description": "Enterprise governance policy evaluation engine",
+      "transport": {
+        "type": "stdio",
+        "command": "python",
+        "args": ["-m", "src.orchestrator.tools.policy_engine"]
+      },
+      "tools": [
+        {
+          "name": "check_policy",
+          "description": "Evaluate an architecture component against enterprise governance policies.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "component_description": {
+                "type": "string",
+                "description": "Description of the component or architecture to evaluate."
+              },
+              "policy_id": {
+                "type": "string",
+                "description": "Specific policy ID to check (optional, checks all if omitted)."
+              }
+            },
+            "required": ["component_description"]
+          }
+        },
+        {
+          "name": "list_policies",
+          "description": "List all active enterprise governance policies, optionally filtered by category.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "category": {
+                "type": "string",
+                "description": "Filter by policy category."
+              }
+            }
+          }
+        },
+        {
+          "name": "explain_policy",
+          "description": "Get a detailed explanation of a specific governance policy.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "policy_id": {
+                "type": "string",
+                "description": "The policy identifier (e.g., 'SEC-001')."
+              }
+            },
+            "required": ["policy_id"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "template-renderer",
+      "description": "Infrastructure and documentation template rendering engine",
+      "transport": {
+        "type": "stdio",
+        "command": "python",
+        "args": ["-m", "src.orchestrator.tools.template_renderer"]
+      },
+      "tools": [
+        {
+          "name": "render_template",
+          "description": "Render a specific template (bicep, cicd, app, docs) using plan data.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "template_name": {
+                "type": "string",
+                "description": "Template to render: 'bicep', 'cicd', 'app', or 'docs'.",
+                "enum": ["bicep", "cicd", "app", "docs"]
+              },
+              "spec_json": {
+                "type": "string",
+                "description": "JSON string of the IntentSpec."
+              },
+              "plan_json": {
+                "type": "string",
+                "description": "JSON string of the PlanOutput."
+              }
+            },
+            "required": ["template_name", "spec_json", "plan_json"]
+          }
+        },
+        {
+          "name": "list_templates",
+          "description": "List all available infrastructure and documentation templates.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "preview_output",
+          "description": "Preview all files that would be generated, with sizes, without writing to disk.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "spec_json": {
+                "type": "string",
+                "description": "JSON string of the IntentSpec."
+              },
+              "plan_json": {
+                "type": "string",
+                "description": "JSON string of the PlanOutput."
+              }
+            },
+            "required": ["spec_json", "plan_json"]
+          }
+        }
+      ]
+    }
+  ]
+}

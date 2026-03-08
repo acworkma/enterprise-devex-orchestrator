@@ -1,0 +1,58 @@
+# ═══════════════════════════════════════════════════════════════════
+# Enterprise Standards Configuration
+# ═══════════════════════════════════════════════════════════════════
+#
+# Customize naming conventions, tagging policies, and governance
+# baselines for your organization. This file is loaded automatically
+# by the Enterprise DevEx Orchestrator.
+#
+# Reference: Azure Cloud Adoption Framework
+#   https://learn.microsoft.com/en-us/azure/cloud-adoption-framework
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Naming Conventions ──────────────────────────────────────────────
+# Pattern variables: {prefix}, {workload}, {env}, {region}, {instance}
+# Prefix is auto-set per resource type (rg, kv, law, cr, ca, st, etc.)
+naming:
+  include_region: true
+  include_instance: false
+  # Override patterns per resource type (uncomment to customize):
+  # custom_patterns:
+  #   kv: "{prefix}-{workload}-{env}-{region}"
+  #   st: "{prefix}{workload}{env}{region}"
+  #   cr: "{prefix}{workload}{env}{region}"
+  # Override region abbreviations:
+  # region_overrides:
+  #   eastus2: "e2"
+  #   westus2: "w2"
+
+# ── Tagging Standards ──────────────────────────────────────────────
+# Required tags: project, environment, costCenter, owner, managedBy,
+#                createdBy, dataSensitivity
+# Optional tags: complianceScope, department, team, criticality, createdDate
+tagging:
+  default_cost_center: "DEFAULT-001"
+  default_owner: "platform-team@contoso.com"
+  default_data_sensitivity: "confidential"
+  default_compliance_scope: "general"
+  default_criticality: "medium"
+  include_optional: true
+  department: ""
+  team: ""
+  # Add organization-specific required tags:
+  # custom_required_tags:
+  #   businessUnit: "Business unit code"
+  #   chargeCode: "Charge code for billing"
+
+# ── Governance Baselines ───────────────────────────────────────────
+governance:
+  max_remediation_iterations: 2
+  min_stride_categories: 3
+  min_adrs: 3
+  enforce_naming: true
+  enforce_tagging: true
+  fail_on_severity: "error"
+  required_modules:
+    - key-vault
+    - log-analytics
+    - managed-identity

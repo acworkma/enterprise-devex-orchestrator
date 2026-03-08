@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "enterprise-devex-orchestrator"
+version = "1.0.0"
+description = "GitHub Copilot SDK powered agent that transforms business intent into production-ready, secure, deployable Azure workloads"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+authors = [
+    {name = "Enterprise DevEx Team"},
+]
+keywords = ["copilot", "sdk", "azure", "enterprise", "devex", "agent"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+    "click>=8.1.0",
+    "pydantic>=2.5.0",
+    "jinja2>=3.1.0",
+    "pyyaml>=6.0",
+    "rich>=13.0.0",
+    "openai>=1.12.0",
+    "azure-identity>=1.15.0",
+    "python-dotenv>=1.0.0",
+    "structlog>=24.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.3.0",
+    "mypy>=1.8.0",
+    "pre-commit>=3.6.0",
+]
+
+[project.scripts]
+devex = "src.orchestrator.main:cli"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "S", "B", "A", "C4", "SIM", "TCH"]
+ignore = [
+    "S101",   # assert allowed in tests
+    "S603",   # subprocess calls are intentional (az CLI)
+    "S607",   # partial paths for az CLI
+    "S608",   # hardcoded SQL in templates (false positive)
+    "E501",   # line-too-long in embedded templates/strings
+    "TC001",  # typing-only imports not critical
+    "UP042",  # StrEnum migration deferred
+    "SIM108", # ternary style preference
+    "SIM201", # negate-equal style preference
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
