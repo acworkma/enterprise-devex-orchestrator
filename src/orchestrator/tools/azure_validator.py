@@ -1,4 +1,4 @@
-"""Azure Validator Tool — validates Bicep templates and Azure resource availability.
+"""Azure Validator Tool -- validates Bicep templates and Azure resource availability.
 
 Provides tools for the agent runtime to call during plan/scaffold operations:
     - validate_bicep: Run `az bicep build` on generated templates

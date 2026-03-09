@@ -1,8 +1,8 @@
-"""Deploy Orchestrator — automated Azure deployment with error recovery.
+"""Deploy Orchestrator -- automated Azure deployment with error recovery.
 
 Orchestrates deployment of generated Bicep templates via Azure CLI with:
     - Pre-deployment validation (what-if)
-    - Staged deployment (infra → app → monitoring)
+    - Staged deployment (infra -> app -> monitoring)
     - Automatic error classification and retry
     - Rollback on critical failures
     - Deployment status tracking
@@ -64,7 +64,7 @@ ERROR_PATTERNS: list[tuple[str, ErrorCategory, str]] = [
     (r"AADSTS\d+", ErrorCategory.AUTHENTICATION, "Re-authenticate with `az login`"),
     (r"AuthorizationFailed|does not have authorization", ErrorCategory.AUTHORIZATION, "Check RBAC role assignments"),
     (r"QuotaExceeded|exceeds.*quota", ErrorCategory.QUOTA, "Request quota increase or change SKU/region"),
-    (r"Conflict|already exists", ErrorCategory.CONFLICT, "Resource exists — use incremental deployment or delete first"),
+    (r"Conflict|already exists", ErrorCategory.CONFLICT, "Resource exists -- use incremental deployment or delete first"),
     (r"InvalidTemplate|validation failed", ErrorCategory.VALIDATION, "Fix Bicep template errors"),
     (r"timeout|ETIMEDOUT|connection refused", ErrorCategory.NETWORK, "Check network connectivity"),
     (r"InternalServerError|ServiceUnavailable|BadGateway", ErrorCategory.TRANSIENT, "Retry after 30 seconds"),
@@ -139,12 +139,12 @@ class DeployOrchestrator:
     """Orchestrates staged Azure deployment with error recovery.
 
     Deployment stages:
-    1. Validate — `az deployment group validate`
-    2. What-If — Preview changes
-    3. Deploy Infra — Core infrastructure (main.bicep)
-    4. Deploy App — Container App image update
-    5. Deploy Monitoring — Alert rules and dashboards
-    6. Verify — Post-deployment health checks
+    1. Validate -- `az deployment group validate`
+    2. What-If -- Preview changes
+    3. Deploy Infra -- Core infrastructure (main.bicep)
+    4. Deploy App -- Container App image update
+    5. Deploy Monitoring -- Alert rules and dashboards
+    6. Verify -- Post-deployment health checks
     """
 
     MAX_RETRIES = 2
@@ -365,7 +365,7 @@ class DeployOrchestrator:
         return proc.stdout
 
     def _verify(self) -> str:
-        """Post-deployment verification — list deployed resources."""
+        """Post-deployment verification -- list deployed resources."""
         cmd = self._build_az_cmd(
             "resource", "list",
             "--output", "json",

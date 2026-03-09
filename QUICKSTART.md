@@ -1,4 +1,4 @@
-# Quick Start Guide — Test Everything Step by Step
+# Quick Start Guide -- Test Everything Step by Step
 
 > Follow this guide to install, run, and test every feature of the
 > Enterprise DevEx Orchestrator. No Azure account needed for local testing.
@@ -38,7 +38,7 @@ devex version
 ```
 
 Shows the orchestrator version, Python version, platform, and LLM backend.
-If no `.env` file exists, it shows "Config not loaded" — that's fine.
+If no `.env` file exists, it shows "Config not loaded" -- that's fine.
 
 ---
 
@@ -50,12 +50,12 @@ devex plan --file examples/intent.md
 
 This runs the intent parser, architecture planner, and governance reviewer
 against the fully defined enterprise intent file. You will see:
-- **Requirements completeness** — percentage of enterprise sections filled
-- **Architecture plan** — Azure services, ADRs, Mermaid diagram
-- **Governance report** — PASS/FAIL with policy results
-- **WAF assessment** — 5-pillar scores with principle-level detail
+- **Requirements completeness** -- percentage of enterprise sections filled
+- **Architecture plan** -- Azure services, ADRs, Mermaid diagram
+- **Governance report** -- PASS/FAIL with policy results
+- **WAF assessment** -- 5-pillar scores with principle-level detail
 
-No files are written — this is a preview only.
+No files are written -- this is a preview only.
 
 For a quick inline test:
 
@@ -81,7 +81,7 @@ Explore the output:
 # List top-level directories
 Get-ChildItem ./test-enterprise -Directory
 
-# Read the improvement suggestions — what to refine for the next iteration
+# Read the improvement suggestions -- what to refine for the next iteration
 Get-Content ./test-enterprise/docs/improvement-suggestions.md
 
 # Check the Bicep infrastructure
@@ -127,7 +127,7 @@ devex init -o ./my-test -p my-cool-api
 # Step 6b: Look at the generated template (note the 9 enterprise sections)
 Get-Content ./my-test/intent.md
 
-# Step 6c: Fill in every section — problem, goals, users, requirements, etc.
+# Step 6c: Fill in every section -- problem, goals, users, requirements, etc.
 # (Each section has guidance comments explaining what to write)
 
 # Step 6d: Scaffold from it
@@ -189,7 +189,7 @@ devex history ./test-upgrade
 # Step 9d: Generate a v2 upgrade template (embeds v1 suggestions)
 devex new-version ./test-upgrade
 
-# Step 9e: Look at the generated template — note the carried-forward
+# Step 9e: Look at the generated template -- note the carried-forward
 # enterprise sections and the "Improvement Suggestions from v1" section
 Get-Content ./test-upgrade/intent.v2.md
 
@@ -262,7 +262,7 @@ az login
 # Create a resource group
 az group create --name rg-my-test --location eastus2
 
-# Deploy (staged: validate → what-if → deploy → verify)
+# Deploy (staged: validate -> what-if -> deploy -> verify)
 devex deploy ./test-inline -g rg-my-test -r eastus2
 
 # Or dry-run (validate + what-if only, no actual deployment)
@@ -312,7 +312,7 @@ Remove-Item -Recurse -Force ./my-test -ErrorAction SilentlyContinue
 | `devex` not found | Activate venv: `.venv\Scripts\Activate.ps1` |
 | "No intent provided" | Quote the intent string: `devex scaffold "Build a secure API" -o ./out` |
 | "No .devex metadata found" | Run `devex scaffold` first before `validate`/`deploy`/`upgrade` |
-| LLM connection error | Expected — system auto-falls back to template-only mode |
+| LLM connection error | Expected -- system auto-falls back to template-only mode |
 | pip install fails | Check Python version: `python --version` (need 3.11+) |
 
 ---

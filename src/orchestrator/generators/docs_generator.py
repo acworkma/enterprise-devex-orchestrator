@@ -1,4 +1,4 @@
-"""Documentation Generator — produces all project documentation.
+"""Documentation Generator -- produces all project documentation.
 
 Generates:
     - docs/plan.md: Architecture plan with ADRs and diagrams
@@ -64,7 +64,7 @@ class DocsGenerator:
         logger.info("docs_generator.complete", file_count=len(files))
         return files
 
-    # ── Improvement Suggestions Engine ──────────────────────────
+    # -- Improvement Suggestions Engine --------------------------
 
     def generate_improvement_suggestions(
         self,
@@ -85,7 +85,7 @@ class DocsGenerator:
         """
         suggestions: list[str] = []
 
-        # ── Governance-derived suggestions ────────────────────────
+        # -- Governance-derived suggestions ------------------------
         if governance:
             for check in governance.checks:
                 if not check.passed:
@@ -96,7 +96,7 @@ class DocsGenerator:
                 if rec not in suggestions:
                     suggestions.append(f"[Governance] {rec}")
 
-        # ── WAF gap suggestions ───────────────────────────────────
+        # -- WAF gap suggestions -----------------------------------
         if waf_report:
             scores = waf_report.pillar_scores()
             for pillar, info in scores.items():
@@ -109,11 +109,11 @@ class DocsGenerator:
                     gap_names = [g.name for g in gap_items[:3]]
                     if gap_names:
                         suggestions.append(
-                            f"[WAF/{pillar.value}] Coverage {pct:.0f}% — "
+                            f"[WAF/{pillar.value}] Coverage {pct:.0f}% -- "
                             f"add coverage for: {', '.join(gap_names)}"
                         )
 
-        # ── Security posture suggestions ──────────────────────────
+        # -- Security posture suggestions --------------------------
         sec = spec.security
         if not sec.enable_waf:
             suggestions.append(
@@ -127,11 +127,11 @@ class DocsGenerator:
             )
         if sec.data_classification == "public":
             suggestions.append(
-                "[Security] Verify data classification — public classification "
+                "[Security] Verify data classification -- public classification "
                 "disables certain encryption and access controls"
             )
 
-        # ── Observability suggestions ─────────────────────────────
+        # -- Observability suggestions -----------------------------
         obs = spec.observability
         if not obs.alerts:
             suggestions.append(
@@ -144,7 +144,7 @@ class DocsGenerator:
                 "visibility into application health"
             )
 
-        # ── Architecture suggestions ──────────────────────────────
+        # -- Architecture suggestions ------------------------------
         component_names = {c.azure_service.lower() for c in plan.components}
 
         if "azure redis cache" not in component_names and len(spec.data_stores) > 0:
@@ -159,14 +159,14 @@ class DocsGenerator:
                 "categories for comprehensive risk coverage"
             )
 
-        # ── CI/CD suggestions ─────────────────────────────────────
+        # -- CI/CD suggestions -------------------------------------
         if not spec.cicd.deploy_on_merge:
             suggestions.append(
                 "[CI/CD] Consider enabling automatic deployment on merge "
                 "to main for faster feedback loops"
             )
 
-        # ── Data store suggestions ────────────────────────────────
+        # -- Data store suggestions --------------------------------
         store_values = {d.value for d in spec.data_stores}
         if "cosmos_db" not in store_values and spec.app_type.value in ("api", "web"):
             suggestions.append(
@@ -184,11 +184,11 @@ class DocsGenerator:
     ) -> str:
         """Render improvement suggestions as a markdown document."""
         if not suggestions:
-            items = "No improvements identified — architecture is well-defined."
+            items = "No improvements identified -- architecture is well-defined."
         else:
             items = "\n".join(f"{i+1}. {s}" for i, s in enumerate(suggestions))
 
-        return f"""# Improvement Suggestions — {spec.project_name}
+        return f"""# Improvement Suggestions -- {spec.project_name}
 
 > Review these suggestions and incorporate them into your intent file.
 > Then re-run `devex scaffold --file intent.md -o ./{spec.project_name}`
@@ -197,7 +197,7 @@ class DocsGenerator:
 ## How to Use This Document
 
 1. **Review** each suggestion below
-2. **Update** `intent.md` — add details to the relevant section
+2. **Update** `intent.md` -- add details to the relevant section
    (Problem Statement, Security, Scalability, etc.)
 3. **Increment** the version number in the Version section
 4. **Re-run** the orchestrator to generate the improved scaffold
@@ -225,7 +225,7 @@ devex upgrade --file intent.v2.md -o ./{spec.project_name}
 ```
 
 ---
-*Generated by Enterprise DevEx Orchestrator Agent — Improvement Analysis*
+*Generated by Enterprise DevEx Orchestrator Agent -- Improvement Analysis*
 """
 
     def _plan_md(self, spec: IntentSpec, plan: PlanOutput) -> str:
@@ -603,7 +603,7 @@ Responsible AI office.
     def _demo_script_md(self, spec: IntentSpec) -> str:
         return f"""# Demo Script: {spec.project_name}
 
-> Duration: 3 minutes | No improvisation — follow this script exactly.
+> Duration: 3 minutes | No improvisation -- follow this script exactly.
 
 ## Setup (Before Recording)
 
@@ -615,15 +615,15 @@ Responsible AI office.
 
 ## Demo Flow
 
-### Minute 0:00 — 0:30 | Introduction
+### Minute 0:00 -- 0:30 | Introduction
 
-**Say:** "We built an Enterprise DevEx Orchestrator — a Copilot SDK-powered
+**Say:** "We built an Enterprise DevEx Orchestrator -- a Copilot SDK-powered
 agent that transforms plain-English business intent into production-ready,
 secure, deployable Azure workloads."
 
 **Show:** README.md in the repo
 
-### Minute 0:30 — 1:30 | Agent in Action
+### Minute 0:30 -- 1:30 | Agent in Action
 
 **Run:**
 ```bash
@@ -643,21 +643,21 @@ python -m src.orchestrator.main plan \\
 ADRs and threat model, validated it against governance policies, and produced
 deployable infrastructure."
 
-### Minute 1:30 — 2:15 | Generated Artifacts
+### Minute 1:30 -- 2:15 | Generated Artifacts
 
 **Show:**
-- `infra/bicep/main.bicep` — Infrastructure as Code
-- `infra/bicep/modules/` — Modular Bicep files
-- `.github/workflows/` — CI/CD pipelines
-- `src/app/main.py` — Application with health endpoint
-- `docs/security.md` — Security controls and threat model
-- `docs/governance-report.md` — Governance validation results
+- `infra/bicep/main.bicep` -- Infrastructure as Code
+- `infra/bicep/modules/` -- Modular Bicep files
+- `.github/workflows/` -- CI/CD pipelines
+- `src/app/main.py` -- Application with health endpoint
+- `docs/security.md` -- Security controls and threat model
+- `docs/governance-report.md` -- Governance validation results
 
 **Say:** "Every artifact is production-grade: private networking, managed
-identity, Key Vault secrets, Log Analytics, and CI/CD with OIDC — all
+identity, Key Vault secrets, Log Analytics, and CI/CD with OIDC -- all
 generated from a single sentence."
 
-### Minute 2:15 — 2:45 | Live Deployment
+### Minute 2:15 -- 2:45 | Live Deployment
 
 **Option A (Live):**
 ```bash
@@ -670,14 +670,14 @@ az deployment group create \\
 **Option B (Pre-deployed):**
 - Switch to Azure Portal
 - Show Resource Group with all resources
-- Click into Container App → show health endpoint response
-- Click into Log Analytics → run sample KQL query
+- Click into Container App -> show health endpoint response
+- Click into Log Analytics -> run sample KQL query
 
-### Minute 2:45 — 3:00 | Wrap Up
+### Minute 2:45 -- 3:00 | Wrap Up
 
 **Say:** "Enterprises don't need faster code. They need safe, compliant,
 repeatable architecture. We built a Copilot SDK-powered orchestrator that
-turns intent into governed infrastructure — with security, observability,
+turns intent into governed infrastructure -- with security, observability,
 and CI/CD built in from the start."
 
 ## Backup Plan
@@ -691,11 +691,11 @@ If live demo fails:
 
 | Resource | What to Click |
 |----------|--------------|
-| Resource Group | Overview → see all resources |
-| Container App | Overview → FQDN, Revisions |
-| Key Vault | Access policies → RBAC |
-| Log Analytics | Logs → run KQL query |
-| Container Registry | Repositories → image |
+| Resource Group | Overview -> see all resources |
+| Container App | Overview -> FQDN, Revisions |
+| Key Vault | Access policies -> RBAC |
+| Log Analytics | Logs -> run KQL query |
+| Container Registry | Repositories -> image |
 
 ## Sample KQL Query
 
@@ -720,7 +720,7 @@ ContainerAppConsoleLogs_CL
 
 | Criteria | Max Pts | Artifact | Validation | Demo Proof |
 |----------|---------|----------|------------|------------|
-| Enterprise Applicability | 30 | ADR + deterministic scaffold + IntentSpec schema | CI validates structure | Live: parse intent → full scaffold |
+| Enterprise Applicability | 30 | ADR + deterministic scaffold + IntentSpec schema | CI validates structure | Live: parse intent -> full scaffold |
 | Azure Integration | 25 | Bicep + OIDC + Container Apps + Key Vault + Log Analytics + ACR | `az deployment group validate` | Portal: show deployed resources |
 | Operational Readiness | 15 | CI/CD workflows + Log Analytics + health endpoint + rollback docs | CI green badge | Live: health endpoint + log query |
 | Security & RAI | 15 | Key Vault + MI + governance report + threat model + CodeQL + Dependabot | Governance validator PASS | `security.md` + `governance-report.md` |
@@ -736,13 +736,13 @@ ContainerAppConsoleLogs_CL
 
 ## Artifact Checklist
 
-- [x] `/src` — Working orchestrator + generated app code
-- [x] `/docs` — README, plan.md, security.md, deployment.md, rai-notes.md
-- [x] `AGENTS.md` — Agent role definitions and instructions
-- [x] `mcp.json` — MCP server declarations
-- [x] `.github/workflows/` — CI/CD validate + deploy
-- [x] `/infra/bicep/` — Deployable Azure infrastructure
-- [x] `/presentations/` — Pitch deck
+- [x] `/src` -- Working orchestrator + generated app code
+- [x] `/docs` -- README, plan.md, security.md, deployment.md, rai-notes.md
+- [x] `AGENTS.md` -- Agent role definitions and instructions
+- [x] `mcp.json` -- MCP server declarations
+- [x] `.github/workflows/` -- CI/CD validate + deploy
+- [x] `/infra/bicep/` -- Deployable Azure infrastructure
+- [x] `/presentations/` -- Pitch deck
 - [x] Demo video (3 min max)
 
 ---
@@ -753,7 +753,7 @@ ContainerAppConsoleLogs_CL
         checks_table = "| ID | Check | Status | Severity | Details |\n"
         checks_table += "|----|-------|--------|----------|--------|\n"
         for c in report.checks:
-            status_icon = "✅" if c.passed else "❌"
+            status_icon = "[PASS]" if c.passed else "[FAIL]"
             checks_table += f"| {c.check_id} | {c.name} | {status_icon} | {c.severity} | {c.details} |\n"
 
         recommendations = ""
@@ -781,5 +781,5 @@ ContainerAppConsoleLogs_CL
 {recommendations}
 
 ---
-*Generated by Enterprise DevEx Orchestrator Agent — Governance Reviewer*
+*Generated by Enterprise DevEx Orchestrator Agent -- Governance Reviewer*
 """

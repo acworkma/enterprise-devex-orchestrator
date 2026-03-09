@@ -1,1 +1,1 @@
-"""Skills subsystem — pluggable, versionable domain-specific skill modules."""
+"""Skills subsystem -- pluggable, versionable domain-specific skill modules."""

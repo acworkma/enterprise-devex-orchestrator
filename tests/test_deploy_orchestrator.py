@@ -1,4 +1,4 @@
-"""Tests for Deploy Orchestrator — staged deployment, error classification."""
+"""Tests for Deploy Orchestrator -- staged deployment, error classification."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from src.orchestrator.agents.deploy_orchestrator import (
     ErrorCategory,
 )
 
-# ───────────────── Data Classes ─────────────────
+# ----------------- Data Classes -----------------
 
 
 class TestDeployStageResult:
@@ -67,7 +67,7 @@ class TestDeploymentResult:
         assert len(d["resources_deployed"]) == 2
 
 
-# ───────────────── Error Classification ─────────────────
+# ----------------- Error Classification -----------------
 
 
 class TestErrorClassification:
@@ -113,7 +113,7 @@ class TestErrorClassification:
         assert cat == ErrorCategory.AUTHORIZATION
 
 
-# ───────────────── Enums ─────────────────
+# ----------------- Enums -----------------
 
 
 class TestDeployEnums:
@@ -137,7 +137,7 @@ class TestDeployEnums:
         assert len(ERROR_PATTERNS) >= 8
 
 
-# ───────────────── Orchestrator Init ─────────────────
+# ----------------- Orchestrator Init -----------------
 
 
 class TestDeployOrchestratorInit:

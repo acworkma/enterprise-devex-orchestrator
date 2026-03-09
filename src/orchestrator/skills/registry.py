@@ -1,4 +1,4 @@
-"""Skill Registry — dynamic discovery, registration, and routing of domain skills.
+"""Skill Registry -- dynamic discovery, registration, and routing of domain skills.
 
 A Skill is a self-contained unit of expertise that an agent can invoke.
 Skills declare their capabilities, version, input/output types, and
@@ -6,11 +6,11 @@ dependencies so the orchestrator can route work to the right specialist.
 
 Architecture:
     SkillRegistry
-      ├── register(skill)         — add skill to catalog
-      ├── discover(directory)     — auto-load skills from a folder
-      ├── route(capability)       — find best skill for a task
-      ├── list_skills()           — catalog introspection
-      └── execute(name, context)  — run a skill and return result
+      |-- register(skill)         -- add skill to catalog
+      |-- discover(directory)     -- auto-load skills from a folder
+      |-- route(capability)       -- find best skill for a task
+      |-- list_skills()           -- catalog introspection
+      \-- execute(name, context)  -- run a skill and return result
 """
 
 from __future__ import annotations
@@ -105,7 +105,7 @@ class SkillRegistry:
 
     def __init__(self) -> None:
         self._skills: dict[str, Skill] = {}
-        self._capability_index: dict[str, list[str]] = {}  # capability → [skill_names]
+        self._capability_index: dict[str, list[str]] = {}  # capability -> [skill_names]
 
     def register(self, skill: Skill) -> None:
         """Register a skill in the catalog."""
@@ -161,7 +161,7 @@ class SkillRegistry:
         if cap_lower in self._capability_index:
             candidates = self._capability_index[cap_lower]
         else:
-            # Fuzzy match — find skills whose capabilities contain the query
+            # Fuzzy match -- find skills whose capabilities contain the query
             candidates = []
             for indexed_cap, skill_names in self._capability_index.items():
                 if cap_lower in indexed_cap or indexed_cap in cap_lower:
@@ -305,7 +305,7 @@ class SkillRegistry:
         return registered
 
 
-# ───────────────── Built-in Skills ─────────────────
+# ----------------- Built-in Skills -----------------
 
 
 class GovernanceSkill:

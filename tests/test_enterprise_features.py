@@ -26,7 +26,7 @@ from src.orchestrator.intent_file import (
 )
 
 
-# ── IntentFileResult dataclass tests ──────────────────────────
+# -- IntentFileResult dataclass tests --------------------------
 
 
 class TestIntentFileResultEnterpriseSections(unittest.TestCase):
@@ -138,7 +138,7 @@ class TestIntentFileResultEnterpriseSections(unittest.TestCase):
         assert "Azure region: eastus2" in full
 
 
-# ── IntentFileParser enterprise section parsing ───────────────
+# -- IntentFileParser enterprise section parsing ---------------
 
 
 class TestParseEnterpriseSections(unittest.TestCase):
@@ -299,7 +299,7 @@ Tests pass.
         assert result.completeness_pct == pytest.approx(33.33, abs=0.1)
 
 
-# ── _strip_comments unit test ────────────────────────────────
+# -- _strip_comments unit test --------------------------------
 
 
 class TestStripComments(unittest.TestCase):
@@ -325,7 +325,7 @@ class TestStripComments(unittest.TestCase):
         assert IntentFileParser._strip_comments(text) == ""
 
 
-# ── Template generation tests ────────────────────────────────
+# -- Template generation tests --------------------------------
 
 
 class TestEnterpriseTemplate(unittest.TestCase):
@@ -383,7 +383,7 @@ class TestUpgradeTemplate(unittest.TestCase):
         suggestions = [
             "[Security] Enable WAF",
             "[Performance] Add Redis cache",
-            "[WAF/Security] Coverage 60% — add coverage for: Zero Trust",
+            "[WAF/Security] Coverage 60% -- add coverage for: Zero Trust",
         ]
         template = generate_upgrade_template(
             "test-project",
@@ -410,7 +410,7 @@ class TestUpgradeTemplate(unittest.TestCase):
         assert "## Acceptance Criteria" in template
 
 
-# ── Improvement Suggestions Engine tests ──────────────────────
+# -- Improvement Suggestions Engine tests ----------------------
 
 
 class TestImprovementSuggestions(unittest.TestCase):
@@ -520,7 +520,7 @@ class TestImprovementSuggestions(unittest.TestCase):
             waf_report=waf_report,
         )
         waf_gap_suggestions = [s for s in suggestions if s.startswith("[WAF/")]
-        # With empty components, coverage should be low → should have WAF gaps
+        # With empty components, coverage should be low -> should have WAF gaps
         assert len(waf_gap_suggestions) >= 1
 
     def test_governance_suggestions(self) -> None:
@@ -580,7 +580,7 @@ class TestImprovementSuggestionsMd(unittest.TestCase):
         md = gen._improvement_suggestions_md(
             spec, ["Suggestion A", "Suggestion B"]
         )
-        assert "# Improvement Suggestions — md-test" in md
+        assert "# Improvement Suggestions -- md-test" in md
         assert "1. Suggestion A" in md
         assert "2. Suggestion B" in md
         assert "How to Use" in md
@@ -653,7 +653,7 @@ class TestDocsGeneratorOutputIncludesImprovements(unittest.TestCase):
         assert "Improvement Suggestions" in files["docs/improvement-suggestions.md"]
 
 
-# ── Roundtrip test: template → parse → completeness ──────────
+# -- Roundtrip test: template -> parse -> completeness ----------
 
 
 class TestEnterpriseRoundtrip(unittest.TestCase):
@@ -727,9 +727,9 @@ All endpoints < 300ms under load, zero critical CVEs, CI green.
         assert "Azure region: eastus2" in full
 
 
-# ── Import guard ─────────────────────────────────────────────
+# -- Import guard ---------------------------------------------
 
-import pytest  # noqa: E402 — needed for approx
+import pytest  # noqa: E402 -- needed for approx
 
 
 if __name__ == "__main__":

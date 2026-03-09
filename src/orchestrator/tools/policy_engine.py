@@ -1,4 +1,4 @@
-"""Policy Engine Tool — enterprise governance policy evaluation.
+"""Policy Engine Tool -- enterprise governance policy evaluation.
 
 Provides tools for the agent runtime to enforce organizational policies:
     - check_policy: Evaluate a component against policy rules
@@ -38,7 +38,7 @@ class PolicyRule:
     remediation: str
 
 
-# ───────────── Enterprise Policy Catalog ─────────────
+# ------------- Enterprise Policy Catalog -------------
 
 POLICY_CATALOG: list[PolicyRule] = [
     PolicyRule(
@@ -170,7 +170,7 @@ POLICY_CATALOG: list[PolicyRule] = [
     PolicyRule(
         id="STD-003",
         name="Region Abbreviation Standard",
-        description="Resource names must use standard Azure region abbreviations (e.g., eastus2 → eus2).",
+        description="Resource names must use standard Azure region abbreviations (e.g., eastus2 -> eus2).",
         severity=Severity.WARNING,
         category="Standards",
         check="Verify resource names include recognized region abbreviations.",

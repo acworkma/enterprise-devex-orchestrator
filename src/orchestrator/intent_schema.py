@@ -36,7 +36,7 @@ class Language(str, Enum):
     DOTNET = "dotnet"
 
 
-# Language → default framework mapping
+# Language -> default framework mapping
 LANGUAGE_FRAMEWORKS: dict[str, str] = {
     "python": "fastapi",
     "node": "express",
@@ -123,12 +123,12 @@ class IntentSpec(BaseModel):
     user can override any field.
     """
 
-    # ── Core Identity ─────────────────────────────────────────────
+    # -- Core Identity ---------------------------------------------
     project_name: str = Field(..., description="Short kebab-case project name", pattern=r"^[a-z][a-z0-9-]{2,38}$")
     description: str = Field(..., description="One-sentence project description", max_length=200)
     raw_intent: str = Field(..., description="Original user intent text as provided")
 
-    # ── Application ───────────────────────────────────────────────
+    # -- Application -----------------------------------------------
     app_type: AppType = Field(default=AppType.API, description="Type of application to scaffold")
     language: str = Field(default="python", description="Primary programming language")
     framework: str = Field(default="fastapi", description="Application framework")
@@ -141,21 +141,21 @@ class IntentSpec(BaseModel):
     )
     uses_ai: bool = Field(default=False, description="Whether the workload uses AI/ML services")
 
-    # ── Security ──────────────────────────────────────────────────
+    # -- Security --------------------------------------------------
     security: SecurityRequirements = Field(default_factory=SecurityRequirements)
 
-    # ── Observability ─────────────────────────────────────────────
+    # -- Observability ---------------------------------------------
     observability: ObservabilityRequirements = Field(default_factory=ObservabilityRequirements)
 
-    # ── CI/CD ─────────────────────────────────────────────────────
+    # -- CI/CD -----------------------------------------------------
     cicd: CICDRequirements = Field(default_factory=CICDRequirements)
 
-    # ── Azure Deployment Target ───────────────────────────────────
+    # -- Azure Deployment Target -----------------------------------
     azure_region: str = Field(default="eastus2", description="Azure deployment region")
     resource_group_name: str = Field(default="", description="Target resource group (auto-generated if empty)")
     environment: str = Field(default="dev", description="Deployment environment")
 
-    # ── Agent Metadata ────────────────────────────────────────────
+    # -- Agent Metadata --------------------------------------------
     assumptions: list[str] = Field(default_factory=list, description="Assumptions made during parsing")
     decisions: list[str] = Field(default_factory=list, description="Decisions made during planning")
     open_risks: list[str] = Field(default_factory=list, description="Identified open risks")

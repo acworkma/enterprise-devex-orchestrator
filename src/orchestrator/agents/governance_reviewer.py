@@ -157,7 +157,7 @@ class GovernanceReviewerAgent:
                 passed=has_diagnostics,
                 details="Diagnostic settings found in Bicep"
                 if has_diagnostics
-                else "No diagnostic settings — add Microsoft.Insights/diagnosticSettings",
+                else "No diagnostic settings -- add Microsoft.Insights/diagnosticSettings",
                 severity="high" if not has_diagnostics else "low",
             )
         )
@@ -282,7 +282,7 @@ class GovernanceReviewerAgent:
                 passed=is_private,
                 details=(
                     f"Networking model: {spec.security.networking.value}"
-                    + (" (enterprise-approved)" if is_private else " — consider private networking")
+                    + (" (enterprise-approved)" if is_private else " -- consider private networking")
                 ),
                 severity="medium" if not is_private else "low",
             ),
@@ -343,7 +343,7 @@ class GovernanceReviewerAgent:
                 check_id="GOV-CICD-002",
                 name="OIDC authentication for CI",
                 passed=spec.cicd.oidc_auth,
-                details="OIDC federation for Azure login" if spec.cicd.oidc_auth else "Not using OIDC — secrets in CI",
+                details="OIDC federation for Azure login" if spec.cicd.oidc_auth else "Not using OIDC -- secrets in CI",
                 severity="medium" if not spec.cicd.oidc_auth else "low",
             ),
         ]
@@ -456,7 +456,7 @@ class GovernanceReviewerAgent:
                 name="Data sensitivity classification set",
                 passed=class_valid,
                 details=(
-                    f"Data classified as '{data_class}' — will be applied as dataSensitivity tag"
+                    f"Data classified as '{data_class}' -- will be applied as dataSensitivity tag"
                     if class_valid
                     else f"Data classification '{data_class}' not in standard levels: {sorted(valid_levels)}"
                 ),

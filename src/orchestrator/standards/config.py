@@ -1,4 +1,4 @@
-"""Enterprise Standards Configuration — configurable governance baselines.
+"""Enterprise Standards Configuration -- configurable governance baselines.
 
 Provides a unified configuration model for enterprise standards including
 naming conventions, tagging policies, and governance baselines. Supports
@@ -52,7 +52,7 @@ class TaggingStandardsConfig:
     default_compliance_scope: str = "general"
     # Whether to include optional tags by default
     include_optional: bool = True
-    # Additional custom required tags (name → description)
+    # Additional custom required tags (name -> description)
     custom_required_tags: dict[str, str] = field(default_factory=dict)
     # Default criticality
     default_criticality: str = "medium"
@@ -66,7 +66,7 @@ class TaggingStandardsConfig:
 class GovernanceConfig:
     """Configuration for governance baselines."""
 
-    # Maximum allowed iterations for planner–reviewer feedback loop
+    # Maximum allowed iterations for planner-reviewer feedback loop
     max_remediation_iterations: int = 2
     # Minimum number of STRIDE categories required
     min_stride_categories: int = 3

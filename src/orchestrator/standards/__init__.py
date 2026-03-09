@@ -1,4 +1,4 @@
-"""Enterprise Standards — naming, tagging, WAF alignment, and governance baselines.
+"""Enterprise Standards -- naming, tagging, WAF alignment, and governance baselines.
 
 This package enforces configurable enterprise standards across all generated
 infrastructure, ensuring consistency with Azure Cloud Adoption Framework (CAF),

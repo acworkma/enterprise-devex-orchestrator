@@ -1,6 +1,6 @@
 # Responsible AI Notes
 
-> Enterprise DevEx Orchestrator — Responsible AI Considerations
+> Enterprise DevEx Orchestrator -- Responsible AI Considerations
 
 ## Overview
 
@@ -14,8 +14,8 @@ outlines the Responsible AI considerations for this system.
 |---------|---------|-----------------|
 | Intent Parsing | LLM extracts structured data from natural language | Rule-based keyword extraction |
 | Architecture Planning | LLM generates context-specific ADRs and threat descriptions | Template-based ADRs with standard content |
-| Governance Review | Policy rules are deterministic (no LLM) | N/A — always rule-based |
-| Code Generation | Templates are deterministic (no LLM) | N/A — always template-based |
+| Governance Review | Policy rules are deterministic (no LLM) | N/A -- always rule-based |
+| Code Generation | Templates are deterministic (no LLM) | N/A -- always template-based |
 
 ## Key Principle: Deterministic Where It Matters
 
@@ -63,10 +63,10 @@ The LLM only influences:
 
 ## Limitations
 
-1. **Not a compliance certification tool** — governance checks provide guidance, not legal compliance
-2. **LLM outputs should be reviewed** — ADR prose and threat descriptions are AI-generated
-3. **Template coverage is bounded** — the system covers common Azure patterns, not all possible architectures
-4. **Intent parsing has limits** — very ambiguous or contradictory intents may produce unexpected results
+1. **Not a compliance certification tool** -- governance checks provide guidance, not legal compliance
+2. **LLM outputs should be reviewed** -- ADR prose and threat descriptions are AI-generated
+3. **Template coverage is bounded** -- the system covers common Azure patterns, not all possible architectures
+4. **Intent parsing has limits** -- very ambiguous or contradictory intents may produce unexpected results
 
 ## Contact
 

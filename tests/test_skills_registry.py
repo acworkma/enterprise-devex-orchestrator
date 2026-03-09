@@ -1,4 +1,4 @@
-"""Tests for Skills Registry — discovery, registration, routing, execution."""
+"""Tests for Skills Registry -- discovery, registration, routing, execution."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from src.orchestrator.skills.registry import (
     create_default_registry,
 )
 
-# ───────────────── Test Helpers ─────────────────
+# ----------------- Test Helpers -----------------
 
 
 class _DummySkill:
@@ -52,7 +52,7 @@ class _FailingSkill(_DummySkill):
         raise RuntimeError("Intentional failure")
 
 
-# ───────────────── Registration ─────────────────
+# ----------------- Registration -----------------
 
 
 class TestSkillRegistration:
@@ -89,7 +89,7 @@ class TestSkillRegistration:
         assert reg.get("missing") is None
 
 
-# ───────────────── Routing ─────────────────
+# ----------------- Routing -----------------
 
 
 class TestSkillRouting:
@@ -135,7 +135,7 @@ class TestSkillRouting:
         assert results[-1].metadata.name == "c"
 
 
-# ───────────────── Execution ─────────────────
+# ----------------- Execution -----------------
 
 
 class TestSkillExecution:
@@ -164,7 +164,7 @@ class TestSkillExecution:
         assert result.duration_ms >= 0
 
 
-# ───────────────── Listing ─────────────────
+# ----------------- Listing -----------------
 
 
 class TestSkillListing:
@@ -197,7 +197,7 @@ class TestSkillListing:
         assert reg.count == 1
 
 
-# ───────────────── Default Registry ─────────────────
+# ----------------- Default Registry -----------------
 
 
 class TestDefaultRegistry:

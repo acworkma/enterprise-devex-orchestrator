@@ -1,7 +1,7 @@
 """Tests for the State Management module.
 
 Covers StateManager, ProjectState, FileRecord, GenerationEvent,
-DriftResult — including persistence, drift detection, and history capping.
+DriftResult -- including persistence, drift detection, and history capping.
 """
 
 from __future__ import annotations
@@ -183,7 +183,7 @@ class TestProjectState:
 
 
 # ---------------------------------------------------------------------------
-# StateManager — core functionality
+# StateManager -- core functionality
 # ---------------------------------------------------------------------------
 
 class TestStateManagerBasics:
@@ -218,7 +218,7 @@ class TestStateManagerBasics:
 
 
 # ---------------------------------------------------------------------------
-# StateManager — record_generation
+# StateManager -- record_generation
 # ---------------------------------------------------------------------------
 
 class TestStateManagerRecordGeneration:
@@ -362,7 +362,7 @@ class TestStateManagerRecordGeneration:
 
 
 # ---------------------------------------------------------------------------
-# StateManager — drift detection
+# StateManager -- drift detection
 # ---------------------------------------------------------------------------
 
 class TestStateManagerDriftDetection:
@@ -476,7 +476,7 @@ class TestStateManagerDriftDetection:
 
 
 # ---------------------------------------------------------------------------
-# StateManager — hash function
+# StateManager -- hash function
 # ---------------------------------------------------------------------------
 
 class TestStateManagerHash:

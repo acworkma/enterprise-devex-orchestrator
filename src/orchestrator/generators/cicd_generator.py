@@ -1,4 +1,4 @@
-"""CI/CD Generator — produces GitHub Actions workflows.
+"""CI/CD Generator -- produces GitHub Actions workflows.
 
 Generates:
     - validate.yml: Lint, test, Bicep build, az validate on PRs
@@ -43,10 +43,10 @@ class CICDGenerator:
         return files
 
     def _validate_workflow(self, spec: IntentSpec) -> str:
-        return f"""# ═══════════════════════════════════════════════════════════════════
-# Validate Workflow — runs on every pull request
+        return f"""# ===================================================================
+# Validate Workflow -- runs on every pull request
 # Lints Python, runs tests, builds Bicep, validates Azure deployment
-# ═══════════════════════════════════════════════════════════════════
+# ===================================================================
 name: Validate
 
 on:
@@ -156,10 +156,10 @@ jobs:
 """
 
     def _deploy_workflow(self, spec: IntentSpec) -> str:
-        return f"""# ═══════════════════════════════════════════════════════════════════
-# Deploy Workflow — deploys infrastructure and application to Azure
+        return f"""# ===================================================================
+# Deploy Workflow -- deploys infrastructure and application to Azure
 # Triggered manually or on merge to main
-# ═══════════════════════════════════════════════════════════════════
+# ===================================================================
 name: Deploy
 
 on:
@@ -304,9 +304,9 @@ updates:
 """
 
     def _codeql_workflow(self) -> str:
-        return """# ═══════════════════════════════════════════════════════════════════
-# CodeQL Analysis — supply chain and code security scanning
-# ═══════════════════════════════════════════════════════════════════
+        return """# ===================================================================
+# CodeQL Analysis -- supply chain and code security scanning
+# ===================================================================
 name: CodeQL Analysis
 
 on:
@@ -351,11 +351,11 @@ jobs:
         Deploys the new version as a Container Apps revision with 0% traffic,
         runs health checks, then shifts traffic to 100%.
         """
-        return f"""# ═══════════════════════════════════════════════════════════════════
-# Promote Workflow — safe revision-based version promotion
+        return f"""# ===================================================================
+# Promote Workflow -- safe revision-based version promotion
 # Deploys v{version} as a new revision, validates, then shifts traffic
 # Previous version stays live until promotion is confirmed
-# ═══════════════════════════════════════════════════════════════════
+# ===================================================================
 name: Promote Version
 
 on:
@@ -474,13 +474,13 @@ jobs:
             STATUS=$(curl -s -o /dev/null -w "%{{http_code}}" "https://$FQDN/health" || echo "000")
             echo "Attempt $i: HTTP $STATUS"
             if [ "$STATUS" = "200" ]; then
-              echo "✓ Health check passed"
+              echo "[ok] Health check passed"
               exit 0
             fi
             sleep 10
           done
 
-          echo "✗ Health check failed after 5 attempts"
+          echo "[x] Health check failed after 5 attempts"
           exit 1
 
   promote-traffic:
@@ -508,7 +508,7 @@ jobs:
             --resource-group ${{{{ env.AZURE_RESOURCE_GROUP }}}} \\
             --revision-weight "$REVISION=$TRAFFIC_PCT"
 
-          echo "✓ Traffic shifted: $REVISION = $TRAFFIC_PCT%"
+          echo "[ok] Traffic shifted: $REVISION = $TRAFFIC_PCT%"
 
       - name: Promotion summary
         run: |
@@ -525,10 +525,10 @@ jobs:
 
     def _rollback_workflow(self, spec: IntentSpec) -> str:
         """Generate a rollback workflow for reverting to a previous revision."""
-        return f"""# ═══════════════════════════════════════════════════════════════════
-# Rollback Workflow — revert to a previous Container Apps revision
+        return f"""# ===================================================================
+# Rollback Workflow -- revert to a previous Container Apps revision
 # Instantly shifts 100% traffic back to the specified revision
-# ═══════════════════════════════════════════════════════════════════
+# ===================================================================
 name: Rollback
 
 on:
@@ -608,7 +608,7 @@ jobs:
             --resource-group ${{{{ env.AZURE_RESOURCE_GROUP }}}} \\
             --revision-weight "$TARGET=100"
 
-          echo "✓ Rolled back to $TARGET with 100% traffic"
+          echo "[ok] Rolled back to $TARGET with 100% traffic"
 
       - name: Rollback summary
         run: |

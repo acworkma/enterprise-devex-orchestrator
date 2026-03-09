@@ -1,7 +1,7 @@
-# AGENTS.md — Enterprise DevEx Orchestrator Agent
+# AGENTS.md -- Enterprise DevEx Orchestrator Agent
 
 > This file defines the agent roles, tool bindings, and orchestration flow
-> for the Enterprise DevEx Orchestrator — a GitHub Copilot SDK powered agent
+> for the Enterprise DevEx Orchestrator -- a GitHub Copilot SDK powered agent
 > that transforms business intent into production-ready Azure workloads.
 
 ## System Overview
@@ -11,9 +11,9 @@ distinct role, instruction set, and tool access. The chain executes sequentially
 with a governance feedback loop between the reviewer and planner.
 
 ```
-Intent → [Intent Parser] → [Architecture Planner] → [Governance Reviewer] → [Infrastructure Generator]
-                                      ↑                       |
-                                      └── feedback loop ──────┘
+Intent -> [Intent Parser] -> [Architecture Planner] -> [Governance Reviewer] -> [Infrastructure Generator]
+                                      ^                       |
+                                      \-- feedback loop ------/
 ```
 
 ---
@@ -64,8 +64,8 @@ Container Registry. Add data stores based on the spec.
 ```
 
 **Tools:**
-- `check_policy` — Validate components against enterprise policies
-- `check_region_availability` — Verify Azure service availability
+- `check_policy` -- Validate components against enterprise policies
+- `check_region_availability` -- Verify Azure service availability
 
 **Fallback:** Deterministic component builder with template ADRs and threat model.
 
@@ -97,9 +97,9 @@ Performance Efficiency) and return a WAFAlignmentReport.
 ```
 
 **Tools:**
-- `check_policy` — Evaluate against policy catalog
-- `list_policies` — Retrieve applicable policies
-- `validate_bicep` — Validate Bicep syntax
+- `check_policy` -- Evaluate against policy catalog
+- `list_policies` -- Retrieve applicable policies
+- `validate_bicep` -- Validate Bicep syntax
 
 **Input:** `IntentSpec` + `PlanOutput` (+ optional Bicep files)  
 **Output:** `GovernanceReport` (Pydantic model) + `WAFAlignmentReport` (dataclass)
@@ -117,7 +117,7 @@ Architecture Planner for remediation (max 2 iterations).
 
 ## Agent 4: Infrastructure Generator
 
-**Role:** Generate all deployable artifacts — Bicep IaC, CI/CD workflows,
+**Role:** Generate all deployable artifacts -- Bicep IaC, CI/CD workflows,
 application scaffold, and documentation.
 
 **System Instructions:**
@@ -136,20 +136,20 @@ All generated code must follow enterprise security baselines:
 ```
 
 **Tools:**
-- `render_template` — Render specific template categories
-- `preview_output` — Preview file manifest before writing
-- `validate_bicep` — Validate generated Bicep syntax
+- `render_template` -- Render specific template categories
+- `preview_output` -- Preview file manifest before writing
+- `validate_bicep` -- Validate generated Bicep syntax
 
 **Sub-generators:**
-- `BicepGenerator` — 7 Bicep modules + parameters + enterprise naming/tagging
-- `CICDGenerator` — 4 GitHub Actions workflows
-- `AppGenerator` — FastAPI app + Docker + requirements
-- `DocsGenerator` — 7 documentation files + standards reference + improvement suggestions
-- `TestGenerator` — Auto-generated pytest test suite (health, API, security, config, storage)
-- `AlertGenerator` — Azure Monitor alert rules (Bicep) + action groups + alerting runbook
+- `BicepGenerator` -- 7 Bicep modules + parameters + enterprise naming/tagging
+- `CICDGenerator` -- 4 GitHub Actions workflows
+- `AppGenerator` -- FastAPI app + Docker + requirements
+- `DocsGenerator` -- 7 documentation files + standards reference + improvement suggestions
+- `TestGenerator` -- Auto-generated pytest test suite (health, API, security, config, storage)
+- `AlertGenerator` -- Azure Monitor alert rules (Bicep) + action groups + alerting runbook
 
 **Input:** `IntentSpec` + `PlanOutput` + `GovernanceReport`  
-**Output:** `dict[str, str]` — file path → content mapping
+**Output:** `dict[str, str]` -- file path -> content mapping
 
 ---
 
@@ -176,7 +176,7 @@ All generated code must follow enterprise security baselines:
 | `NamingEngine` | Azure CAF naming conventions (20 resource types, 34 region abbreviations) |
 | `TaggingEngine` | Enterprise tagging (7 required + 5 optional tags with regex validation) |
 | `EnterpriseStandardsConfig` | YAML-driven config (`standards.yaml`) for naming, tagging, governance |
-| `StateManager` | Persistent state in `.devex/state.json` — drift detection, file manifests, audit trail |
+| `StateManager` | Persistent state in `.devex/state.json` -- drift detection, file manifests, audit trail |
 | `WAFAssessor` | Azure Well-Architected Framework assessment (5 pillars, 26 principles, per-pillar scoring) |
 
 ---
@@ -211,7 +211,7 @@ result aggregation. 6 built-in subagents: Bicep Module, Compliance Check, Cost
 Estimation, Security Scan, Doc Writer, Alert Rule.
 
 ```
-Dispatcher.fan_out([task1, task2, task3]) → parallel execution → aggregate results
+Dispatcher.fan_out([task1, task2, task3]) -> parallel execution -> aggregate results
 ```
 
 ### Persistent Planning
@@ -235,7 +235,7 @@ to the project's technology stack.
 
 **Module:** `src/orchestrator/agents/deploy_orchestrator.py`
 
-Staged Azure deployment engine: validate → what-if → deploy-infra → verify.
+Staged Azure deployment engine: validate -> what-if -> deploy-infra -> verify.
 8 error categories with regex matching, automatic retry for transient errors,
 and actionable remediation suggestions.
 
@@ -257,14 +257,14 @@ for attempt in range(max_iterations):
 files = infrastructure_generator.generate(spec, plan, report)
 write_to_disk(files, output_directory)
 
-# Intent file workflow — zero-prompt scaffold
+# Intent file workflow -- zero-prompt scaffold
 from src.orchestrator.intent_file import IntentFileParser
 parser = IntentFileParser()
 result = parser.parse("intent.md")
 spec = intent_parser.parse(result.full_intent)
 # ... pipeline continues as above
 
-# Version management — track, upgrade, rollback
+# Version management -- track, upgrade, rollback
 from src.orchestrator.versioning import VersionManager
 vm = VersionManager(output_directory)
 vm.record_version(parsed_intent, file_count, governance_status)
@@ -272,26 +272,26 @@ plan = vm.plan_upgrade(new_intent)
 vm.rollback(version_number)
 history = vm.get_history()
 
-# Persistent planning — checkpoint-based execution
+# Persistent planning -- checkpoint-based execution
 planner = PersistentPlanner(output_directory)
 planner.create_pipeline_plan(intent, intent_hash)
 for task_id in ["parse-intent", "plan-architecture", ...]:
     planner.execute_task(task_id)  # auto-saved to .devex/plan_state.json
 
-# Skills — pluggable capability routing
+# Skills -- pluggable capability routing
 registry = create_default_registry()
 result = registry.execute("governance", spec=spec, plan=plan)
 
-# Subagents — parallel fan-out
+# Subagents -- parallel fan-out
 dispatcher = create_default_dispatcher()
 results = dispatcher.fan_out(tasks, max_workers=4)
 
-# State management — track and detect drift
+# State management -- track and detect drift
 state_manager = StateManager(output_directory)
 state_manager.record_generation(intent, spec, report, files)
 drift = state_manager.detect_drift(new_intent)
 
-# Deploy — staged deployment with error recovery
+# Deploy -- staged deployment with error recovery
 orchestrator = DeployOrchestrator(output_dir, resource_group, region)
 result = orchestrator.deploy()
 ```
@@ -307,11 +307,11 @@ requirement definition. The parser extracts project name, business description,
 9 enterprise requirement sections, configuration, and version metadata.
 
 **Key Components:**
-- `IntentFileParser` — Parses intent.md files including enterprise sections
-- `IntentFileResult` — Parsed result with 9 enterprise fields, full_intent, version_info, config
-- `IntentFileVersion` — Version metadata (version number, based_on, changes)
-- `generate_intent_template()` — Creates a structured enterprise requirements template
-- `generate_upgrade_template()` — Creates upgrade template with improvement suggestions from previous run
+- `IntentFileParser` -- Parses intent.md files including enterprise sections
+- `IntentFileResult` -- Parsed result with 9 enterprise fields, full_intent, version_info, config
+- `IntentFileVersion` -- Version metadata (version number, based_on, changes)
+- `generate_intent_template()` -- Creates a structured enterprise requirements template
+- `generate_upgrade_template()` -- Creates upgrade template with improvement suggestions from previous run
 
 **9 Enterprise Requirement Sections:**
 
@@ -328,17 +328,17 @@ requirement definition. The parser extracts project name, business description,
 | Acceptance Criteria | `acceptance_criteria` | Functional tests, benchmarks, security scans |
 
 **Heading Aliases:** 28 heading name aliases mapped via `_ENTERPRISE_SECTIONS`
-(e.g., "goals" → `business_goals`, "scaling" → `scalability_requirements`).
+(e.g., "goals" -> `business_goals`, "scaling" -> `scalability_requirements`).
 
 **Completeness Tracking:**
-- `enterprise_sections_filled` — `dict[str, bool]` of which sections have content
-- `completeness_pct` — Percentage of sections filled (0–100%)
+- `enterprise_sections_filled` -- `dict[str, bool]` of which sections have content
+- `completeness_pct` -- Percentage of sections filled (0-100%)
 
 **Improvement Suggestions Loop:**
 - `generate_upgrade_template()` accepts `improvement_suggestions: list[str]`
 - Suggestions from `DocsGenerator.generate_improvement_suggestions()` are embedded
   in the upgrade template's "Improvement Suggestions from vN" section
-- Users review, incorporate, and re-run — each cycle converges toward production
+- Users review, incorporate, and re-run -- each cycle converges toward production
 
 **Supported Configuration:**
 
@@ -361,16 +361,16 @@ Tracks scaffold versions, manages upgrades, and supports rollback.
 State is persisted in `.devex/versions.json`.
 
 **Key Components:**
-- `VersionManager` — Core version tracking (record, upgrade, rollback, history)
-- `VersionRecord` — Individual version entry (version, intent, status, file_count)
-- `VersionState` — Full state container (project_name, versions list)
-- `UpgradePlan` — Upgrade diff with summary and notes
+- `VersionManager` -- Core version tracking (record, upgrade, rollback, history)
+- `VersionRecord` -- Individual version entry (version, intent, status, file_count)
+- `VersionState` -- Full state container (project_name, versions list)
+- `UpgradePlan` -- Upgrade diff with summary and notes
 
 **Version Statuses:** `active`, `superseded`, `rolled-back`
 
 **CI/CD Integration:** When upgrading to v2+, the CICDGenerator produces
 promotion and rollback GitHub Actions workflows that deploy as Container Apps
-revisions with traffic shifting (0% → health check → 100%).
+revisions with traffic shifting (0% -> health check -> 100%).
 
 ---
 
@@ -398,6 +398,6 @@ revisions with traffic shifting (0% → health check → 100%).
 - All secrets are referenced, never embedded in generated code
 - Bicep templates use parameter references for sensitive values
 - Generated CI/CD workflows use OIDC, never stored credentials
-- Tool execution is sandboxed — no arbitrary code execution
+- Tool execution is sandboxed -- no arbitrary code execution
 - State files (`.devex/state.json`) contain only hashes, never raw secrets or credentials
 - Enterprise tags enforce data-sensitivity classification on every generated resource

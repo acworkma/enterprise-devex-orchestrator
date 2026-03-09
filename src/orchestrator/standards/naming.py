@@ -1,4 +1,4 @@
-"""Naming Standards Engine — Azure Cloud Adoption Framework compliant.
+"""Naming Standards Engine -- Azure Cloud Adoption Framework compliant.
 
 Generates resource names that follow enterprise naming conventions based
 on the Azure CAF recommended patterns:
@@ -50,7 +50,7 @@ class ResourceType(str, Enum):
     ACTION_GROUP = "ag"
 
 
-# Region abbreviation lookup — Azure CAF recommended short codes
+# Region abbreviation lookup -- Azure CAF recommended short codes
 REGION_ABBREVIATIONS: dict[str, str] = {
     "eastus": "eus",
     "eastus2": "eus2",
@@ -210,7 +210,7 @@ class NamingEngine:
     Usage:
         engine = NamingEngine(workload="myapi", environment="dev", region="eastus2")
         kv_name = engine.generate(ResourceType.KEY_VAULT)
-        # → "kv-myapi-dev-eus2"
+        # -> "kv-myapi-dev-eus2"
     """
 
     workload: str
@@ -359,7 +359,7 @@ class NamingEngine:
         region_abbrev = self._abbreviate_region(self.region)
 
         lines = [
-            "// ── Enterprise Naming Convention (Azure CAF) ───────────────────",
+            "// -- Enterprise Naming Convention (Azure CAF) -------------------",
             "// Resource names follow: {type}-{workload}-{env}-{region}",
             f"var lawName = 'law-${{projectName}}-${{environment}}-{region_abbrev}'",
             f"var identityName = 'id-${{projectName}}-${{environment}}-{region_abbrev}'",

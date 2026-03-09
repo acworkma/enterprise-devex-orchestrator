@@ -1,6 +1,6 @@
 """Tests for the Intent File Parser and Version Manager.
 
-Validates the complete describe → run → iterate workflow:
+Validates the complete describe -> run -> iterate workflow:
   - Parsing intent.md files into structured data
   - Generating intent templates
   - Version tracking and upgrade planning
@@ -30,9 +30,9 @@ from src.orchestrator.versioning import (
 )
 
 
-# ═══════════════════════════════════════════════
+# ===============================================
 # Intent File Parser Tests
-# ═══════════════════════════════════════════════
+# ===============================================
 
 
 class TestIntentFileParser:
@@ -234,9 +234,9 @@ class TestIntentFileParser:
         assert "batch processing" in result.intent
 
 
-# ═══════════════════════════════════════════════
+# ===============================================
 # Template Generation Tests
-# ═══════════════════════════════════════════════
+# ===============================================
 
 
 class TestTemplateGeneration:
@@ -284,9 +284,9 @@ class TestTemplateGeneration:
         assert result.config.get("app_type") == "api"
 
 
-# ═══════════════════════════════════════════════
+# ===============================================
 # Version Manager Tests
-# ═══════════════════════════════════════════════
+# ===============================================
 
 
 class TestVersionManager:
@@ -475,9 +475,9 @@ class TestVersionManager:
         assert "1" in data["versions"]
 
 
-# ═══════════════════════════════════════════════
+# ===============================================
 # CI/CD Promotion Tests
-# ═══════════════════════════════════════════════
+# ===============================================
 
 
 class TestCICDPromotion:
@@ -539,16 +539,16 @@ class TestCICDPromotion:
         assert "revision" in rollback.lower()
 
 
-# ═══════════════════════════════════════════════
+# ===============================================
 # End-to-End Workflow Test
-# ═══════════════════════════════════════════════
+# ===============================================
 
 
 class TestEndToEndWorkflow:
-    """Test the full describe → scaffold → upgrade workflow."""
+    """Test the full describe -> scaffold -> upgrade workflow."""
 
     def test_full_lifecycle(self, tmp_path: Path) -> None:
-        """Simulate: create intent → scaffold v1 → create v2 → upgrade."""
+        """Simulate: create intent -> scaffold v1 -> create v2 -> upgrade."""
         # Step 1: Create intent.md
         template = generate_intent_template(project_name="lifecycle-test")
         intent_path = tmp_path / "intent.md"
@@ -604,7 +604,7 @@ class TestEndToEndWorkflow:
         assert len(history) == 2
 
     def test_anyone_can_clone_and_scaffold(self, tmp_path: Path) -> None:
-        """Simulate: clone repo → edit intent.md → scaffold."""
+        """Simulate: clone repo -> edit intent.md -> scaffold."""
         # Simulate cloning: copy intent.md to a new directory
         clone_dir = tmp_path / "cloned-repo"
         clone_dir.mkdir()

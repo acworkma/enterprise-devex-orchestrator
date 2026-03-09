@@ -4,11 +4,11 @@
 
 | Requirement | Version | Check |
 |---|---|---|
-| Azure CLI | ≥ 2.55 | `az version` |
-| Bicep CLI | ≥ 0.24 | `az bicep version` |
-| Python | ≥ 3.11 | `python --version` |
-| Docker | ≥ 24.0 | `docker --version` |
-| GitHub CLI | ≥ 2.40 | `gh --version` |
+| Azure CLI | >= 2.55 | `az version` |
+| Bicep CLI | >= 0.24 | `az bicep version` |
+| Python | >= 3.11 | `python --version` |
+| Docker | >= 24.0 | `docker --version` |
+| GitHub CLI | >= 2.40 | `gh --version` |
 
 ## Authentication
 
@@ -23,7 +23,7 @@ az account set --subscription e47370c7-8804-46b9-86f9-a96f5e950535
 az account show --query "{name:name, id:id}" -o table
 ```
 
-## Step 1 — Create Resource Group
+## Step 1 -- Create Resource Group
 
 ```bash
 az group create \
@@ -34,7 +34,7 @@ az group create \
          createdBy=devex-orchestrator
 ```
 
-## Step 2 — Validate Bicep Templates
+## Step 2 -- Validate Bicep Templates
 
 ```bash
 # Syntax validation
@@ -47,7 +47,7 @@ az deployment group what-if \
   --parameters infra/bicep/parameters/dev.parameters.json
 ```
 
-## Step 3 — Deploy Infrastructure
+## Step 3 -- Deploy Infrastructure
 
 ```bash
 az deployment group create \
@@ -68,7 +68,7 @@ Expected resources created:
 > All resource names follow [Azure CAF naming conventions](https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/resource-naming).
 > All resources are tagged with 7 required enterprise tags (project, environment, costCenter, owner, managedBy, createdBy, dataSensitivity).
 
-## Step 4 — Build and Push Container Image
+## Step 4 -- Build and Push Container Image
 
 ```bash
 # Get ACR name from deployment output
@@ -85,7 +85,7 @@ docker build -t ${ACR_NAME}.azurecr.io/devex-orchestrator:latest .
 docker push ${ACR_NAME}.azurecr.io/devex-orchestrator:latest
 ```
 
-## Step 5 — Update Container App Image
+## Step 5 -- Update Container App Image
 
 ```bash
 CONTAINER_APP_NAME=$(az deployment group show \
@@ -99,7 +99,7 @@ az containerapp update \
   --image ${ACR_NAME}.azurecr.io/devex-orchestrator:latest
 ```
 
-## Step 6 — Verify Deployment
+## Step 6 -- Verify Deployment
 
 ```bash
 # Get the FQDN
@@ -115,7 +115,7 @@ curl https://${FQDN}/health
 # {"status": "healthy", "version": "0.1.0"}
 ```
 
-## Step 7 — Configure GitHub Actions (OIDC)
+## Step 7 -- Configure GitHub Actions (OIDC)
 
 ### Create Azure AD App Registration
 

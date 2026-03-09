@@ -1,4 +1,4 @@
-"""Tests for new features — multi-language, multi-compute, cost estimation, intent detection."""
+"""Tests for new features -- multi-language, multi-compute, cost estimation, intent detection."""
 
 from __future__ import annotations
 
@@ -98,9 +98,9 @@ def _make_plan() -> PlanOutput:
     )
 
 
-# ═══════════════════════════════════════════════════════════════════
+# ===================================================================
 # Multi-Language App Generator
-# ═══════════════════════════════════════════════════════════════════
+# ===================================================================
 
 
 class TestMultiLanguageAppGenerator:
@@ -109,7 +109,7 @@ class TestMultiLanguageAppGenerator:
     def setup_method(self) -> None:
         self.gen = AppGenerator()
 
-    # ── Python (default) ────────────────────────────────────────────
+    # -- Python (default) --------------------------------------------
 
     def test_python_generates_main_py(self) -> None:
         files = self.gen.generate(_make_spec(language="python"))
@@ -127,7 +127,7 @@ class TestMultiLanguageAppGenerator:
         files = self.gen.generate(_make_spec(language="python"))
         assert "python:" in files["src/app/Dockerfile"].lower()
 
-    # ── Node.js ─────────────────────────────────────────────────────
+    # -- Node.js -----------------------------------------------------
 
     def test_node_generates_index_js(self) -> None:
         files = self.gen.generate(_make_spec(language="node"))
@@ -149,7 +149,7 @@ class TestMultiLanguageAppGenerator:
         files = self.gen.generate(_make_spec(language="node"))
         assert "node:" in files["src/app/Dockerfile"].lower()
 
-    # ── .NET ────────────────────────────────────────────────────────
+    # -- .NET --------------------------------------------------------
 
     def test_dotnet_generates_program_cs(self) -> None:
         files = self.gen.generate(_make_spec(language="dotnet"))
@@ -173,9 +173,9 @@ class TestMultiLanguageAppGenerator:
         assert "src/app/appsettings.json" in files
 
 
-# ═══════════════════════════════════════════════════════════════════
+# ===================================================================
 # Multi-Compute Target Bicep Generator
-# ═══════════════════════════════════════════════════════════════════
+# ===================================================================
 
 
 class TestMultiComputeBicepGenerator:
@@ -184,7 +184,7 @@ class TestMultiComputeBicepGenerator:
     def setup_method(self) -> None:
         self.gen = BicepGenerator()
 
-    # ── Container Apps (default) ────────────────────────────────────
+    # -- Container Apps (default) ------------------------------------
 
     def test_container_apps_generates_ca_module(self) -> None:
         spec = _make_spec(compute_target=ComputeTarget.CONTAINER_APPS)
@@ -201,7 +201,7 @@ class TestMultiComputeBicepGenerator:
         files = self.gen.generate(spec, _make_plan())
         assert "container" in files["infra/bicep/main.bicep"].lower()
 
-    # ── App Service ─────────────────────────────────────────────────
+    # -- App Service -------------------------------------------------
 
     def test_app_service_generates_module(self) -> None:
         spec = _make_spec(compute_target=ComputeTarget.APP_SERVICE)
@@ -224,7 +224,7 @@ class TestMultiComputeBicepGenerator:
         files = self.gen.generate(spec, _make_plan())
         assert "app_service" in files["infra/bicep/main.bicep"]
 
-    # ── Functions ───────────────────────────────────────────────────
+    # -- Functions ---------------------------------------------------
 
     def test_functions_generates_module(self) -> None:
         spec = _make_spec(compute_target=ComputeTarget.FUNCTIONS)
@@ -247,7 +247,7 @@ class TestMultiComputeBicepGenerator:
         files = self.gen.generate(spec, _make_plan())
         assert "functions" in files["infra/bicep/main.bicep"].lower()
 
-    # ── Common modules always present ───────────────────────────────
+    # -- Common modules always present -------------------------------
 
     def test_always_has_keyvault(self) -> None:
         for target in ComputeTarget:
@@ -268,9 +268,9 @@ class TestMultiComputeBicepGenerator:
             assert "infra/bicep/modules/managed-identity.bicep" in files, f"Missing identity for {target}"
 
 
-# ═══════════════════════════════════════════════════════════════════
+# ===================================================================
 # Cost Estimator
-# ═══════════════════════════════════════════════════════════════════
+# ===================================================================
 
 
 class TestCostEstimator:
@@ -346,9 +346,9 @@ class TestCostEstimator:
         assert "Managed Identity" in resources
 
 
-# ═══════════════════════════════════════════════════════════════════
-# Intent Parser — Language & Compute Detection
-# ═══════════════════════════════════════════════════════════════════
+# ===================================================================
+# Intent Parser -- Language & Compute Detection
+# ===================================================================
 
 
 class TestIntentParserLanguageDetection:
@@ -357,7 +357,7 @@ class TestIntentParserLanguageDetection:
     def setup_method(self) -> None:
         self.parser = IntentParserAgent(_make_config())
 
-    # ── Language detection ──────────────────────────────────────────
+    # -- Language detection ------------------------------------------
 
     def test_detects_python_default(self) -> None:
         spec = self.parser.parse("Build a secure API with blob storage")
@@ -379,7 +379,7 @@ class TestIntentParserLanguageDetection:
         spec = self.parser.parse("Build a dotnet API for data processing")
         assert spec.language == "dotnet"
 
-    # ── Compute target detection ────────────────────────────────────
+    # -- Compute target detection ------------------------------------
 
     def test_defaults_to_container_apps(self) -> None:
         spec = self.parser.parse("Build a secure API with blob storage")
@@ -397,7 +397,7 @@ class TestIntentParserLanguageDetection:
         spec = self.parser.parse("Build an Azure function for image processing")
         assert spec.compute_target == ComputeTarget.FUNCTIONS
 
-    # ── Framework follows language ──────────────────────────────────
+    # -- Framework follows language ----------------------------------
 
     def test_python_gets_fastapi(self) -> None:
         spec = self.parser.parse("Build a python API")
@@ -412,9 +412,9 @@ class TestIntentParserLanguageDetection:
         assert spec.framework == "aspnet"
 
 
-# ═══════════════════════════════════════════════════════════════════
-# Schema — ComputeTarget and Language enums
-# ═══════════════════════════════════════════════════════════════════
+# ===================================================================
+# Schema -- ComputeTarget and Language enums
+# ===================================================================
 
 
 class TestSchemaEnums:

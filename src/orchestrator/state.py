@@ -1,4 +1,4 @@
-"""State Management — tracks generated artifacts and detects drift.
+"""State Management -- tracks generated artifacts and detects drift.
 
 Provides persistent state tracking for the orchestrator, enabling:
   - Recording what was generated (intent, plan, files)
@@ -214,7 +214,7 @@ class StateManager:
             environment: Target environment.
             region: Azure region.
             governance_status: PASS/FAIL/PASS_WITH_WARNINGS.
-            files: Generated file path → content mapping.
+            files: Generated file path -> content mapping.
         """
         now = datetime.now(tz=UTC).isoformat()
 
@@ -282,7 +282,7 @@ class StateManager:
         if not self.state.last_intent:
             return DriftResult(
                 has_drift=True,
-                summary="No previous generation found — initial scaffold.",
+                summary="No previous generation found -- initial scaffold.",
             )
 
         changed: list[str] = []
@@ -353,7 +353,7 @@ class StateManager:
         return self.state.history[-1] if self.state.history else None
 
     def get_file_manifest(self) -> dict[str, str]:
-        """Return file path → content hash mapping."""
+        """Return file path -> content hash mapping."""
         return {path: rec.content_hash for path, rec in self.state.files.items()}
 
     @staticmethod

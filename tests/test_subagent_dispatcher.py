@@ -1,4 +1,4 @@
-"""Tests for Subagent Dispatcher — spawning, fan-out, aggregation."""
+"""Tests for Subagent Dispatcher -- spawning, fan-out, aggregation."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from src.orchestrator.agents.subagent_dispatcher import (
     create_default_dispatcher,
 )
 
-# ───────────────── Test Helpers ─────────────────
+# ----------------- Test Helpers -----------------
 
 
 class _EchoSubagent:
@@ -52,7 +52,7 @@ class _FailSubagent:
         raise RuntimeError("Subagent crash")
 
 
-# ───────────────── Registration ─────────────────
+# ----------------- Registration -----------------
 
 
 class TestSubagentRegistration:
@@ -68,7 +68,7 @@ class TestSubagentRegistration:
         assert set(d.registered_types) == {"alpha", "beta"}
 
 
-# ───────────────── Spawn ─────────────────
+# ----------------- Spawn -----------------
 
 
 class TestSubagentSpawn:
@@ -104,7 +104,7 @@ class TestSubagentSpawn:
         assert len(d.execution_history) == 2
 
 
-# ───────────────── Fan-Out ─────────────────
+# ----------------- Fan-Out -----------------
 
 
 class TestSubagentFanOut:
@@ -157,7 +157,7 @@ class TestSubagentFanOut:
         assert dep_result.status == SubagentStatus.CANCELLED
 
 
-# ───────────────── Aggregation ─────────────────
+# ----------------- Aggregation -----------------
 
 
 class TestSubagentAggregation:
@@ -204,7 +204,7 @@ class TestSubagentAggregation:
         assert agg["errors"][0]["error"] == "err1"
 
 
-# ───────────────── Default Dispatcher ─────────────────
+# ----------------- Default Dispatcher -----------------
 
 
 class TestDefaultDispatcher:

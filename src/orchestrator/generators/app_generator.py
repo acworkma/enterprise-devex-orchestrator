@@ -1,4 +1,4 @@
-"""Application Generator — produces sample application code.
+"""Application Generator -- produces sample application code.
 
 Generates a minimal but production-grade application with:
     - Health endpoint
@@ -10,7 +10,7 @@ Generates a minimal but production-grade application with:
     - Dependency file
 
 Supports multiple languages:
-    - Python (FastAPI)  — default
+    - Python (FastAPI)  -- default
     - Node.js (Express)
     - .NET (ASP.NET Core minimal API)
 """
@@ -24,7 +24,7 @@ logger = get_logger(__name__)
 
 
 class AppGenerator:
-    """Generates application scaffold — multi-language support."""
+    """Generates application scaffold -- multi-language support."""
 
     def generate(self, spec: IntentSpec) -> dict[str, str]:
         """Generate application files based on spec.language."""
@@ -41,9 +41,9 @@ class AppGenerator:
         logger.info("app_generator.complete", file_count=len(files), language=language)
         return files
 
-    # ═══════════════════════════════════════════════════════════════
+    # ===============================================================
     # Python / FastAPI
-    # ═══════════════════════════════════════════════════════════════
+    # ===============================================================
 
     def _generate_python(self, spec: IntentSpec) -> dict[str, str]:
         """Generate Python/FastAPI scaffold."""
@@ -54,9 +54,9 @@ class AppGenerator:
         files["src/app/__init__.py"] = '"""Generated application package."""\n'
         return files
 
-    # ═══════════════════════════════════════════════════════════════
+    # ===============================================================
     # Node.js / Express
-    # ═══════════════════════════════════════════════════════════════
+    # ===============================================================
 
     def _generate_node(self, spec: IntentSpec) -> dict[str, str]:
         """Generate Node.js/Express scaffold."""
@@ -67,9 +67,9 @@ class AppGenerator:
         files["src/app/.env.example"] = self._node_env_example(spec)
         return files
 
-    # ═══════════════════════════════════════════════════════════════
+    # ===============================================================
     # .NET / ASP.NET Core
-    # ═══════════════════════════════════════════════════════════════
+    # ===============================================================
 
     def _generate_dotnet(self, spec: IntentSpec) -> dict[str, str]:
         """Generate .NET/ASP.NET Core minimal API scaffold."""
@@ -90,7 +90,7 @@ class AppGenerator:
 from azure.storage.blob import BlobServiceClient
 """
             storage_client = """
-# ── Storage Client ───────────────────────────────────────────────────
+# -- Storage Client ---------------------------------------------------
 def get_blob_client() -> BlobServiceClient:
     \"\"\"Create an authenticated Blob Storage client using Managed Identity.\"\"\"
     credential = DefaultAzureCredential(
@@ -121,7 +121,7 @@ async def storage_status():
         )
 """
 
-        return f"""\"\"\"Enterprise DevEx Orchestrator — Generated Application.
+        return f"""\"\"\"Enterprise DevEx Orchestrator -- Generated Application.
 
 Project: {spec.project_name}
 Description: {spec.description}
@@ -145,18 +145,18 @@ from azure.keyvault.secrets import SecretClient
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 {storage_imports}
-# ── Configuration ────────────────────────────────────────────────────
+# -- Configuration ----------------------------------------------------
 APP_NAME = "{spec.project_name}"
 VERSION = "1.0.0"
 
-# ── Logging ──────────────────────────────────────────────────────────
+# -- Logging ----------------------------------------------------------
 logging.basicConfig(
     level=logging.INFO,
     format='{{"timestamp":"%(asctime)s","level":"%(levelname)s","logger":"%(name)s","message":"%(message)s"}}',
 )
 logger = logging.getLogger(APP_NAME)
 
-# ── FastAPI Application ─────────────────────────────────────────────
+# -- FastAPI Application ---------------------------------------------
 app = FastAPI(
     title=APP_NAME,
     version=VERSION,
@@ -166,7 +166,7 @@ app = FastAPI(
 )
 
 
-# ── Key Vault Client ────────────────────────────────────────────────
+# -- Key Vault Client ------------------------------------------------
 def get_keyvault_client() -> SecretClient:
     \"\"\"Create an authenticated Key Vault client using Managed Identity.\"\"\"
     credential = DefaultAzureCredential(
@@ -179,7 +179,7 @@ def get_keyvault_client() -> SecretClient:
     return SecretClient(vault_url=vault_url, credential=credential)
 
 {storage_client}
-# ── Health Endpoint ──────────────────────────────────────────────────
+# -- Health Endpoint --------------------------------------------------
 @app.get("/health")
 async def health():
     \"\"\"Health check endpoint for liveness and readiness probes.\"\"\"
@@ -191,7 +191,7 @@ async def health():
     }}
 
 
-# ── Info Endpoint ────────────────────────────────────────────────────
+# -- Info Endpoint ----------------------------------------------------
 @app.get("/")
 async def root():
     \"\"\"Root endpoint with service information.\"\"\"
@@ -203,7 +203,7 @@ async def root():
     }}
 
 
-# ── Key Vault Status ────────────────────────────────────────────────
+# -- Key Vault Status ------------------------------------------------
 @app.get("/keyvault/status")
 async def keyvault_status():
     \"\"\"Check Key Vault connectivity via Managed Identity.\"\"\"
@@ -223,7 +223,7 @@ async def keyvault_status():
         )
 
 {storage_endpoint}
-# ── Startup Event ────────────────────────────────────────────────────
+# -- Startup Event ----------------------------------------------------
 @app.on_event("startup")
 async def startup():
     \"\"\"Application startup tasks.\"\"\"
@@ -244,7 +244,7 @@ if __name__ == "__main__":
 """
 
     def _python_requirements(self, spec: IntentSpec) -> str:
-        reqs = """# Enterprise DevEx Orchestrator — Generated Application Dependencies
+        reqs = """# Enterprise DevEx Orchestrator -- Generated Application Dependencies
 fastapi>=0.109.0
 uvicorn[standard]>=0.27.0
 azure-identity>=1.15.0
@@ -260,12 +260,12 @@ python-dotenv>=1.0.0
         return reqs
 
     def _python_dockerfile(self, spec: IntentSpec) -> str:
-        return f"""# ═══════════════════════════════════════════════════════════════════
-# Dockerfile — {spec.project_name}
+        return f"""# ===================================================================
+# Dockerfile -- {spec.project_name}
 # Multi-stage build for minimal production image
-# ═══════════════════════════════════════════════════════════════════
+# ===================================================================
 
-# ── Build Stage ──────────────────────────────────────────────────────
+# -- Build Stage ------------------------------------------------------
 FROM python:3.11-slim AS builder
 
 WORKDIR /build
@@ -273,7 +273,7 @@ WORKDIR /build
 COPY requirements.txt .
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
-# ── Runtime Stage ────────────────────────────────────────────────────
+# -- Runtime Stage ----------------------------------------------------
 FROM python:3.11-slim AS runtime
 
 # Security: run as non-root user
@@ -301,9 +301,9 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \\
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
 """
 
-    # ═══════════════════════════════════════════════════════════════
-    # Node.js / Express — implementation methods
-    # ═══════════════════════════════════════════════════════════════
+    # ===============================================================
+    # Node.js / Express -- implementation methods
+    # ===============================================================
 
     def _node_main(self, spec: IntentSpec) -> str:
         storage_require = ""
@@ -312,7 +312,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", 
         if DataStore.BLOB_STORAGE in spec.data_stores:
             storage_require = 'const { BlobServiceClient } = require("@azure/storage-blob");\n'
             storage_route = f"""
-// ── Storage Status ──────────────────────────────────────────────────
+// -- Storage Status --------------------------------------------------
 app.get("/storage/status", async (req, res) => {{
   try {{
     const credential = new DefaultAzureCredential();
@@ -330,12 +330,12 @@ app.get("/storage/status", async (req, res) => {{
 }});
 """
 
-        return f"""// ═══════════════════════════════════════════════════════════════════
-// Enterprise DevEx Orchestrator — Generated Application (Node.js)
+        return f"""// ===================================================================
+// Enterprise DevEx Orchestrator -- Generated Application (Node.js)
 //
 // Project: {spec.project_name}
 // Description: {spec.description}
-// ═══════════════════════════════════════════════════════════════════
+// ===================================================================
 
 const express = require("express");
 const {{ DefaultAzureCredential }} = require("@azure/identity");
@@ -348,7 +348,7 @@ const PORT = parseInt(process.env.PORT || "8000", 10);
 
 app.use(express.json());
 
-// ── Health Endpoint ─────────────────────────────────────────────────
+// -- Health Endpoint -------------------------------------------------
 app.get("/health", (req, res) => {{
   res.json({{
     status: "healthy",
@@ -358,7 +358,7 @@ app.get("/health", (req, res) => {{
   }});
 }});
 
-// ── Root Endpoint ───────────────────────────────────────────────────
+// -- Root Endpoint ---------------------------------------------------
 app.get("/", (req, res) => {{
   res.json({{
     service: APP_NAME,
@@ -367,7 +367,7 @@ app.get("/", (req, res) => {{
   }});
 }});
 
-// ── Key Vault Status ────────────────────────────────────────────────
+// -- Key Vault Status ------------------------------------------------
 app.get("/keyvault/status", async (req, res) => {{
   try {{
     const credential = new DefaultAzureCredential();
@@ -427,10 +427,10 @@ app.listen(PORT, () => {{
 """
 
     def _node_dockerfile(self, spec: IntentSpec) -> str:
-        return f"""# ═══════════════════════════════════════════════════════════════════
-# Dockerfile — {spec.project_name} (Node.js)
+        return f"""# ===================================================================
+# Dockerfile -- {spec.project_name} (Node.js)
 # Multi-stage build for minimal production image
-# ═══════════════════════════════════════════════════════════════════
+# ===================================================================
 
 FROM node:20-slim AS builder
 WORKDIR /build
@@ -465,9 +465,9 @@ CMD ["node", "index.js"]
             lines += ["", "# Storage", "STORAGE_ACCOUNT_URL="]
         return "\n".join(lines) + "\n"
 
-    # ═══════════════════════════════════════════════════════════════
-    # .NET / ASP.NET Core — implementation methods
-    # ═══════════════════════════════════════════════════════════════
+    # ===============================================================
+    # .NET / ASP.NET Core -- implementation methods
+    # ===============================================================
 
     def _dotnet_program(self, spec: IntentSpec) -> str:
         storage_usings = ""
@@ -500,12 +500,12 @@ app.MapGet("/storage/status", async (BlobServiceClient blobClient) =>
 }});
 """
 
-        return f"""// ═══════════════════════════════════════════════════════════════════
-// Enterprise DevEx Orchestrator — Generated Application (.NET)
+        return f"""// ===================================================================
+// Enterprise DevEx Orchestrator -- Generated Application (.NET)
 //
 // Project: {spec.project_name}
 // Description: {spec.description}
-// ═══════════════════════════════════════════════════════════════════
+// ===================================================================
 
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
@@ -515,7 +515,7 @@ var builder = WebApplication.CreateBuilder(args);
 var appName = "{spec.project_name}";
 var version = "1.0.0";
 
-// ── Key Vault Client ────────────────────────────────────────────────
+// -- Key Vault Client ------------------------------------------------
 builder.Services.AddSingleton(sp =>
 {{
     var credential = new DefaultAzureCredential();
@@ -526,7 +526,7 @@ builder.Services.AddSingleton(sp =>
 {storage_services}
 var app = builder.Build();
 
-// ── Health Endpoint ─────────────────────────────────────────────────
+// -- Health Endpoint -------------------------------------------------
 app.MapGet("/health", () => Results.Ok(new
 {{
     status = "healthy",
@@ -535,7 +535,7 @@ app.MapGet("/health", () => Results.Ok(new
     timestamp = DateTime.UtcNow.ToString("o"),
 }}));
 
-// ── Root Endpoint ───────────────────────────────────────────────────
+// -- Root Endpoint ---------------------------------------------------
 app.MapGet("/", () => Results.Ok(new
 {{
     service = appName,
@@ -543,7 +543,7 @@ app.MapGet("/", () => Results.Ok(new
     status = "running",
 }}));
 
-// ── Key Vault Status ────────────────────────────────────────────────
+// -- Key Vault Status ------------------------------------------------
 app.MapGet("/keyvault/status", async (SecretClient kvClient) =>
 {{
     try
@@ -583,10 +583,10 @@ app.Run();
 """
 
     def _dotnet_dockerfile(self, spec: IntentSpec) -> str:
-        return f"""# ═══════════════════════════════════════════════════════════════════
-# Dockerfile — {spec.project_name} (.NET)
+        return f"""# ===================================================================
+# Dockerfile -- {spec.project_name} (.NET)
 # Multi-stage build for minimal production image
-# ═══════════════════════════════════════════════════════════════════
+# ===================================================================
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS builder
 WORKDIR /build

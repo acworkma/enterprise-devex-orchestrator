@@ -1,4 +1,4 @@
-"""Tests for generators — Bicep, CI/CD, App, Docs."""
+"""Tests for generators -- Bicep, CI/CD, App, Docs."""
 
 from __future__ import annotations
 

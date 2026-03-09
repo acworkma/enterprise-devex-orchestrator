@@ -1,13 +1,13 @@
-"""Version Manager — safe, incremental version upgrades for scaffolded projects.
+"""Version Manager -- safe, incremental version upgrades for scaffolded projects.
 
-Tracks version history, enables v1 → v2 → v3 upgrades without breaking
+Tracks version history, enables v1 -> v2 -> v3 upgrades without breaking
 existing deployments, and generates version-aware CI/CD artifacts.
 
 Version state is stored in `.devex/versions.json`.
 
 Upgrade strategy:
   - v1: Full scaffold (Container Apps, infra, CI/CD, app)
-  - v2+: Incremental — only regenerate changed components.
+  - v2+: Incremental -- only regenerate changed components.
          CI/CD gets a promotion workflow with revision-based deployment
          so the previous version stays live while the new one is validated.
 
@@ -123,7 +123,7 @@ class UpgradePlan:
 
     @property
     def summary(self) -> str:
-        parts = [f"Upgrade v{self.from_version} → v{self.to_version}"]
+        parts = [f"Upgrade v{self.from_version} -> v{self.to_version}"]
         if self.changes:
             parts.append(f"Changes: {self.changes}")
         regen = []
@@ -274,10 +274,10 @@ class VersionManager:
 
         if new_config.get("data_stores") or new_config.get("app_type"):
             plan.regenerate_infra = True
-            plan.notes.append("Infrastructure changes detected — regenerating Bicep")
+            plan.notes.append("Infrastructure changes detected -- regenerating Bicep")
         if new_config.get("region") or new_config.get("environment"):
             plan.regenerate_infra = True
-            plan.notes.append("Region/environment change — updating parameters")
+            plan.notes.append("Region/environment change -- updating parameters")
 
         # Always add promotion workflow for upgrades
         if from_version > 0:

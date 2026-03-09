@@ -86,10 +86,10 @@ class WAFAlignmentReport:
         return [i for i in self.items if not i.covered]
 
 
-# ───────────── WAF Design Principles Catalog ─────────────
+# ------------- WAF Design Principles Catalog -------------
 
 WAF_PRINCIPLES: list[WAFPrinciple] = [
-    # ── Reliability ──────────────────────────────────────
+    # -- Reliability --------------------------------------
     WAFPrinciple(
         id="REL-01",
         pillar=WAFPillar.RELIABILITY,
@@ -130,7 +130,7 @@ WAF_PRINCIPLES: list[WAFPrinciple] = [
         check="Verify deployment guide includes rollback instructions.",
         azure_services=["GitHub Actions", "Azure Container Apps"],
     ),
-    # ── Security ─────────────────────────────────────────
+    # -- Security -----------------------------------------
     WAFPrinciple(
         id="SEC-01",
         pillar=WAFPillar.SECURITY,
@@ -195,7 +195,7 @@ WAF_PRINCIPLES: list[WAFPrinciple] = [
         check="Verify networking model is private or internal by default.",
         azure_services=["Azure Virtual Network", "Azure Container Apps"],
     ),
-    # ── Cost Optimization ────────────────────────────────
+    # -- Cost Optimization --------------------------------
     WAFPrinciple(
         id="COST-01",
         pillar=WAFPillar.COST_OPTIMIZATION,
@@ -228,7 +228,7 @@ WAF_PRINCIPLES: list[WAFPrinciple] = [
         check="Verify Cosmos DB uses serverless throughput for dev workloads.",
         azure_services=["Azure Cosmos DB"],
     ),
-    # ── Operational Excellence ───────────────────────────
+    # -- Operational Excellence ---------------------------
     WAFPrinciple(
         id="OPS-01",
         pillar=WAFPillar.OPERATIONAL_EXCELLENCE,
@@ -269,7 +269,7 @@ WAF_PRINCIPLES: list[WAFPrinciple] = [
         check="Verify StateManager records generation events and supports drift detection.",
         azure_services=["DevEx Orchestrator"],
     ),
-    # ── Performance Efficiency ───────────────────────────
+    # -- Performance Efficiency ---------------------------
     WAFPrinciple(
         id="PERF-01",
         pillar=WAFPillar.PERFORMANCE_EFFICIENCY,
@@ -330,7 +330,7 @@ class WAFAssessor:
 
         Args:
             plan_components: List of component names from the architecture plan.
-            governance_checks: Mapping of governance check_id → passed (True/False).
+            governance_checks: Mapping of governance check_id -> passed (True/False).
             has_bicep: Whether Bicep templates were generated.
             has_dockerfile: Whether a Dockerfile was generated.
             has_cicd: Whether CI/CD workflows were generated.
@@ -393,7 +393,7 @@ class WAFAssessor:
 
         pid = principle.id
 
-        # ── Reliability ──
+        # -- Reliability --
         if pid == "REL-01":
             covered = has_health_endpoint
             return (
@@ -435,7 +435,7 @@ class WAFAssessor:
                 "" if covered else "Add rollback steps to deployment documentation.",
             )
 
-        # ── Security ──
+        # -- Security --
         if pid == "SEC-01":
             covered = governance_checks.get("GOV-REQ-MANAGED-IDENTITY", False)
             return (
@@ -500,7 +500,7 @@ class WAFAssessor:
                 "" if covered else "Configure Container Apps with internal ingress.",
             )
 
-        # ── Cost Optimization ──
+        # -- Cost Optimization --
         if pid == "COST-01":
             covered = has_tags
             return (
@@ -528,8 +528,8 @@ class WAFAssessor:
         if pid == "COST-04":
             has_cosmos = "cosmos" in data_stores or "cosmos-db" in plan_components
             if not has_cosmos:
-                covered = True  # N/A — no data tier needing serverless
-                return (covered, "No Cosmos DB — cost optimization N/A for data tier", "")
+                covered = True  # N/A -- no data tier needing serverless
+                return (covered, "No Cosmos DB -- cost optimization N/A for data tier", "")
             covered = has_cosmos  # BicepGenerator uses serverless for dev
             return (
                 covered,
@@ -537,7 +537,7 @@ class WAFAssessor:
                 "" if covered else "Use serverless SKU for Cosmos DB in dev/test environments.",
             )
 
-        # ── Operational Excellence ──
+        # -- Operational Excellence --
         if pid == "OPS-01":
             covered = governance_checks.get("GOV-REQ-LOG-ANALYTICS", False)
             return (
@@ -578,7 +578,7 @@ class WAFAssessor:
                 "" if covered else "Enable StateManager for generation tracking.",
             )
 
-        # ── Performance Efficiency ──
+        # -- Performance Efficiency --
         if pid == "PERF-01":
             covered = "container-app" in plan_components
             return (
@@ -612,10 +612,10 @@ class WAFAssessor:
             )
 
         # Fallback for any unknown principle
-        return (False, "Unknown principle — not evaluated", f"Add assessment logic for {pid}")
+        return (False, "Unknown principle -- not evaluated", f"Add assessment logic for {pid}")
 
 
-# ── WAF Pillar → Governance Check Mapping ──────────────────
+# -- WAF Pillar -> Governance Check Mapping ------------------
 
 # Maps each governance check ID to the WAF pillar(s) it contributes to.
 # Used for traceability between the SDK's governance engine and WAF alignment.
@@ -627,21 +627,21 @@ GOVERNANCE_TO_WAF: dict[str, list[WAFPillar]] = {
     "GOV-SEC-CONTAINER-APP": [WAFPillar.SECURITY],
     "GOV-NET-001": [WAFPillar.SECURITY],
     "GOV-NET-002": [WAFPillar.SECURITY],
-    # Observability → Operational Excellence + Reliability
+    # Observability -> Operational Excellence + Reliability
     "GOV-OBS-001": [WAFPillar.OPERATIONAL_EXCELLENCE],
     "GOV-OBS-002": [WAFPillar.OPERATIONAL_EXCELLENCE],
     "GOV-OBS-003": [WAFPillar.RELIABILITY, WAFPillar.PERFORMANCE_EFFICIENCY],
-    # CI/CD → Operational Excellence + Security
+    # CI/CD -> Operational Excellence + Security
     "GOV-CICD-001": [WAFPillar.OPERATIONAL_EXCELLENCE],
     "GOV-CICD-002": [WAFPillar.SECURITY, WAFPillar.OPERATIONAL_EXCELLENCE],
-    # Threat model → Security
+    # Threat model -> Security
     "GOV-THREAT-001": [WAFPillar.SECURITY],
     "GOV-THREAT-002": [WAFPillar.SECURITY],
-    # Naming → Operational Excellence
+    # Naming -> Operational Excellence
     "STD-NAME-001": [WAFPillar.OPERATIONAL_EXCELLENCE],
     "STD-NAME-002": [WAFPillar.OPERATIONAL_EXCELLENCE],
     "STD-NAME-003": [WAFPillar.OPERATIONAL_EXCELLENCE],
-    # Tagging → Cost Optimization + Operational Excellence
+    # Tagging -> Cost Optimization + Operational Excellence
     "STD-TAG-001": [WAFPillar.COST_OPTIMIZATION, WAFPillar.OPERATIONAL_EXCELLENCE],
     "STD-TAG-002": [WAFPillar.SECURITY],
     "STD-TAG-003": [WAFPillar.COST_OPTIMIZATION],
@@ -651,7 +651,7 @@ GOVERNANCE_TO_WAF: dict[str, list[WAFPillar]] = {
 }
 
 
-# ── ADR → WAF Mapping ───────────────────────────────────────
+# -- ADR -> WAF Mapping ---------------------------------------
 
 # Maps common ADR titles/IDs to the WAF pillar(s) they address.
 ADR_TO_WAF: dict[str, list[WAFPillar]] = {
@@ -682,7 +682,7 @@ def generate_waf_report_md(report: WAFAlignmentReport) -> str:
 
     for pillar, scores in report.pillar_scores().items():
         pct = scores["pct"]
-        bar = "█" * int(pct / 10) + "░" * (10 - int(pct / 10))
+        bar = "#" * int(pct / 10) + "." * (10 - int(pct / 10))
         lines.append(
             f"| {pillar.value} | {scores['covered']} | {scores['total']} "
             f"| {bar} {pct:.0f}% |"
@@ -705,7 +705,7 @@ def generate_waf_report_md(report: WAFAlignmentReport) -> str:
         lines.append("|----|-----------|--------|----------|")
 
         for item in pillar_items:
-            status = "✅" if item.covered else "❌"
+            status = "[PASS]" if item.covered else "[FAIL]"
             lines.append(
                 f"| {item.principle_id} | {item.name} | {status} | {item.evidence} |"
             )

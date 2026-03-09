@@ -383,9 +383,9 @@ Pay attention to:
 
 Given the user's existing project context:
 - The project uses {primary_language} with {frameworks}
-- {"Docker is already configured" if has_docker else "No Docker setup detected — include Dockerfile generation"}
-- {"CI/CD is configured" if has_cicd else "No CI/CD detected — include full workflow generation"}
-- {"IaC exists" if has_iac else "No IaC detected — generate complete Bicep templates"}
+- {"Docker is already configured" if has_docker else "No Docker setup detected -- include Dockerfile generation"}
+- {"CI/CD is configured" if has_cicd else "No CI/CD detected -- include full workflow generation"}
+- {"IaC exists" if has_iac else "No IaC detected -- generate complete Bicep templates"}
 - Security patterns found: {security_summary}
 
 Design the architecture to complement existing infrastructure.
@@ -396,7 +396,7 @@ Design the architecture to complement existing infrastructure.
 {codebase_context}
 
 The project's existing security posture includes: {security_summary}
-Test coverage: {"Tests detected using " + test_framework if has_tests else "No tests detected — flag as governance finding"}
+Test coverage: {"Tests detected using " + test_framework if has_tests else "No tests detected -- flag as governance finding"}
 
 Evaluate the architecture plan against enterprise policies, considering
 what the project already has in place.
@@ -458,7 +458,7 @@ class PromptGenerator:
 
         template = AGENT_PROMPT_TEMPLATES.get(agent_name)
         if not template:
-            # Unknown agent — just prepend context summary
+            # Unknown agent -- just prepend context summary
             return f"Codebase context:\n{self.scan_result.context_summary()}\n\n{base_instructions}"
 
         ctx = self._build_context_vars(base_instructions)
@@ -477,10 +477,10 @@ class PromptGenerator:
         """Generate enriched prompts for all 4 agents.
 
         Args:
-            base_prompts: Map of agent_name → default system prompt.
+            base_prompts: Map of agent_name -> default system prompt.
 
         Returns:
-            Map of agent_name → enriched prompt.
+            Map of agent_name -> enriched prompt.
         """
         base = base_prompts or {}
         return {

@@ -1,4 +1,4 @@
-"""Tests for IntentParserAgent — rule-based parsing."""
+"""Tests for IntentParserAgent -- rule-based parsing."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Cost Estimator — provides Azure monthly cost estimates.
+"""Cost Estimator -- provides Azure monthly cost estimates.
 
 Produces a rough cost breakdown for each Azure resource in the architecture plan.
 Uses published Azure pricing baselines (not live API) so estimates are directional,
@@ -15,7 +15,7 @@ from src.orchestrator.logging import get_logger
 logger = get_logger(__name__)
 
 
-# ── Baseline monthly pricing (USD, lowest tier, dev workload) ───────
+# -- Baseline monthly pricing (USD, lowest tier, dev workload) -------
 # These are approximate starting prices; actual cost depends on usage.
 _BASELINE_PRICES: dict[str, dict[str, float]] = {
     "container_apps": {

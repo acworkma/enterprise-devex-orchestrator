@@ -13,9 +13,9 @@ from src.orchestrator.standards.waf import (
     generate_waf_report_md,
 )
 
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 # WAFPillar Enum Tests
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 
 
 class TestWAFPillarEnum:
@@ -43,9 +43,9 @@ class TestWAFPillarEnum:
         assert WAFPillar.COST_OPTIMIZATION.name == "COST_OPTIMIZATION"
 
 
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 # WAFPrinciple Catalog Tests
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 
 
 class TestWAFPrinciplesCatalog:
@@ -97,12 +97,12 @@ class TestWAFPrinciplesCatalog:
             p.id = "SHOULD-FAIL"  # type: ignore[misc]
             raise AssertionError("WAFPrinciple should be frozen")
         except AttributeError:
-            pass  # Expected — frozen dataclass
+            pass  # Expected -- frozen dataclass
 
 
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 # WAFAlignmentReport Tests
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 
 
 class TestWAFAlignmentReport:
@@ -192,9 +192,9 @@ class TestWAFAlignmentReport:
         assert gaps[0].covered is False
 
 
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 # WAFAssessor Tests
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 
 
 class TestWAFAssessor:
@@ -204,7 +204,7 @@ class TestWAFAssessor:
         self.assessor = WAFAssessor()
 
     def test_full_coverage_scenario(self) -> None:
-        """Test assessment with all features enabled — high coverage expected."""
+        """Test assessment with all features enabled -- high coverage expected."""
         report = self.assessor.assess(
             plan_components=[
                 "container-app",
@@ -235,7 +235,7 @@ class TestWAFAssessor:
         assert report.coverage_pct >= 90.0, f"Expected >=90% but got {report.coverage_pct}%"
 
     def test_minimal_coverage_scenario(self) -> None:
-        """Test assessment with minimal features — low coverage expected."""
+        """Test assessment with minimal features -- low coverage expected."""
         report = self.assessor.assess(
             plan_components=[],
             governance_checks={},
@@ -328,7 +328,7 @@ class TestWAFAssessor:
         cost04 = next(i for i in report.items if i.principle_id == "COST-04")
         assert cost04.covered is True
 
-        # Without cosmos — N/A, should still be "covered"
+        # Without cosmos -- N/A, should still be "covered"
         report_no = self.assessor.assess(
             plan_components=[],
             governance_checks={},
@@ -405,9 +405,9 @@ class TestWAFAssessor:
                 assert item.recommendation, f"{item.principle_id} is uncovered but has no recommendation"
 
 
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 # Mapping Tests
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 
 
 class TestGovernanceToWAFMapping:
@@ -449,9 +449,9 @@ class TestADRToWAFMapping:
         assert WAFPillar.OPERATIONAL_EXCELLENCE in ADR_TO_WAF["ADR-003"]
 
 
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 # WAF Report Generation Tests
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 
 
 class TestGenerateWAFReportMd:
@@ -505,7 +505,7 @@ class TestGenerateWAFReportMd:
 
     def test_report_has_status_icons(self) -> None:
         md = generate_waf_report_md(self._make_report())
-        assert "✅" in md  # At least some should pass
+        assert "[PASS]" in md  # At least some should pass
 
     def test_report_generated_by_footer(self) -> None:
         md = generate_waf_report_md(self._make_report())
@@ -517,9 +517,9 @@ class TestGenerateWAFReportMd:
         assert "0/0" in md
 
 
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 # Integration Tests
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 
 
 class TestWAFIntegration:
@@ -675,9 +675,9 @@ class TestWAFIntegration:
         assert "docs/plan.md" in files  # Other docs still generated
 
 
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 # Policy Engine WAF Policy Tests
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 
 
 class TestWAFPolicies:

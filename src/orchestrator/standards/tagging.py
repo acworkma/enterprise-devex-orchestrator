@@ -1,4 +1,4 @@
-"""Tagging Standards Engine — enterprise resource tagging enforcement.
+"""Tagging Standards Engine -- enterprise resource tagging enforcement.
 
 Ensures all Azure resources include required metadata tags per enterprise
 policy. Supports configurable required/optional tags with validation rules
@@ -54,7 +54,7 @@ class TagSpec:
     category: str = "general"  # cost, operations, security, governance
 
 
-# ── Enterprise Tag Catalog ──────────────────────────────────────────
+# -- Enterprise Tag Catalog ------------------------------------------
 
 REQUIRED_TAGS: list[TagSpec] = [
     TagSpec(
@@ -227,7 +227,7 @@ class TaggingEngine:
             include_optional: Include optional tags with defaults.
 
         Returns:
-            Dict of tag name → value.
+            Dict of tag name -> value.
         """
         tags: dict[str, str] = {
             "project": self.project,
@@ -261,7 +261,7 @@ class TaggingEngine:
         """Validate tags against enterprise tagging standards.
 
         Args:
-            tags: Dict of tag name → value to validate.
+            tags: Dict of tag name -> value to validate.
 
         Returns:
             TagValidationResult with errors and warnings.
@@ -275,7 +275,7 @@ class TaggingEngine:
         for spec in REQUIRED_TAGS:
             if spec.name not in tags:
                 missing_required.append(spec.name)
-                errors.append(f"Missing required tag: '{spec.name}' — {spec.description}")
+                errors.append(f"Missing required tag: '{spec.name}' -- {spec.description}")
             elif spec.validation_pattern and not re.match(spec.validation_pattern, tags[spec.name]):
                 invalid_values.append(spec.name)
                 errors.append(
@@ -294,7 +294,7 @@ class TaggingEngine:
                         f"(expected pattern: {spec.validation_pattern})"
                     )
             elif spec.name not in tags:
-                warnings.append(f"Optional tag not set: '{spec.name}' — {spec.description}")
+                warnings.append(f"Optional tag not set: '{spec.name}' -- {spec.description}")
 
         valid = len(errors) == 0
         return TagValidationResult(
@@ -312,7 +312,7 @@ class TaggingEngine:
             Bicep variable declaration for standard tags.
         """
         lines = [
-            "// ── Enterprise Tagging Standard ─────────────────────────────────",
+            "// -- Enterprise Tagging Standard ---------------------------------",
             "// Required: project, environment, costCenter, owner, managedBy,",
             "//           createdBy, dataSensitivity",
             "// Optional: complianceScope, department, team, criticality, createdDate",

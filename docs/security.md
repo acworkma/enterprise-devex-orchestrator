@@ -1,6 +1,6 @@
 # Security Documentation
 
-> Enterprise DevEx Orchestrator — Security Controls & Threat Model
+> Enterprise DevEx Orchestrator -- Security Controls & Threat Model
 
 ## Security Posture
 
@@ -20,7 +20,7 @@
 
 | ID | Category | Threat | Mitigation | Residual Risk |
 |----|----------|--------|------------|---------------|
-| T-001 | Spoofing | Unauthorized access to API endpoints | Managed Identity + RBAC — no passwords to steal | Low |
+| T-001 | Spoofing | Unauthorized access to API endpoints | Managed Identity + RBAC -- no passwords to steal | Low |
 | T-002 | Tampering | Modification of secrets or config | Key Vault with soft delete + purge protection | Low |
 | T-003 | Repudiation | Untracked changes to infrastructure | Log Analytics diagnostics + Git audit trail | Low |
 | T-004 | Information Disclosure | Secrets leaked in logs or code | structlog sanitization + Key Vault references | Low |

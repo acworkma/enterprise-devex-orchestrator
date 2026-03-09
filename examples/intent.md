@@ -9,7 +9,7 @@ Our engineering teams manually share project documents through email and shared
 drives. There is no central repository, no access control, and no audit trail.
 Sensitive design documents are accessible to anyone with a network drive link.
 Compliance (SOC2) requires us to demonstrate controlled access to documents
-and a full audit log of every read, write, and delete — we currently cannot.
+and a full audit log of every read, write, and delete -- we currently cannot.
 The lack of a proper system costs ~40 engineer-hours/month in document hunting
 and creates audit findings every quarter.
 
@@ -23,10 +23,10 @@ and creates audit findings every quarter.
 
 ## Target Users
 
-- **Engineering Lead** — uploads and organises project documents daily; intermediate technical proficiency
-- **Developer** — searches and downloads documents multiple times per day; high technical proficiency
-- **Compliance Officer** — reviews audit logs weekly; low technical proficiency, needs a clear UI/API
-- **External Auditor** — read-only access to audit reports quarterly; non-technical
+- **Engineering Lead** -- uploads and organises project documents daily; intermediate technical proficiency
+- **Developer** -- searches and downloads documents multiple times per day; high technical proficiency
+- **Compliance Officer** -- reviews audit logs weekly; low technical proficiency, needs a clear UI/API
+- **External Auditor** -- read-only access to audit reports quarterly; non-technical
 
 ## Functional Requirements
 
@@ -57,7 +57,7 @@ and creates audit findings every quarter.
 - Network: Private endpoints for blob and Cosmos, no public internet access to data stores
 - Compliance frameworks: SOC2 Type II
 - Secret management: Azure Key Vault with RBAC access policy, soft delete, purge protection
-- No secrets in code, config, or CI/CD — all via managed identity or Key Vault references
+- No secrets in code, config, or CI/CD -- all via managed identity or Key Vault references
 
 ## Performance Requirements
 
@@ -88,7 +88,7 @@ and creates audit findings every quarter.
 ## Acceptance Criteria
 
 - All CRUD endpoints return correct HTTP status codes and JSON responses
-- RBAC enforcement: viewer cannot upload, auditor cannot delete — verified by integration tests
+- RBAC enforcement: viewer cannot upload, auditor cannot delete -- verified by integration tests
 - Audit log captures 100% of API calls with correct metadata
 - Upload handles files from 1 KB to 100 MB without timeout or data corruption
 - Search returns relevant results within p95 latency target
@@ -101,4 +101,4 @@ and creates audit findings every quarter.
 
 - **Version**: 1
 - **Based On**: none
-- **Changes**: Initial scaffold — enterprise document management API
+- **Changes**: Initial scaffold -- enterprise document management API

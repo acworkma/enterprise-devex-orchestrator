@@ -1,9 +1,9 @@
-﻿# Enterprise DevEx Orchestrator Agent
+# Enterprise DevEx Orchestrator Agent
 
-> **GitHub Copilot SDK Enterprise Challenge â€” Q3 FY26**
+> **GitHub Copilot SDK Enterprise Challenge -- Q3 FY26**
 
 A GitHub Copilot SDK powered agent that transforms structured business requirements
-into production-ready, secure, deployable Azure workloads â€” with governance validation,
+into production-ready, secure, deployable Azure workloads -- with governance validation,
 threat modeling, and CI/CD built in from the start.
 
 **Define. Generate. Improve. Repeat until production-ready.**
@@ -16,9 +16,9 @@ threat modeling, and CI/CD built in from the start.
 - [The Solution](#the-solution)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
-- [Quick Start â€” Try It in 2 Minutes](#quick-start--try-it-in-2-minutes)
+- [Quick Start -- Try It in 2 Minutes](#quick-start--try-it-in-2-minutes)
 - [Complete CLI Reference](#complete-cli-reference)
-- [Describe â†’ Run â†’ Iterate Workflow](#describe--run--iterate-workflow)
+- [Describe -> Run -> Iterate Workflow](#describe--run--iterate-workflow)
 - [Architecture](#architecture)
 - [Project Structure](#project-structure)
 - [Advanced Patterns](#advanced-patterns)
@@ -45,7 +45,7 @@ Azure workload involves:
 
 **Define requirements once. Generate everything. Improve iteratively.**
 
-Enterprise solutions require structured, comprehensive requirement definition â€”
+Enterprise solutions require structured, comprehensive requirement definition --
 not a one-liner. The orchestrator forces you to clearly define every stage of
 your solution, then analyses, designs, implements, tests, and suggests
 improvements in a single run. Each re-run with updated requirements brings
@@ -55,22 +55,22 @@ the solution closer to production readiness.
 # Step 1: Create a comprehensive requirements template
 devex init
 
-# Step 2: Fill in every section â€” problem, goals, users, security, scalability, etc.
+# Step 2: Fill in every section -- problem, goals, users, security, scalability, etc.
 # (The template guides you through each enterprise-standard requirement)
 
-# Step 3: Generate, test, and get improvement suggestions â€” one command
+# Step 3: Generate, test, and get improvement suggestions -- one command
 devex scaffold --file intent.md -o ./my-project
 
 # Step 4: Review docs/improvement-suggestions.md
-# Step 5: Update intent.md with improvements, re-run â€” each run converges toward production
+# Step 5: Update intent.md with improvements, re-run -- each run converges toward production
 ```
 
 The orchestrator runs a **4-agent chain** powered by GitHub Copilot SDK:
 
 ```
-Intent Parser â†’ Architecture Planner â†’ Governance Reviewer â†’ Infrastructure Generator
-                        â†‘                       |
-                        â””â”€â”€ feedback loop â”€â”€â”€â”€â”€â”€â”˜
+Intent Parser -> Architecture Planner -> Governance Reviewer -> Infrastructure Generator
+                        ^                       |
+                        \-- feedback loop ------\
 ```
 
 ### What You Get
@@ -93,7 +93,7 @@ From a single command, you receive **36+ production files**:
 | **Subagent Dispatch** | Parallel fan-out subagent spawning with result aggregation |
 | **Persistent Planning** | Checkpoint-based task execution with resume, retry, and history |
 | **Prompt Engineering** | Codebase-aware prompt generation that adapts to the user's project |
-| **Improvement Suggestions** | Per-run analysis of gaps in governance, security, WAF, observability â€” fed back into the next iteration |
+| **Improvement Suggestions** | Per-run analysis of gaps in governance, security, WAF, observability -- fed back into the next iteration |
 
 ---
 
@@ -132,7 +132,7 @@ source .venv/bin/activate
 # 4. Install the project and dev dependencies
 pip install -e ".[dev]"
 
-# 5. Configure environment (optional â€” works without it)
+# 5. Configure environment (optional -- works without it)
 copy .env.example .env
 # Edit .env with your credentials (see .env.example for details)
 ```
@@ -145,7 +145,7 @@ devex --help
 
 ---
 
-## Quick Start â€” Try It in 2 Minutes
+## Quick Start -- Try It in 2 Minutes
 
 ### Option A: Structured Enterprise Workflow (Recommended)
 
@@ -165,7 +165,7 @@ devex init
 #   - Acceptance Criteria: Conditions for "done"
 #   - Configuration: App type, data stores, region, auth
 
-# Step 3: Run the full pipeline â€” analyse, design, implement, test, suggest
+# Step 3: Run the full pipeline -- analyse, design, implement, test, suggest
 devex scaffold --file intent.md -o ./my-project
 
 # Step 4: Review docs/improvement-suggestions.md for what to refine
@@ -195,14 +195,14 @@ After scaffolding, explore what was generated:
 
 ```
 my-project/
-â”œâ”€â”€ .devex/                  # Metadata (spec, plan, governance, state, versions)
-â”œâ”€â”€ .github/workflows/       # CI/CD pipelines (validate, deploy, codeql, dependabot)
-â”œâ”€â”€ infra/bicep/             # Azure Bicep IaC (main + 6 modules + parameters)
-â”œâ”€â”€ src/app/                 # FastAPI application + Dockerfile
-â”œâ”€â”€ tests/                   # Auto-generated pytest test suite
-â”œâ”€â”€ docs/                    # Architecture, security, deployment, RAI docs
-â”œâ”€â”€ monitoring/              # Azure Monitor alert rules + runbook
-â””â”€â”€ ...
+|-- .devex/                  # Metadata (spec, plan, governance, state, versions)
+|-- .github/workflows/       # CI/CD pipelines (validate, deploy, codeql, dependabot)
+|-- infra/bicep/             # Azure Bicep IaC (main + 6 modules + parameters)
+|-- src/app/                 # FastAPI application + Dockerfile
+|-- tests/                   # Auto-generated pytest test suite
+|-- docs/                    # Architecture, security, deployment, RAI docs
+|-- monitoring/              # Azure Monitor alert rules + runbook
+\-- ...
 ```
 
 ---
@@ -211,7 +211,7 @@ my-project/
 
 The `devex` CLI provides 8 commands. Here is every command with all flags:
 
-### `devex init` â€” Create an Intent File Template
+### `devex init` -- Create an Intent File Template
 
 ```bash
 devex init                           # Creates intent.md in current directory
@@ -224,7 +224,7 @@ devex init -p my-cool-api            # Sets project name in the template
 | `--output` | `-o` | `.` (current dir) | Directory to create intent.md in |
 | `--project` | `-p` | `my-secure-api` | Default project name in template |
 
-### `devex plan` â€” Preview Architecture Plan (No Files)
+### `devex plan` -- Preview Architecture Plan (No Files)
 
 ```bash
 devex plan "Build a secure REST API with blob storage"
@@ -239,7 +239,7 @@ devex plan "Build an API" -o ./docs-only     # Save plan docs to directory
 | `--output` | `-o` | `./out` | Output directory for plan docs |
 | `--format` | `-F` | `text` | Output format: `text` or `json` |
 
-### `devex scaffold` â€” Generate Full Production Scaffold
+### `devex scaffold` -- Generate Full Production Scaffold
 
 ```bash
 devex scaffold "Build a secure REST API with blob storage" -o ./my-project
@@ -251,9 +251,9 @@ devex scaffold --file intent.md --dry-run    # Preview without writing files
 |------|-------|---------|-------------|
 | `--file` | `-f` | none | Path to intent .md file (overrides inline intent) |
 | `--output` | `-o` | `./out` | Output directory for all generated artifacts |
-| `--dry-run` | â€” | false | Show what would be generated without writing files |
+| `--dry-run` | -- | false | Show what would be generated without writing files |
 
-### `devex validate` â€” Validate Existing Scaffold
+### `devex validate` -- Validate Existing Scaffold
 
 ```bash
 devex validate ./my-project
@@ -266,7 +266,7 @@ for drift, and re-runs the governance reviewer on the existing plan.
 |----------|----------|-------------|
 | `PATH` | Yes | Directory of a generated scaffold (must have `.devex/` metadata) |
 
-### `devex deploy` â€” Deploy to Azure
+### `devex deploy` -- Deploy to Azure
 
 ```bash
 devex deploy ./my-project -g my-resource-group -r eastus2
@@ -279,9 +279,9 @@ devex deploy ./my-project -g my-rg -r eastus2 -s <subscription-id>
 | `--resource-group` | `-g` | (required) | Azure resource group name |
 | `--region` | `-r` | `eastus2` | Azure region |
 | `--subscription` | `-s` | `""` | Azure subscription ID |
-| `--dry-run` | â€” | false | Validate and what-if only (no deploy) |
+| `--dry-run` | -- | false | Validate and what-if only (no deploy) |
 
-### `devex upgrade` â€” Upgrade Existing Scaffold
+### `devex upgrade` -- Upgrade Existing Scaffold
 
 ```bash
 devex upgrade --file intent.v2.md -o ./my-project
@@ -292,9 +292,9 @@ devex upgrade --file intent.v2.md -o ./my-project --dry-run
 |------|-------|---------|-------------|
 | `--file` | `-f` | (required) | Path to upgrade intent .md file |
 | `--output` | `-o` | `./out` | Output directory of existing scaffold |
-| `--dry-run` | â€” | false | Show upgrade plan without executing |
+| `--dry-run` | -- | false | Show upgrade plan without executing |
 
-### `devex history` â€” View Version History
+### `devex history` -- View Version History
 
 ```bash
 devex history ./my-project
@@ -307,7 +307,7 @@ governance result, timestamp).
 |----------|----------|-------------|
 | `PATH` | Yes | Directory of a generated scaffold |
 
-### `devex new-version` â€” Generate Upgrade Template
+### `devex new-version` -- Generate Upgrade Template
 
 ```bash
 devex new-version ./my-project                  # Creates intent.v2.md in the scaffold dir
@@ -321,7 +321,7 @@ only describe what's changing.
 |------|-------|---------|-------------|
 | `--output` | `-o` | `<path>/intent.v<N>.md` | Where to write the new intent file |
 
-### `devex version` â€” Show Version Info
+### `devex version` -- Show Version Info
 
 ```bash
 devex version
@@ -331,7 +331,7 @@ Shows the orchestrator version, Python version, platform, LLM backend, and regio
 
 ---
 
-## Describe â†’ Run â†’ Iterate Workflow
+## Describe -> Run -> Iterate Workflow
 
 Define your enterprise requirements once in a structured markdown file, run one
 command to get a full production scaffold, then refine iteratively based on
@@ -341,12 +341,12 @@ automated improvement suggestions.
 
 ```bash
 devex init
-# Creates intent.md â€” a structured enterprise requirements template
+# Creates intent.md -- a structured enterprise requirements template
 ```
 
 ### Step 2: Fill In Every Section of `intent.md`
 
-The template contains **9 enterprise requirement sections** â€” each with guidance
+The template contains **9 enterprise requirement sections** -- each with guidance
 comments that explain exactly what to write. Fill in all of them:
 
 | Section | What to Define |
@@ -385,18 +385,18 @@ output but with generic defaults.
 devex scaffold --file intent.md -o ./my-project
 ```
 
-This runs the full pipeline (parse â†’ plan â†’ govern â†’ generate) and writes all
+This runs the full pipeline (parse -> plan -> govern -> generate) and writes all
 artifacts to `./my-project`. The console shows:
 
-- **Requirements completeness** â€” percentage of sections filled
-- **Architecture plan** â€” Azure services and ADRs
-- **Governance report** â€” policy compliance status
-- **WAF assessment** â€” Well-Architected Framework alignment
-- **Improvement suggestions** â€” what to refine in the next iteration
+- **Requirements completeness** -- percentage of sections filled
+- **Architecture plan** -- Azure services and ADRs
+- **Governance report** -- policy compliance status
+- **WAF assessment** -- Well-Architected Framework alignment
+- **Improvement suggestions** -- what to refine in the next iteration
 
 ### Step 4: Review Suggestions & Iterate
 
-Every run produces `docs/improvement-suggestions.md` â€” a prioritised list of
+Every run produces `docs/improvement-suggestions.md` -- a prioritised list of
 gaps in governance, security, observability, and architecture. Use it:
 
 ```bash
@@ -405,7 +405,7 @@ cat ./my-project/docs/improvement-suggestions.md
 
 # 2. Update intent.md based on what the suggestions say
 # 3. Increment the version number in intent.md
-# 4. Re-run scaffold â€” the improved requirements produce a better scaffold
+# 4. Re-run scaffold -- the improved requirements produce a better scaffold
 devex scaffold --file intent.md -o ./my-project
 ```
 
@@ -425,7 +425,7 @@ devex upgrade --file intent.v2.md -o ./my-project
 ```
 
 The upgrade deploys as a new Container Apps **revision** with 0% traffic, runs
-health checks, then promotes to 100% â€” your v1 stays running until v2 is verified.
+health checks, then promotes to 100% -- your v1 stays running until v2 is verified.
 
 ### Step 6: View History & Rollback
 
@@ -441,11 +441,11 @@ devex history ./my-project
 
 ```
 v1 (active, 100% traffic)
-  â””â”€ devex upgrade --file intent.v2.md
-       â”œâ”€ Deploy v2 revision (0% traffic)
-       â”œâ”€ Health check v2 revision
-       â”œâ”€ Promote v2 â†’ 100% traffic
-       â””â”€ v1 revision kept (instant rollback available)
+  \- devex upgrade --file intent.v2.md
+       |- Deploy v2 revision (0% traffic)
+       |- Health check v2 revision
+       |- Promote v2 -> 100% traffic
+       \- v1 revision kept (instant rollback available)
 ```
 
 See [examples/intent.md](examples/intent.md) and [examples/intent.v2.md](examples/intent.v2.md) for complete examples.
@@ -455,7 +455,7 @@ See [examples/intent.md](examples/intent.md) and [examples/intent.v2.md](example
 After scaffolding, you can deploy the generated infrastructure:
 
 ```bash
-# Option 1: Use the devex CLI (staged: validate â†’ what-if â†’ deploy â†’ verify)
+# Option 1: Use the devex CLI (staged: validate -> what-if -> deploy -> verify)
 devex deploy ./my-project -g my-resource-group -r eastus2
 
 # Option 2: Use Azure CLI directly
@@ -482,7 +482,7 @@ az deployment group create \
 
 | Agent | Role | Input | Output |
 |-------|------|-------|--------|
-| **Intent Parser** | Parse business intent â†’ structured schema | Plain text | `IntentSpec` |
+| **Intent Parser** | Parse business intent -> structured schema | Plain text | `IntentSpec` |
 | **Architecture Planner** | Design Azure architecture with ADRs + threat model | `IntentSpec` | `PlanOutput` |
 | **Governance Reviewer** | Validate against enterprise policies + WAF assessment | `IntentSpec` + `PlanOutput` | `GovernanceReport` + `WAFAlignmentReport` |
 | **Infrastructure Generator** | Generate all deployable artifacts | `IntentSpec` + `PlanOutput` + `GovernanceReport` + `WAFAlignmentReport` | Files |
@@ -515,90 +515,90 @@ az deployment group create \
 ## Project Structure
 
 ```
-â”œâ”€â”€ AGENTS.md                          # Agent role definitions
-â”œâ”€â”€ mcp.json                           # MCP server declarations
-â”œâ”€â”€ pyproject.toml                     # Project config + dependencies
-â”œâ”€â”€ .env.example                       # Environment template
-â”œâ”€â”€ README.md                          # This file
-â”‚
-â”œâ”€â”€ src/
-â”‚   â””â”€â”€ orchestrator/
-â”‚       â”œâ”€â”€ main.py                    # CLI entrypoint (devex command)
-â”‚       â”œâ”€â”€ config.py                  # Configuration dataclasses
-â”‚       â”œâ”€â”€ logging.py                 # Structured logging setup
-â”‚       â”œâ”€â”€ intent_schema.py           # Pydantic models (IntentSpec, PlanOutput, etc.)
-â”‚       â”œâ”€â”€ intent_file.py             # Markdown intent file parser + templates
-â”‚       â”œâ”€â”€ versioning.py              # Version management (record, upgrade, rollback)
-â”‚       â”œâ”€â”€ agent.py                   # AgentRuntime (Copilot SDK integration)
-â”‚       â”‚
-â”‚       â”œâ”€â”€ agents/
-â”‚       â”‚   â”œâ”€â”€ intent_parser.py       # Agent 1: Intent â†’ IntentSpec
-â”‚       â”‚   â”œâ”€â”€ architecture_planner.py # Agent 2: IntentSpec â†’ PlanOutput
-â”‚       â”‚   â”œâ”€â”€ governance_reviewer.py  # Agent 3: Plan â†’ GovernanceReport
-â”‚       â”‚   â”œâ”€â”€ infra_generator.py     # Agent 4: Plan â†’ Files
-â”‚       â”‚   â”œâ”€â”€ subagent_dispatcher.py # Parallel fan-out subagent spawning
-â”‚       â”‚   â””â”€â”€ deploy_orchestrator.py # Staged Azure deployment engine
-â”‚       â”‚
-â”‚       â”œâ”€â”€ generators/
-â”‚       â”‚   â”œâ”€â”€ bicep_generator.py     # Bicep IaC templates
-â”‚       â”‚   â”œâ”€â”€ cicd_generator.py      # GitHub Actions workflows
-â”‚       â”‚   â”œâ”€â”€ app_generator.py       # FastAPI application scaffold
-â”‚       â”‚   â”œâ”€â”€ docs_generator.py      # Documentation (plan, security, RAI)
-â”‚       â”‚   â”œâ”€â”€ test_generator.py      # Auto-generated pytest test suite
-â”‚       â”‚   â””â”€â”€ alert_generator.py     # Azure Monitor alerts + action groups
-â”‚       â”‚
-â”‚       â”œâ”€â”€ skills/
-â”‚       â”‚   â””â”€â”€ registry.py            # Pluggable skill registry (9 built-in skills)
-â”‚       â”‚
-â”‚       â”œâ”€â”€ planning/
-â”‚       â”‚   â””â”€â”€ __init__.py            # Persistent planner (checkpoint, resume, retry)
-â”‚       â”‚
-â”‚       â”œâ”€â”€ prompts/
-â”‚       â”‚   â””â”€â”€ generator.py           # Codebase scanner + context-aware prompts
-â”‚       â”‚
-â”‚       â”œâ”€â”€ standards/                 # Enterprise standards engine
-â”‚       â”‚   â”œâ”€â”€ naming.py              # Azure CAF naming conventions
-â”‚       â”‚   â”œâ”€â”€ tagging.py             # Enterprise tagging standard (12 tags)
-â”‚       â”‚   â”œâ”€â”€ config.py              # YAML-driven standards config
-â”‚       â”‚   â””â”€â”€ waf.py                 # Azure Well-Architected Framework (5 pillars, 26 principles)
-â”‚       â”‚
-â”‚       â”œâ”€â”€ state.py                   # State management + drift detection
-â”‚       â”‚
-â”‚       â””â”€â”€ tools/
-â”‚           â”œâ”€â”€ azure_validator.py     # MCP: Bicep + deployment validation
-â”‚           â”œâ”€â”€ policy_engine.py       # MCP: Governance policy engine (20 policies)
-â”‚           â””â”€â”€ template_renderer.py   # MCP: Template rendering
-â”‚
-â”œâ”€â”€ standards.yaml                     # Enterprise standards configuration
-â”œâ”€â”€ tests/
-â”‚   â”œâ”€â”€ test_intent_parser.py
-â”‚   â”œâ”€â”€ test_governance_validator.py
-â”‚   â”œâ”€â”€ test_generators.py
-â”‚   â”œâ”€â”€ test_standards.py              # 67 tests for naming/tagging/config
-â”‚   â”œâ”€â”€ test_state.py                  # 37 tests for state management
-â”‚   â”œâ”€â”€ test_waf.py                    # 61 tests for WAF 5-pillar assessment
-â”‚   â”œâ”€â”€ test_skills_registry.py        # 26 tests for skill routing/execution
-â”‚   â”œâ”€â”€ test_subagent_dispatcher.py    # 17 tests for subagent spawning/fan-out
-â”‚   â”œâ”€â”€ test_planning.py               # 22 tests for persistent planning
-â”‚   â”œâ”€â”€ test_prompt_generator.py       # 18 tests for codebase scanning
-â”‚   â”œâ”€â”€ test_superpowers.py            # 24 tests for test/alert generators
-â”‚   â”œâ”€â”€ test_deploy_orchestrator.py    # 19 tests for deploy orchestration
-â”‚   â”œâ”€â”€ test_intent_versioning.py      # 33 tests for intent files + versioning
-â”‚   â””â”€â”€ test_enterprise_features.py    # 37 tests for enterprise intent model
-â”‚
-â”œâ”€â”€ examples/
-â”‚   â”œâ”€â”€ intent.md                      # Sample v1 intent file
-â”‚   â””â”€â”€ intent.v2.md                   # Sample v2 upgrade intent file
-â”‚
-â””â”€â”€ docs/                              # (Generated by the agent)
-    â”œâ”€â”€ plan.md
-    â”œâ”€â”€ security.md
-    â”œâ”€â”€ deployment.md
-    â”œâ”€â”€ rai-notes.md
-    â”œâ”€â”€ demo-script.md
-    â”œâ”€â”€ scorecard.md
-    â”œâ”€â”€ governance-report.md
-    â””â”€â”€ waf-report.md
+|-- AGENTS.md                          # Agent role definitions
+|-- mcp.json                           # MCP server declarations
+|-- pyproject.toml                     # Project config + dependencies
+|-- .env.example                       # Environment template
+|-- README.md                          # This file
+|
+|-- src/
+|   \-- orchestrator/
+|       |-- main.py                    # CLI entrypoint (devex command)
+|       |-- config.py                  # Configuration dataclasses
+|       |-- logging.py                 # Structured logging setup
+|       |-- intent_schema.py           # Pydantic models (IntentSpec, PlanOutput, etc.)
+|       |-- intent_file.py             # Markdown intent file parser + templates
+|       |-- versioning.py              # Version management (record, upgrade, rollback)
+|       |-- agent.py                   # AgentRuntime (Copilot SDK integration)
+|       |
+|       |-- agents/
+|       |   |-- intent_parser.py       # Agent 1: Intent -> IntentSpec
+|       |   |-- architecture_planner.py # Agent 2: IntentSpec -> PlanOutput
+|       |   |-- governance_reviewer.py  # Agent 3: Plan -> GovernanceReport
+|       |   |-- infra_generator.py     # Agent 4: Plan -> Files
+|       |   |-- subagent_dispatcher.py # Parallel fan-out subagent spawning
+|       |   \-- deploy_orchestrator.py # Staged Azure deployment engine
+|       |
+|       |-- generators/
+|       |   |-- bicep_generator.py     # Bicep IaC templates
+|       |   |-- cicd_generator.py      # GitHub Actions workflows
+|       |   |-- app_generator.py       # FastAPI application scaffold
+|       |   |-- docs_generator.py      # Documentation (plan, security, RAI)
+|       |   |-- test_generator.py      # Auto-generated pytest test suite
+|       |   \-- alert_generator.py     # Azure Monitor alerts + action groups
+|       |
+|       |-- skills/
+|       |   \-- registry.py            # Pluggable skill registry (9 built-in skills)
+|       |
+|       |-- planning/
+|       |   \-- __init__.py            # Persistent planner (checkpoint, resume, retry)
+|       |
+|       |-- prompts/
+|       |   \-- generator.py           # Codebase scanner + context-aware prompts
+|       |
+|       |-- standards/                 # Enterprise standards engine
+|       |   |-- naming.py              # Azure CAF naming conventions
+|       |   |-- tagging.py             # Enterprise tagging standard (12 tags)
+|       |   |-- config.py              # YAML-driven standards config
+|       |   \-- waf.py                 # Azure Well-Architected Framework (5 pillars, 26 principles)
+|       |
+|       |-- state.py                   # State management + drift detection
+|       |
+|       \-- tools/
+|           |-- azure_validator.py     # MCP: Bicep + deployment validation
+|           |-- policy_engine.py       # MCP: Governance policy engine (20 policies)
+|           \-- template_renderer.py   # MCP: Template rendering
+|
+|-- standards.yaml                     # Enterprise standards configuration
+|-- tests/
+|   |-- test_intent_parser.py
+|   |-- test_governance_validator.py
+|   |-- test_generators.py
+|   |-- test_standards.py              # 67 tests for naming/tagging/config
+|   |-- test_state.py                  # 37 tests for state management
+|   |-- test_waf.py                    # 61 tests for WAF 5-pillar assessment
+|   |-- test_skills_registry.py        # 26 tests for skill routing/execution
+|   |-- test_subagent_dispatcher.py    # 17 tests for subagent spawning/fan-out
+|   |-- test_planning.py               # 22 tests for persistent planning
+|   |-- test_prompt_generator.py       # 18 tests for codebase scanning
+|   |-- test_superpowers.py            # 24 tests for test/alert generators
+|   |-- test_deploy_orchestrator.py    # 19 tests for deploy orchestration
+|   |-- test_intent_versioning.py      # 33 tests for intent files + versioning
+|   \-- test_enterprise_features.py    # 37 tests for enterprise intent model
+|
+|-- examples/
+|   |-- intent.md                      # Sample v1 intent file
+|   \-- intent.v2.md                   # Sample v2 upgrade intent file
+|
+\-- docs/                              # (Generated by the agent)
+    |-- plan.md
+    |-- security.md
+    |-- deployment.md
+    |-- rai-notes.md
+    |-- demo-script.md
+    |-- scorecard.md
+    |-- governance-report.md
+    \-- waf-report.md
 ```
 
 ---
@@ -613,7 +613,7 @@ tagging, Bicep generation, CI/CD, app scaffolding, and documentation.
 
 ```python
 registry = create_default_registry()
-matches = registry.route("validate governance")   # â†’ GovernanceSkill
+matches = registry.route("validate governance")   # -> GovernanceSkill
 result = registry.execute("governance", spec=spec, plan=plan)
 ```
 
@@ -644,14 +644,14 @@ planner.execute_task("parse-intent")  # checkpointed to .devex/plan_state.json
 ### 4. Prompt Generator
 
 Scans the user's repository to detect languages, frameworks, security patterns,
-and CI/CD configuration â€” then generates **context-enriched prompts** for each
+and CI/CD configuration -- then generates **context-enriched prompts** for each
 agent that adapt to the project's existing technology stack.
 
 ```python
 gen = PromptGenerator()
 gen.scan(Path("./my-project"))
 prompt = gen.generate_prompt("intent_parser", "Parse intent.")
-# â†’ includes language, framework, security context
+# -> includes language, framework, security context
 ```
 
 ### 5. Superpowers (Test + Alert + Deploy)
@@ -660,7 +660,7 @@ prompt = gen.generate_prompt("intent_parser", "Parse intent.")
   (conftest, health, API, security, config, conditional storage tests)
 - **AlertGenerator**: Produces Azure Monitor alert rules as Bicep, action groups,
   and an alerting runbook with severity tables and escalation procedures
-- **DeployOrchestrator**: Staged Azure deployment (validate â†’ what-if â†’ deploy â†’ verify)
+- **DeployOrchestrator**: Staged Azure deployment (validate -> what-if -> deploy -> verify)
   with error classification (8 categories), retry logic, and remediation suggestions
 
 ---
@@ -671,12 +671,12 @@ Every generated scaffold enforces:
 
 | Control | Implementation |
 |---------|---------------|
-| **Identity** | User-assigned Managed Identity â€” no connection strings |
+| **Identity** | User-assigned Managed Identity -- no connection strings |
 | **Secrets** | Azure Key Vault with RBAC, soft delete, purge protection |
 | **Networking** | Private ingress, no public blob access |
 | **Encryption** | TLS 1.2+, encryption at rest for storage + Key Vault |
 | **Observability** | Log Analytics + diagnostic settings on all resources |
-| **CI/CD** | OIDC federation â€” no stored credentials |
+| **CI/CD** | OIDC federation -- no stored credentials |
 | **Supply Chain** | CodeQL scanning, Dependabot, non-root containers |
 | **Governance** | ADRs + STRIDE threat model + 20 governance policies + naming/tagging standards |
 | **Well-Architected** | Azure WAF 5-pillar assessment (Reliability, Security, Cost, Ops, Perf) with 26 principles |
@@ -748,10 +748,10 @@ devex scaffold Build a secure API -o ./out
 
 The system works **without** a Copilot SDK or Azure OpenAI connection. When no
 LLM is available, it uses **template-only mode** (rule-based parsing). This
-produces the same output quality â€” the LLM only enhances intent parsing.
+produces the same output quality -- the LLM only enhances intent parsing.
 
 If you see errors like `Personal Access Tokens are not supported`, this is
-expected â€” the system automatically falls back to template mode.
+expected -- the system automatically falls back to template mode.
 
 ### "No .devex metadata found"
 
@@ -809,7 +809,7 @@ pip install -e ".[dev]"
 
 ## License
 
-Internal â€” Microsoft Confidential
+Internal -- Microsoft Confidential
 
 ---
 

@@ -1,4 +1,4 @@
-"""Enterprise DevEx Orchestrator — CLI Entrypoint.
+"""Enterprise DevEx Orchestrator -- CLI Entrypoint.
 
 Usage:
     devex init                          # Create intent.md template
@@ -71,7 +71,7 @@ def _run_pipeline(
     """Execute the full agent pipeline."""
     setup_logging(level=config.log_level)
 
-    # ── Initialize advanced subsystems ──────────────────────────────
+    # -- Initialize advanced subsystems ------------------------------
     # Prompt Generator: scan codebase for context-aware prompts
     prompt_gen = PromptGenerator()
     if output_dir and output_dir.exists():
@@ -103,7 +103,7 @@ def _run_pipeline(
         spec = parser.parse(intent)
         if planner_mgr:
             planner_mgr.execute_task("parse-intent", handler=lambda: {"summary": f"Parsed: {spec.project_name}"})
-        progress.update(task, completed=True, description="[green]✓ Intent parsed")
+        progress.update(task, completed=True, description="[green][ok] Intent parsed")
 
         _show_intent_summary(spec)
 
@@ -113,7 +113,7 @@ def _run_pipeline(
         plan = planner.plan(spec)
         if planner_mgr:
             planner_mgr.execute_task("plan-architecture", handler=lambda: {"summary": f"{len(plan.components)} components"})
-        progress.update(task, completed=True, description="[green]✓ Architecture planned")
+        progress.update(task, completed=True, description="[green][ok] Architecture planned")
 
         _show_plan_summary(plan)
 
@@ -123,7 +123,7 @@ def _run_pipeline(
         gov_report = reviewer.validate_plan(spec, plan)
         if planner_mgr:
             planner_mgr.execute_task("validate-governance", handler=lambda: {"summary": gov_report.status})
-        progress.update(task, completed=True, description="[green]✓ Governance validated")
+        progress.update(task, completed=True, description="[green][ok] Governance validated")
 
         _show_governance_summary(gov_report)
 
@@ -135,7 +135,7 @@ def _run_pipeline(
         progress.update(
             task,
             completed=True,
-            description=f"[green]✓ WAF assessed ({waf_report.coverage_pct:.0f}% coverage)",
+            description=f"[green][ok] WAF assessed ({waf_report.coverage_pct:.0f}% coverage)",
         )
 
         _show_waf_summary(waf_report)
@@ -176,7 +176,7 @@ def _run_pipeline(
             progress.update(
                 task,
                 completed=True,
-                description=f"[green]✓ Generated {written} files",
+                description=f"[green][ok] Generated {written} files",
             )
 
             _show_file_tree(output_dir)
@@ -241,7 +241,7 @@ def _show_governance_summary(report: GovernanceReport) -> None:
 
     if report.recommendations:
         for r in report.recommendations:
-            console.print(f"  [yellow]→[/] {r}")
+            console.print(f"  [yellow]->[/] {r}")
 
 
 def _show_waf_summary(waf_report: WAFAlignmentReport) -> None:
@@ -276,7 +276,7 @@ def _show_waf_summary(waf_report: WAFAlignmentReport) -> None:
 
     gaps = waf_report.gaps()
     if gaps:
-        console.print(f"  [dim]{len(gaps)} gap(s) — see docs/waf-report.md for details[/]")
+        console.print(f"  [dim]{len(gaps)} gap(s) -- see docs/waf-report.md for details[/]")
 
 
 def _write_files(files: dict[str, str], output_dir: Path) -> int:
@@ -319,7 +319,7 @@ def _show_improvement_suggestions(
     suggestions = docs_gen.generate_improvement_suggestions(spec, plan, gov_report, waf_report)
 
     if not suggestions:
-        console.print("\n  [green]No improvements identified — architecture is well-defined.[/]")
+        console.print("\n  [green]No improvements identified -- architecture is well-defined.[/]")
         return
 
     console.print(
@@ -391,7 +391,7 @@ def _resolve_intent_with_meta(
     sys.exit(1)
 
 
-# ───────────────── CLI Commands ─────────────────
+# ----------------- CLI Commands -----------------
 
 
 @click.group()
@@ -400,7 +400,7 @@ def cli() -> None:
     """Enterprise DevEx Orchestrator Agent.
 
     Transform business intent into production-ready, secure, deployable
-    Azure workloads — powered by GitHub Copilot SDK.
+    Azure workloads -- powered by GitHub Copilot SDK.
     """
     pass
 
@@ -470,7 +470,7 @@ def plan(intent: str | None, intent_file: str | None, output: str | None, output
         }
         console.print_json(json.dumps(result, indent=2))
 
-    console.print("\n[green bold]✓ Plan complete.[/] Run `devex scaffold` to generate full infrastructure.\n")
+    console.print("\n[green bold][ok] Plan complete.[/] Run `devex scaffold` to generate full infrastructure.\n")
 
 
 @cli.command()
@@ -502,7 +502,7 @@ def scaffold(intent: str | None, intent_file: str | None, output: str, dry_run: 
     INTENT is the business requirement in plain English (quoted string).
     Alternatively, use --file to read from an intent.md file.
 
-    Runs the complete pipeline: parse → plan → govern → generate.
+    Runs the complete pipeline: parse -> plan -> govern -> generate.
 
     Example:
         devex scaffold "Build a secure REST API with blob storage" -o ./my-project
@@ -513,7 +513,7 @@ def scaffold(intent: str | None, intent_file: str | None, output: str, dry_run: 
     out_dir = Path(output)
 
     if dry_run:
-        console.print("[yellow]Dry run mode — no files will be written.[/]\n")
+        console.print("[yellow]Dry run mode -- no files will be written.[/]\n")
 
     start = time.time()
 
@@ -546,7 +546,7 @@ def scaffold(intent: str | None, intent_file: str | None, output: str, dry_run: 
                 f"  [cyan]Version {parsed_intent.version_info.version} recorded[/]"
             )
 
-    console.print(f"\n[green bold]✓ Scaffold complete[/] in {elapsed:.1f}s")
+    console.print(f"\n[green bold][ok] Scaffold complete[/] in {elapsed:.1f}s")
     if not dry_run:
         console.print(f"  Output: [cyan]{out_dir.resolve()}[/]")
 
@@ -614,7 +614,7 @@ def validate(path: str) -> None:
         plan_report = reviewer.validate_plan(spec, plan)
         bicep_report = reviewer.validate_bicep(bicep_files)
 
-        progress.update(task, completed=True, description="[green]✓ Validation complete")
+        progress.update(task, completed=True, description="[green][ok] Validation complete")
 
     _show_governance_summary(plan_report)
 
@@ -622,7 +622,7 @@ def validate(path: str) -> None:
         console.print()
         console.print("[bold]Bicep Security Scan:[/]")
         for c in bicep_report.checks:
-            icon = "✅" if c.passed else "❌"
+            icon = "[PASS]" if c.passed else "[FAIL]"
             console.print(f"  {icon} [{c.severity}] {c.name}: {c.details}")
 
     # Drift detection
@@ -647,7 +647,7 @@ def validate(path: str) -> None:
                 for f in drift.removed_files:
                     console.print(f"  [red]- {f}[/]")
         else:
-            console.print("\n[green]✓ No file drift detected.[/]")
+            console.print("\n[green][ok] No file drift detected.[/]")
 
         last = state_mgr.get_last_event()
         if last:
@@ -657,9 +657,9 @@ def validate(path: str) -> None:
     # Combined status
     all_passed = plan_report.status != "FAIL" and bicep_report.status != "FAIL"
     if all_passed:
-        console.print("\n[green bold]✓ All governance checks passed.[/]\n")
+        console.print("\n[green bold][ok] All governance checks passed.[/]\n")
     else:
-        console.print("\n[red bold]✗ Governance validation failed. Fix issues above.[/]\n")
+        console.print("\n[red bold][x] Governance validation failed. Fix issues above.[/]\n")
         sys.exit(1)
 
 
@@ -697,7 +697,7 @@ def deploy(path: str, resource_group: str, region: str, subscription: str, dry_r
 
     PATH is the directory of a generated scaffold.
 
-    Runs staged deployment: validate → what-if → deploy → verify.
+    Runs staged deployment: validate -> what-if -> deploy -> verify.
     Uses automatic error classification and retry for transient failures.
 
     Example:
@@ -754,14 +754,14 @@ def deploy(path: str, resource_group: str, region: str, subscription: str, dry_r
     console.print(table)
 
     if result.is_success:
-        console.print(f"\n[green bold]✓ Deployment succeeded[/] in {result.total_duration_ms:.0f}ms")
+        console.print(f"\n[green bold][ok] Deployment succeeded[/] in {result.total_duration_ms:.0f}ms")
     else:
         failed = [s for s in result.stages if s.status == DeployStatus.FAILED]
         for s in failed:
             console.print(f"\n[red]Error ({s.error_category}):[/] {s.error[:200]}")
             if s.remediation:
                 console.print(f"  [yellow]Remediation:[/] {s.remediation}")
-        console.print("\n[red bold]✗ Deployment failed.[/]")
+        console.print("\n[red bold][x] Deployment failed.[/]")
         sys.exit(1)
 
 
@@ -803,9 +803,9 @@ def init(output: str, project: str) -> None:
     content = generate_intent_template(project_name=project)
     intent_path.write_text(content, encoding="utf-8")
 
-    console.print(f"\n[green bold]✓ Created {intent_path}[/]\n")
+    console.print(f"\n[green bold][ok] Created {intent_path}[/]\n")
     console.print("  Next steps:")
-    console.print(f"  1. Edit [cyan]{intent_path}[/] — describe what you want to build")
+    console.print(f"  1. Edit [cyan]{intent_path}[/] -- describe what you want to build")
     console.print(f"  2. Run: [bold]devex scaffold --file {intent_path} -o ./my-project[/]")
     console.print("  3. Your entire infrastructure is generated and ready!\n")
 
@@ -871,15 +871,15 @@ def upgrade(intent_file: str, output: str, dry_run: bool) -> None:
         console.print()
         console.print(Panel(
             f"[bold]{plan.summary}[/]\n\n"
-            + "\n".join(f"  • {n}" for n in plan.notes),
+            + "\n".join(f"  * {n}" for n in plan.notes),
             title="Upgrade Plan",
             border_style="cyan",
         ))
     else:
-        console.print("[dim]No previous version found — full scaffold will be generated.[/]")
+        console.print("[dim]No previous version found -- full scaffold will be generated.[/]")
 
     if dry_run:
-        console.print("\n[yellow]Dry run — no changes applied.[/]")
+        console.print("\n[yellow]Dry run -- no changes applied.[/]")
         return
 
     # Execute the pipeline with the upgrade intent
@@ -899,7 +899,7 @@ def upgrade(intent_file: str, output: str, dry_run: bool) -> None:
     file_count = len(list(out_dir.rglob("*")))
     vm.record_version(parsed, file_count, gov_report.status)
 
-    console.print(f"\n[green bold]✓ Upgrade to v{parsed.version_info.version} complete[/] in {elapsed:.1f}s")
+    console.print(f"\n[green bold][ok] Upgrade to v{parsed.version_info.version} complete[/] in {elapsed:.1f}s")
     console.print(f"  Version {parsed.version_info.version} recorded and active")
 
     # Show version history
@@ -981,11 +981,11 @@ def new_version(path: str, output: str | None) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(template, encoding="utf-8")
 
-    console.print(f"\n[green bold]✓ Created {out_path}[/]\n")
+    console.print(f"\n[green bold][ok] Created {out_path}[/]\n")
     console.print(f"  Current version: v{current.version}")
     console.print(f"  New version:     v{new_v}\n")
     console.print("  Next steps:")
-    console.print(f"  1. Edit [cyan]{out_path}[/] — describe your changes")
+    console.print(f"  1. Edit [cyan]{out_path}[/] -- describe your changes")
     console.print(f"  2. Run: [bold]devex upgrade --file {out_path} -o {out_dir}[/]")
     console.print("  3. CI/CD promotion workflow keeps v1 safe while v2 deploys\n")
 
@@ -1040,11 +1040,11 @@ def interactive(output: str) -> None:
     """
     _banner()
     console.print(
-        "[bold]Interactive mode[/] — answer a few questions and we'll generate "
+        "[bold]Interactive mode[/] -- answer a few questions and we'll generate "
         "your full production scaffold.\n"
     )
 
-    # ── Project basics ──────────────────────────────────────────────
+    # -- Project basics ----------------------------------------------
     project_name = click.prompt(
         "Project name (kebab-case, e.g. my-secure-api)",
         default="my-secure-api",
@@ -1054,28 +1054,28 @@ def interactive(output: str) -> None:
         default="A secure REST API for enterprise data processing",
     )
 
-    # ── Language ────────────────────────────────────────────────────
+    # -- Language ----------------------------------------------------
     language = click.prompt(
         "Programming language",
         type=click.Choice(["python", "node", "dotnet"], case_sensitive=False),
         default="python",
     )
 
-    # ── App Type ────────────────────────────────────────────────────
+    # -- App Type ----------------------------------------------------
     app_type = click.prompt(
         "Application type",
         type=click.Choice(["api", "web", "worker", "function"], case_sensitive=False),
         default="api",
     )
 
-    # ── Compute Target ──────────────────────────────────────────────
+    # -- Compute Target ----------------------------------------------
     compute = click.prompt(
         "Azure compute target",
         type=click.Choice(["container_apps", "app_service", "functions"], case_sensitive=False),
         default="container_apps",
     )
 
-    # ── Data Stores ─────────────────────────────────────────────────
+    # -- Data Stores -------------------------------------------------
     ds_choices = click.prompt(
         "Data stores (comma-separated: blob, cosmos, sql, redis, none)",
         default="blob",
@@ -1090,7 +1090,7 @@ def interactive(output: str) -> None:
     }
     data_stores = [ds_map.get(d, d) for d in data_stores_raw]
 
-    # ── Security ────────────────────────────────────────────────────
+    # -- Security ----------------------------------------------------
     auth = click.prompt(
         "Authentication model",
         type=click.Choice(["managed-identity", "entra-id", "api-key"], case_sensitive=False),
@@ -1102,7 +1102,7 @@ def interactive(output: str) -> None:
         default="general",
     )
 
-    # ── Region ──────────────────────────────────────────────────────
+    # -- Region ------------------------------------------------------
     region = click.prompt("Azure region", default="eastus2")
     environment = click.prompt(
         "Environment",
@@ -1110,7 +1110,7 @@ def interactive(output: str) -> None:
         default="dev",
     )
 
-    # ── Confirmation ────────────────────────────────────────────────
+    # -- Confirmation ------------------------------------------------
     console.print()
     summary = Table(title="Your Configuration", border_style="cyan")
     summary.add_column("Setting", style="bold")
@@ -1131,7 +1131,7 @@ def interactive(output: str) -> None:
         console.print("[dim]Cancelled.[/]")
         return
 
-    # ── Build intent string ─────────────────────────────────────────
+    # -- Build intent string -----------------------------------------
     auth_clean = auth.replace("-", " ")
     intent = (
         f"Build a {app_type} called {project_name}: {description}. "
@@ -1152,7 +1152,7 @@ def interactive(output: str) -> None:
     )
 
     elapsed = time.time() - start
-    console.print(f"\n[green bold]✓ Scaffold complete[/] in {elapsed:.1f}s")
+    console.print(f"\n[green bold][ok] Scaffold complete[/] in {elapsed:.1f}s")
     console.print(f"  Output: [cyan]{out_dir.resolve()}[/]\n")
     _show_improvement_suggestions(spec, plan, gov_report, waf_report)
 

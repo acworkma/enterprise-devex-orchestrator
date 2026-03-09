@@ -1,6 +1,6 @@
 # Architecture Overview
 
-> Enterprise DevEx Orchestrator Agent — System Architecture
+> Enterprise DevEx Orchestrator Agent -- System Architecture
 
 ## High-Level Flow
 
@@ -155,7 +155,7 @@ graph TD
 1. **Deterministic Structure**: File layout, naming, and module organization are always the same
 2. **Controlled Variability**: LLM adds context-specific content within deterministic boundaries
 3. **Governance by Default**: Every scaffold passes governance validation before output
-4. **Defense in Depth**: Multiple security layers — identity, encryption, networking, scanning
+4. **Defense in Depth**: Multiple security layers -- identity, encryption, networking, scanning
 5. **Observable from Day 1**: Log Analytics and diagnostics configured for all resources
 6. **Enterprise Standards**: Azure CAF naming conventions and enterprise tagging enforced via YAML config
 7. **State Awareness**: Every generation is tracked with drift detection between runs

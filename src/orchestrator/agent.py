@@ -6,10 +6,10 @@ perform multi-turn, tool-calling agent workflows.
 
 Architecture:
     User Intent (string)
-        → Intent Parser Agent   → IntentSpec
-        → Architecture Planner  → PlanOutput
-        → Governance Reviewer   → GovernanceReport (with feedback loop)
-        → Infrastructure Gen    → Bicep files, CI/CD, app code, docs
+        -> Intent Parser Agent   -> IntentSpec
+        -> Architecture Planner  -> PlanOutput
+        -> Governance Reviewer   -> GovernanceReport (with feedback loop)
+        -> Infrastructure Gen    -> Bicep files, CI/CD, app code, docs
 """
 
 from __future__ import annotations
@@ -66,8 +66,8 @@ class AgentContext:
 class AgentRuntime:
     """Core agent runtime powered by GitHub Copilot SDK / OpenAI API.
 
-    Manages the agent loop: send messages → receive tool calls → execute
-    tools → append results → repeat until the agent produces a final response.
+    Manages the agent loop: send messages -> receive tool calls -> execute
+    tools -> append results -> repeat until the agent produces a final response.
     """
 
     def __init__(self, config: AppConfig | None = None) -> None:
@@ -93,7 +93,7 @@ class AgentRuntime:
             )
 
         # Fallback: local or mock mode
-        logger.warning("agent.client", backend="mock", msg="No API credentials — running in template-only mode")
+        logger.warning("agent.client", backend="mock", msg="No API credentials -- running in template-only mode")
         return OpenAI(api_key="mock-key", base_url="http://localhost:11434/v1")  # noqa: S106
 
     def register_tool(self, tool: Tool) -> None:
@@ -197,7 +197,7 @@ class AgentRuntime:
         return json.dumps(
             {
                 "mode": "template-fallback",
-                "message": "API unavailable — using secure defaults",
+                "message": "API unavailable -- using secure defaults",
                 "input": user_message[:200],
             }
         )

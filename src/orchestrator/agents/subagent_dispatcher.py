@@ -1,25 +1,25 @@
-"""Subagent Dispatcher — dynamic spawning and orchestration of specialized micro-agents.
+"""Subagent Dispatcher -- dynamic spawning and orchestration of specialized micro-agents.
 
 Enables the orchestrator to decompose complex tasks and dispatch them to
 specialized subagents that run in parallel, with result aggregation.
 
 Architecture:
     SubagentDispatcher
-      ├── register_subagent(spec)       — register a subagent type
-      ├── spawn(task)                   — spawn subagent for a task
-      ├── fan_out(tasks)                — spawn N subagents in parallel
-      ├── aggregate(results)            — merge subagent outputs
-      └── execute_plan(plan)            — run a multi-step subagent plan
+      |-- register_subagent(spec)       -- register a subagent type
+      |-- spawn(task)                   -- spawn subagent for a task
+      |-- fan_out(tasks)                -- spawn N subagents in parallel
+      |-- aggregate(results)            -- merge subagent outputs
+      \-- execute_plan(plan)            -- run a multi-step subagent plan
 
 Subagent Specializations:
-    - BicepModuleAgent       — generates a single Bicep module
-    - ThreatAnalysisAgent    — analyzes one STRIDE category
-    - ComplianceCheckAgent   — checks one compliance domain
-    - CostEstimationAgent    — estimates cost for one component
-    - SecurityScanAgent      — scans one artifact type
-    - DocWriterAgent         — writes one documentation file
-    - TestWriterAgent        — generates tests for one module
-    - AlertRuleAgent         — creates alert rules for one resource
+    - BicepModuleAgent       -- generates a single Bicep module
+    - ThreatAnalysisAgent    -- analyzes one STRIDE category
+    - ComplianceCheckAgent   -- checks one compliance domain
+    - CostEstimationAgent    -- estimates cost for one component
+    - SecurityScanAgent      -- scans one artifact type
+    - DocWriterAgent         -- writes one documentation file
+    - TestWriterAgent        -- generates tests for one module
+    - AlertRuleAgent         -- creates alert rules for one resource
 """
 
 from __future__ import annotations
@@ -261,7 +261,7 @@ class SubagentDispatcher:
         return len(self._subagents)
 
 
-# ───────────────── Built-in Subagents ─────────────────
+# ----------------- Built-in Subagents -----------------
 
 
 class BicepModuleSubagent:

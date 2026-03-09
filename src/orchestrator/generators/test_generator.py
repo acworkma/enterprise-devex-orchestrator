@@ -1,4 +1,4 @@
-"""Test Generator — produces pytest tests for the scaffolded application.
+"""Test Generator -- produces pytest tests for the scaffolded application.
 
 Generates comprehensive test suites including:
     - Unit tests for API endpoints
@@ -26,7 +26,7 @@ class TestGenerator:
             spec: The parsed intent specification.
 
         Returns:
-            Mapping of file path → content.
+            Mapping of file path -> content.
         """
         logger.info("test_generator.start", project=spec.project_name)
 

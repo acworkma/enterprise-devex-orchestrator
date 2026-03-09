@@ -1,4 +1,4 @@
-"""Persistent Planning — resumable, checkpoint-based task execution.
+"""Persistent Planning -- resumable, checkpoint-based task execution.
 
 Implements a Manus-style persistent planning system where:
 - Complex work is decomposed into a task graph with dependencies
@@ -111,7 +111,7 @@ class ExecutionPlan:
     """A complete execution plan with ordered tasks.
 
     Plans are versioned and checkpointed. Each version represents
-    a distinct intent → scaffold run.
+    a distinct intent -> scaffold run.
     """
 
     plan_id: str

@@ -1,12 +1,12 @@
-"""Intent File Parser — reads structured intent from Markdown files.
+"""Intent File Parser -- reads structured intent from Markdown files.
 
 Allows users to describe enterprise requirements in a comprehensive
 ``intent.md`` file and have the orchestrator parse it into a
 pipeline-ready intent string and version metadata.
 
 Enterprise intent files force the user to clearly define every stage of
-the solution — problem, goals, users, scalability, security, performance,
-integrations, and acceptance criteria — so the orchestrator can analyse,
+the solution -- problem, goals, users, scalability, security, performance,
+integrations, and acceptance criteria -- so the orchestrator can analyse,
 design, implement, test, and suggest improvements in a single run.
 
 Supported format::
@@ -24,7 +24,7 @@ Supported format::
     Who will use this system and how?
 
     ## Functional Requirements
-    What the system must do — features and capabilities.
+    What the system must do -- features and capabilities.
 
     ## Scalability Requirements
     Load expectations, growth targets, scaling strategy.
@@ -68,7 +68,7 @@ from src.orchestrator.logging import get_logger
 
 logger = get_logger(__name__)
 
-# ─── Section heading patterns ──────────────────────────────────
+# --- Section heading patterns ----------------------------------
 
 _HEADING_RE = re.compile(r"^(#{1,3})\s+(.+)$", re.MULTILINE)
 _FIELD_RE = re.compile(
@@ -120,7 +120,7 @@ class IntentFileResult:
     # Project name (from H1 heading)
     project_name: str = ""
 
-    # ── Enterprise requirement sections ───────────────────────────
+    # -- Enterprise requirement sections ---------------------------
     problem_statement: str = ""
     business_goals: str = ""
     target_users: str = ""
@@ -143,7 +143,7 @@ class IntentFileResult:
     # Source file path
     source_path: str = ""
 
-    # ── Enterprise section name → attribute mapping ───────────────
+    # -- Enterprise section name -> attribute mapping ---------------
     _ENTERPRISE_SECTIONS: dict[str, str] = field(
         default=None,  # type: ignore[assignment]
         init=False,
@@ -191,7 +191,7 @@ class IntentFileResult:
         if self.intent:
             parts.append(self.intent)
 
-        # ── Enterprise requirement sections (in logical order) ────
+        # -- Enterprise requirement sections (in logical order) ----
         if self.problem_statement:
             parts.append(f"Problem Statement: {self.problem_statement}")
         if self.business_goals:
@@ -211,7 +211,7 @@ class IntentFileResult:
         if self.acceptance_criteria:
             parts.append(f"Acceptance Criteria: {self.acceptance_criteria}")
 
-        # ── Structured configuration as natural language ──────────
+        # -- Structured configuration as natural language ----------
         config_parts = []
         if self.config.get("app_type"):
             config_parts.append(f"Application type: {self.config['app_type']}")
@@ -389,12 +389,12 @@ class IntentFileParser:
 
         return result
 
-    # ── Internal helpers ────────────────────────────────────────
+    # -- Internal helpers ----------------------------------------
 
     def _split_sections(self, content: str) -> dict[str, str]:
         """Split markdown into named sections by headings.
 
-        Returns a dict with lowercase heading names → section content.
+        Returns a dict with lowercase heading names -> section content.
         Special keys:
             _title: The H1 heading text
             _body: Text between H1 and first H2/H3
@@ -497,7 +497,7 @@ class IntentFileParser:
         return version_info
 
 
-# ─── Template generation ──────────────────────────────────────
+# --- Template generation --------------------------------------
 
 
 def generate_intent_template(
@@ -569,7 +569,7 @@ Example:
 ## Functional Requirements
 
 <!--
-Describe what the system must do — its features and capabilities:
+Describe what the system must do -- its features and capabilities:
   - Core features (must-have for v1)
   - API endpoints or user-facing functionality
   - Data processing or business logic
@@ -792,7 +792,7 @@ sections above or into the changes description below.
 ## Notes
 
 <!--
-UPGRADE from v{current_version} → v{new_version}
+UPGRADE from v{current_version} -> v{new_version}
 
 The orchestrator will:
   1. Analyse your updated requirements against v{current_version}

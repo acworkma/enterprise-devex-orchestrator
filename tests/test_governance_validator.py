@@ -1,4 +1,4 @@
-"""Tests for GovernanceReviewerAgent — policy validation."""
+"""Tests for GovernanceReviewerAgent -- policy validation."""
 
 from __future__ import annotations
 

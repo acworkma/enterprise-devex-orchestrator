@@ -1,4 +1,4 @@
-"""Template Renderer Tool — renders structured templates from plan output.
+"""Template Renderer Tool -- renders structured templates from plan output.
 
 Provides tools for the agent runtime to:
     - render_template: Render a named template with plan data

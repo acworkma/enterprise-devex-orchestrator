@@ -1,4 +1,4 @@
-"""Tests for Persistent Planning — plan creation, execution, checkpointing, resume."""
+"""Tests for Persistent Planning -- plan creation, execution, checkpointing, resume."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ def tmp_out(tmp_path: Path) -> Path:
     return tmp_path / "out"
 
 
-# ───────────────── PlanTask ─────────────────
+# ----------------- PlanTask -----------------
 
 
 class TestPlanTask:
@@ -50,7 +50,7 @@ class TestPlanTask:
         assert restored.dependencies == ["t1"]
 
 
-# ───────────────── ExecutionPlan ─────────────────
+# ----------------- ExecutionPlan -----------------
 
 
 class TestExecutionPlan:
@@ -135,7 +135,7 @@ class TestExecutionPlan:
         assert restored.metadata["key"] == "val"
 
 
-# ───────────────── PersistentPlanner ─────────────────
+# ----------------- PersistentPlanner -----------------
 
 
 class TestPersistentPlanner:
@@ -168,7 +168,7 @@ class TestPersistentPlanner:
         planner = PersistentPlanner(tmp_out)
         plan1 = planner.create_pipeline_plan("Build API A")
 
-        # Different intent → new plan
+        # Different intent -> new plan
         plan2 = planner.create_pipeline_plan("Build API B")
         assert plan2.plan_id != plan1.plan_id
 

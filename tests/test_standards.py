@@ -1,4 +1,4 @@
-"""Tests for enterprise standards — Naming, Tagging, and Configuration."""
+"""Tests for enterprise standards -- Naming, Tagging, and Configuration."""
 
 from __future__ import annotations
 
@@ -25,9 +25,9 @@ from src.orchestrator.standards.tagging import (
     TaggingEngine,
 )
 
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 # Naming Engine Tests
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 
 
 class TestNamingEngineBasics:
@@ -203,9 +203,9 @@ class TestNamingEngineConstraints:
         assert ResourceType.CONTAINER_REGISTRY in RESOURCE_CONSTRAINTS
 
 
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 # Tagging Engine Tests
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 
 
 class TestTaggingEngineGeneration:
@@ -383,9 +383,9 @@ class TestTagCatalog:
             assert entry["requirement"] in ("required", "optional")
 
 
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 # Enterprise Standards Config Tests
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
 
 
 class TestEnterpriseStandardsConfig:
@@ -500,9 +500,9 @@ class TestConfigLoading:
             assert isinstance(config.governance, GovernanceConfig)
 
 
-# ═════════════════════════════════════════════════════════════════════
-# Integration Tests — Standards + Generators
-# ═════════════════════════════════════════════════════════════════════
+# =====================================================================
+# Integration Tests -- Standards + Generators
+# =====================================================================
 
 
 class TestStandardsIntegration:

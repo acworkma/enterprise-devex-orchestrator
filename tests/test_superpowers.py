@@ -47,7 +47,7 @@ def _make_spec(data_stores: list[DataStore] | None = None) -> IntentSpec:
     )
 
 
-# ───────────────── Test Generator ─────────────────
+# ----------------- Test Generator -----------------
 
 
 class TestTestGenerator:
@@ -117,7 +117,7 @@ class TestTestGenerator:
         assert "test-project" in content or "test_health" in content
 
 
-# ───────────────── Alert Generator ─────────────────
+# ----------------- Alert Generator -----------------
 
 
 class TestAlertGenerator:

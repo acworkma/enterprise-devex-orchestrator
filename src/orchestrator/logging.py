@@ -13,7 +13,7 @@ def setup_logging(level: str = "INFO", fmt: str = "json") -> None:
 
     Args:
         level: Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
-        fmt: Output format — 'json' for structured, 'console' for human-readable.
+        fmt: Output format -- 'json' for structured, 'console' for human-readable.
     """
     shared_processors: list[structlog.types.Processor] = [
         structlog.contextvars.merge_contextvars,

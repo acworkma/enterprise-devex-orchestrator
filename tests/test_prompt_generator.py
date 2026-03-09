@@ -1,4 +1,4 @@
-"""Tests for Prompt Generator — codebase scanning and context-aware prompts."""
+"""Tests for Prompt Generator -- codebase scanning and context-aware prompts."""
 
 from __future__ import annotations
 
@@ -60,7 +60,7 @@ def empty_project(tmp_path: Path) -> Path:
     return tmp_path / "empty"
 
 
-# ───────────────── CodebaseScanner ─────────────────
+# ----------------- CodebaseScanner -----------------
 
 
 class TestCodebaseScanner:
@@ -133,7 +133,7 @@ class TestCodebaseScanner:
         assert len(result.folder_structure) > 0
 
 
-# ───────────────── PromptGenerator ─────────────────
+# ----------------- PromptGenerator -----------------
 
 
 class TestPromptGenerator:
@@ -145,7 +145,7 @@ class TestPromptGenerator:
 
     def test_generate_prompt_without_scan(self) -> None:
         gen = PromptGenerator()
-        # Should work even without scanning — returns base instructions
+        # Should work even without scanning -- returns base instructions
         prompt = gen.generate_prompt("intent_parser", "Parse the intent.")
         assert "Parse the intent." in prompt
 
