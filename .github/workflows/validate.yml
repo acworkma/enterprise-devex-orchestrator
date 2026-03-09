@@ -1,19 +1,44 @@
-name: Validate
+name: CI/CD - Validate, Build & Deploy
 
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      skip_deploy:
+        description: "Skip deployment (validate & build only)"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
+  id-token: write   # OIDC for Azure login
   contents: read
 
+env:
+  AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP || 'rg-devex-orchestrator' }}
+  AZURE_LOCATION: ${{ vars.AZURE_LOCATION || 'eastus2' }}
+  PROJECT_NAME: ${{ vars.PROJECT_NAME || 'devex-orchestrator' }}
+  ENVIRONMENT: ${{ github.event.inputs.environment || 'dev' }}
+
+# ──────────────────────────────────────────────
+# Stage 1: Validate (lint, format, unit tests)
+# ──────────────────────────────────────────────
 jobs:
-  test:
+  validate:
     name: Lint & Test
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,3 +60,250 @@ jobs:
 
       - name: Run tests
         run: pytest tests/ -v --tb=short -q
+
+  # ──────────────────────────────────────────────
+  # Stage 2: Validate Bicep templates
+  # ──────────────────────────────────────────────
+  validate-infra:
+    name: Validate Infrastructure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Validate Bicep syntax
+        run: az bicep build --file infra/bicep/main.bicep
+
+      - name: Validate deployment (preflight)
+        run: |
+          az deployment group validate \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --template-file infra/bicep/main.bicep \
+            --parameters infra/bicep/parameters/dev.parameters.json \
+            --parameters location=${{ env.AZURE_LOCATION }}
+
+      - name: What-if (preview changes)
+        if: github.event_name == 'pull_request'
+        run: |
+          az deployment group what-if \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --template-file infra/bicep/main.bicep \
+            --parameters infra/bicep/parameters/dev.parameters.json \
+            --parameters location=${{ env.AZURE_LOCATION }}
+
+  # ──────────────────────────────────────────────
+  # Stage 3: Deploy Infrastructure (Bicep)
+  # ──────────────────────────────────────────────
+  deploy-infra:
+    name: Deploy Infrastructure
+    needs: [validate, validate-infra]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.event.inputs.skip_deploy != 'true'
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+    outputs:
+      acr-login-server: ${{ steps.deploy.outputs.acrLoginServer }}
+      acr-name: ${{ steps.extract-acr.outputs.acrName }}
+      container-app-name: ${{ steps.extract-app.outputs.appName }}
+      container-env-name: ${{ steps.extract-app.outputs.envName }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Ensure resource group exists
+        run: |
+          az group create \
+            --name ${{ env.AZURE_RESOURCE_GROUP }} \
+            --location ${{ env.AZURE_LOCATION }} \
+            --tags project=${{ env.PROJECT_NAME }} environment=${{ env.ENVIRONMENT }} managedBy=github-actions
+
+      - name: Deploy Bicep templates
+        id: deploy
+        run: |
+          result=$(az deployment group create \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --template-file infra/bicep/main.bicep \
+            --parameters infra/bicep/parameters/dev.parameters.json \
+            --parameters location=${{ env.AZURE_LOCATION }} \
+            --query 'properties.outputs' \
+            --output json)
+
+          echo "Deployment outputs:"
+          echo "$result" | jq .
+
+          # Extract outputs for downstream jobs
+          acrLoginServer=$(echo "$result" | jq -r '.registryLoginServer.value')
+          echo "acrLoginServer=$acrLoginServer" >> "$GITHUB_OUTPUT"
+
+      - name: Extract ACR name
+        id: extract-acr
+        run: |
+          acrName=$(az acr list \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query '[0].name' \
+            --output tsv)
+          echo "acrName=$acrName" >> "$GITHUB_OUTPUT"
+
+      - name: Extract Container App name
+        id: extract-app
+        run: |
+          appName=$(az containerapp list \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query '[0].name' \
+            --output tsv)
+          envName=$(az containerapp env list \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query '[0].name' \
+            --output tsv)
+          echo "appName=$appName" >> "$GITHUB_OUTPUT"
+          echo "envName=$envName" >> "$GITHUB_OUTPUT"
+
+  # ──────────────────────────────────────────────
+  # Stage 4: Build & Push Container Image
+  # ──────────────────────────────────────────────
+  build-image:
+    name: Build & Push Container
+    needs: deploy-infra
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.meta.outputs.imageTag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Login to ACR
+        run: az acr login --name ${{ needs.deploy-infra.outputs.acr-name }}
+
+      - name: Build and push image
+        id: meta
+        run: |
+          ACR_SERVER=${{ needs.deploy-infra.outputs.acr-login-server }}
+          IMAGE_TAG="${{ github.sha }}"
+          FULL_IMAGE="${ACR_SERVER}/${{ env.PROJECT_NAME }}:${IMAGE_TAG}"
+          LATEST_IMAGE="${ACR_SERVER}/${{ env.PROJECT_NAME }}:latest"
+
+          echo "Building image: $FULL_IMAGE"
+
+          docker build \
+            --tag "$FULL_IMAGE" \
+            --tag "$LATEST_IMAGE" \
+            --label "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
+            --label "org.opencontainers.image.revision=${{ github.sha }}" \
+            --file src/app/Dockerfile \
+            src/app/
+
+          docker push "$FULL_IMAGE"
+          docker push "$LATEST_IMAGE"
+
+          echo "imageTag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+
+  # ──────────────────────────────────────────────
+  # Stage 5: Deploy Application to Container App
+  # ──────────────────────────────────────────────
+  deploy-app:
+    name: Deploy Application
+    needs: [deploy-infra, build-image]
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy new revision
+        run: |
+          ACR_SERVER=${{ needs.deploy-infra.outputs.acr-login-server }}
+          IMAGE="${ACR_SERVER}/${{ env.PROJECT_NAME }}:${{ needs.build-image.outputs.image-tag }}"
+          APP_NAME=${{ needs.deploy-infra.outputs.container-app-name }}
+
+          echo "Deploying image: $IMAGE"
+          echo "To Container App: $APP_NAME"
+
+          az containerapp update \
+            --name "$APP_NAME" \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --image "$IMAGE"
+
+      - name: Wait for revision to be ready
+        run: |
+          APP_NAME=${{ needs.deploy-infra.outputs.container-app-name }}
+          echo "Waiting for Container App revision to stabilize..."
+
+          for i in $(seq 1 30); do
+            status=$(az containerapp revision list \
+              --name "$APP_NAME" \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+              --query '[0].properties.runningState' \
+              --output tsv 2>/dev/null || echo "unknown")
+
+            echo "  Attempt $i/30: status=$status"
+            if [ "$status" = "Running" ]; then
+              echo "Revision is running!"
+              break
+            fi
+            sleep 10
+          done
+
+      - name: Verify deployment (health check)
+        run: |
+          APP_NAME=${{ needs.deploy-infra.outputs.container-app-name }}
+          FQDN=$(az containerapp show \
+            --name "$APP_NAME" \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query 'properties.configuration.ingress.fqdn' \
+            --output tsv)
+
+          echo "Application URL: https://$FQDN"
+          echo "Running health check..."
+
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://$FQDN/health" --max-time 30 || echo "000")
+          echo "Health check status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 400 ]; then
+            echo "Health check PASSED"
+          else
+            echo "::warning::Health check returned $HTTP_STATUS -- deployment may need attention"
+          fi
+
+      - name: Deployment summary
+        run: |
+          APP_NAME=${{ needs.deploy-infra.outputs.container-app-name }}
+          FQDN=$(az containerapp show \
+            --name "$APP_NAME" \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query 'properties.configuration.ingress.fqdn' \
+            --output tsv)
+
+          echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Detail | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Environment** | ${{ env.ENVIRONMENT }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Resource Group** | ${{ env.AZURE_RESOURCE_GROUP }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Container App** | $APP_NAME |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Image** | ${{ env.PROJECT_NAME }}:${{ needs.build-image.outputs.image-tag }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **URL** | https://$FQDN |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
