@@ -11,7 +11,7 @@ ownership tracking, and compliance classification.
 
 from __future__ import annotations
 
-from src.orchestrator.intent_schema import DataStore, IntentSpec, PlanOutput
+from src.orchestrator.intent_schema import ComputeTarget, DataStore, IntentSpec, PlanOutput
 from src.orchestrator.logging import get_logger
 from src.orchestrator.standards.config import EnterpriseStandardsConfig
 
@@ -49,8 +49,16 @@ class BicepGenerator:
         files["infra/bicep/modules/log-analytics.bicep"] = self._log_analytics_module()
         files["infra/bicep/modules/managed-identity.bicep"] = self._managed_identity_module()
         files["infra/bicep/modules/keyvault.bicep"] = self._keyvault_module()
-        files["infra/bicep/modules/container-registry.bicep"] = self._container_registry_module()
-        files["infra/bicep/modules/container-app.bicep"] = self._container_app_module(spec)
+
+        # Compute-target-specific modules
+        compute = getattr(spec, "compute_target", ComputeTarget.CONTAINER_APPS)
+        if compute == ComputeTarget.APP_SERVICE:
+            files["infra/bicep/modules/app-service.bicep"] = self._app_service_module(spec)
+        elif compute == ComputeTarget.FUNCTIONS:
+            files["infra/bicep/modules/function-app.bicep"] = self._function_app_module(spec)
+        else:
+            files["infra/bicep/modules/container-registry.bicep"] = self._container_registry_module()
+            files["infra/bicep/modules/container-app.bicep"] = self._container_app_module(spec)
 
         # Data stores
         if DataStore.BLOB_STORAGE in spec.data_stores:
@@ -89,9 +97,129 @@ module storage 'modules/storage.bicep' = {
 }
 """
 
+        # Compute-target-specific parameters and modules
+        compute = getattr(spec, "compute_target", ComputeTarget.CONTAINER_APPS)
+        if compute == ComputeTarget.APP_SERVICE:
+            compute_params = """
+@description('App Service plan SKU')
+param appServicePlanSku string = 'B1'
+"""
+            compute_module = """
+// ── App Service ────────────────────────────────────────────────────
+module appService 'modules/app-service.bicep' = {
+  name: 'app-service-deployment'
+  params: {
+    location: location
+    appName: '${projectName}-app'
+    appServicePlanName: '${projectName}-plan'
+    appServicePlanSku: appServicePlanSku
+    managedIdentityId: identity.outputs.identityId
+    managedIdentityClientId: identity.outputs.clientId
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
+    keyVaultName: keyVault.outputs.keyVaultName
+    tags: tags
+  }
+}
+"""
+            compute_outputs = """
+output appServiceDefaultHostName string = appService.outputs.defaultHostName
+output appServiceName string = appService.outputs.appName
+"""
+        elif compute == ComputeTarget.FUNCTIONS:
+            compute_params = """
+@description('Function App runtime')
+param functionRuntime string = 'python'
+"""
+            compute_module = """
+// ── Function App ───────────────────────────────────────────────────
+module functionApp 'modules/function-app.bicep' = {
+  name: 'function-app-deployment'
+  params: {
+    location: location
+    functionAppName: '${projectName}-func'
+    appServicePlanName: '${projectName}-func-plan'
+    functionRuntime: functionRuntime
+    managedIdentityId: identity.outputs.identityId
+    managedIdentityClientId: identity.outputs.clientId
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
+    keyVaultName: keyVault.outputs.keyVaultName
+    tags: tags
+  }
+}
+"""
+            compute_outputs = """
+output functionAppDefaultHostName string = functionApp.outputs.defaultHostName
+output functionAppName string = functionApp.outputs.appName
+"""
+        else:
+            compute_params = """
+@description('Container image to deploy')
+param containerImage string = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
+
+@description('Container app port')
+param containerPort int = 8000
+"""
+            compute_module = """
+// ── Container Registry ─────────────────────────────────────────────
+module containerRegistry 'modules/container-registry.bicep' = {{
+  name: 'acr-deployment'
+  params: {{
+    location: location
+    registryName: crName
+    managedIdentityPrincipalId: identity.outputs.principalId
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
+    tags: tags
+  }}
+}}
+{storage_module}
+// ── Container App ──────────────────────────────────────────────────
+module containerApp 'modules/container-app.bicep' = {{
+  name: 'container-app-deployment'
+  params: {{
+    location: location
+    appName: caName
+    environmentName: caeName
+    containerImage: containerImage
+    containerPort: containerPort
+    managedIdentityId: identity.outputs.identityId
+    managedIdentityClientId: identity.outputs.clientId
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
+    keyVaultName: keyVault.outputs.keyVaultName
+    tags: tags
+  }}
+}}
+"""
+            compute_outputs = """
+output containerAppFqdn string = containerApp.outputs.fqdn
+output containerAppName string = containerApp.outputs.appName
+"""
+            # For non-container-apps, embed storage after keyvault
+            if compute != ComputeTarget.CONTAINER_APPS:
+                storage_after_kv = storage_module
+            else:
+                storage_after_kv = ""
+
+        # For App Service and Functions, storage goes directly in main
+        storage_section = ""
+        if compute != ComputeTarget.CONTAINER_APPS and DataStore.BLOB_STORAGE in spec.data_stores:
+            storage_section = """
+// ── Storage Account ────────────────────────────────────────────────
+module storage 'modules/storage.bicep' = {
+  name: 'storage-deployment'
+  params: {
+    location: location
+    storageAccountName: stName
+    managedIdentityPrincipalId: identity.outputs.principalId
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
+    tags: tags
+  }
+}
+"""
+
         return f"""// ═══════════════════════════════════════════════════════════════════
 // Enterprise DevEx Orchestrator — Main Deployment
 // Project: {spec.project_name}
+// Compute Target: {compute.value}
 // Generated by: Enterprise DevEx Orchestrator Agent
 // Naming Standard: Azure Cloud Adoption Framework (CAF)
 // Tagging Standard: Enterprise governance policy
@@ -111,13 +239,7 @@ param location string = resourceGroup().location
 @description('Environment (dev, staging, prod)')
 @allowed(['dev', 'staging', 'prod'])
 param environment string = 'dev'
-
-@description('Container image to deploy')
-param containerImage string = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
-
-@description('Container app port')
-param containerPort int = 8000
-
+{compute_params}
 @description('Resource owner email for tagging')
 param ownerEmail string = '{self.tagging.owner}'
 
@@ -160,39 +282,9 @@ module keyVault 'modules/keyvault.bicep' = {{
     tags: tags
   }}
 }}
-
-// ── Container Registry ─────────────────────────────────────────────
-module containerRegistry 'modules/container-registry.bicep' = {{
-  name: 'acr-deployment'
-  params: {{
-    location: location
-    registryName: crName
-    managedIdentityPrincipalId: identity.outputs.principalId
-    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
-    tags: tags
-  }}
-}}
-{storage_module}
-// ── Container App ──────────────────────────────────────────────────
-module containerApp 'modules/container-app.bicep' = {{
-  name: 'container-app-deployment'
-  params: {{
-    location: location
-    appName: caName
-    environmentName: caeName
-    containerImage: containerImage
-    containerPort: containerPort
-    managedIdentityId: identity.outputs.identityId
-    managedIdentityClientId: identity.outputs.clientId
-    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
-    keyVaultName: keyVault.outputs.keyVaultName
-    tags: tags
-  }}
-}}
-
+{storage_section}{compute_module}
 // ── Outputs ────────────────────────────────────────────────────────
-output containerAppFqdn string = containerApp.outputs.fqdn
-output containerAppName string = containerApp.outputs.appName
+{compute_outputs}
 output keyVaultName string = keyVault.outputs.keyVaultName
 output logAnalyticsWorkspaceId string = logAnalytics.outputs.workspaceId
 output managedIdentityClientId string = identity.outputs.clientId
@@ -683,6 +775,275 @@ output fqdn string = containerApp.properties.configuration.ingress.fqdn
 output appName string = containerApp.name
 output appId string = containerApp.id
 output environmentId string = environment.id
+"""
+
+    def _app_service_module(self, spec: IntentSpec) -> str:
+        """Generate Azure App Service Bicep module."""
+        lang = getattr(spec, "language", "python")
+        if lang == "node":
+            linux_fx = "NODE|20-lts"
+        elif lang == "dotnet":
+            linux_fx = "DOTNETCORE|8.0"
+        else:
+            linux_fx = "PYTHON|3.11"
+
+        return f"""// ═══════════════════════════════════════════════════════════════════
+// Azure App Service Module
+// Managed web application hosting with built-in scaling,
+// managed identity, and integrated logging.
+// ═══════════════════════════════════════════════════════════════════
+
+@description('Azure region')
+param location string
+
+@description('App Service name')
+param appName string
+
+@description('App Service Plan name')
+param appServicePlanName string
+
+@description('App Service Plan SKU')
+param appServicePlanSku string = 'B1'
+
+@description('User-assigned managed identity resource ID')
+param managedIdentityId string
+
+@description('Managed identity client ID')
+param managedIdentityClientId string
+
+@description('Log Analytics workspace ID')
+param logAnalyticsWorkspaceId string
+
+@description('Key Vault name for secret references')
+param keyVaultName string
+
+@description('Resource tags')
+param tags object = {{}}
+
+resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {{
+  name: appServicePlanName
+  location: location
+  tags: tags
+  kind: 'linux'
+  sku: {{
+    name: appServicePlanSku
+  }}
+  properties: {{
+    reserved: true
+  }}
+}}
+
+resource webApp 'Microsoft.Web/sites@2023-12-01' = {{
+  name: appName
+  location: location
+  tags: tags
+  identity: {{
+    type: 'UserAssigned'
+    userAssignedIdentities: {{
+      '${{managedIdentityId}}': {{}}
+    }}
+  }}
+  properties: {{
+    serverFarmId: appServicePlan.id
+    httpsOnly: true
+    siteConfig: {{
+      linuxFxVersion: '{linux_fx}'
+      alwaysOn: true
+      minTlsVersion: '1.2'
+      ftpsState: 'Disabled'
+      healthCheckPath: '/health'
+      appSettings: [
+        {{
+          name: 'AZURE_CLIENT_ID'
+          value: managedIdentityClientId
+        }}
+        {{
+          name: 'KEY_VAULT_NAME'
+          value: keyVaultName
+        }}
+      ]
+    }}
+  }}
+}}
+
+// Diagnostic settings
+resource diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {{
+  scope: webApp
+  name: '${{appName}}-diagnostics'
+  properties: {{
+    workspaceId: logAnalyticsWorkspaceId
+    logs: [
+      {{
+        category: 'AppServiceHTTPLogs'
+        enabled: true
+      }}
+      {{
+        category: 'AppServiceConsoleLogs'
+        enabled: true
+      }}
+      {{
+        category: 'AppServiceAppLogs'
+        enabled: true
+      }}
+    ]
+    metrics: [
+      {{
+        category: 'AllMetrics'
+        enabled: true
+      }}
+    ]
+  }}
+}}
+
+output defaultHostName string = webApp.properties.defaultHostName
+output appName string = webApp.name
+output appId string = webApp.id
+"""
+
+    def _function_app_module(self, spec: IntentSpec) -> str:
+        """Generate Azure Functions Bicep module."""
+        lang = getattr(spec, "language", "python")
+        if lang == "node":
+            runtime = "node"
+            runtime_ver = "~20"
+        elif lang == "dotnet":
+            runtime = "dotnet-isolated"
+            runtime_ver = "~8"
+        else:
+            runtime = "python"
+            runtime_ver = "~3.11"
+
+        return f"""// ═══════════════════════════════════════════════════════════════════
+// Azure Function App Module
+// Serverless compute with consumption-based scaling,
+// managed identity, and integrated logging.
+// ═══════════════════════════════════════════════════════════════════
+
+@description('Azure region')
+param location string
+
+@description('Function App name')
+param functionAppName string
+
+@description('App Service Plan name')
+param appServicePlanName string
+
+@description('Function runtime')
+param functionRuntime string = '{runtime}'
+
+@description('User-assigned managed identity resource ID')
+param managedIdentityId string
+
+@description('Managed identity client ID')
+param managedIdentityClientId string
+
+@description('Log Analytics workspace ID')
+param logAnalyticsWorkspaceId string
+
+@description('Key Vault name for secret references')
+param keyVaultName string
+
+@description('Resource tags')
+param tags object = {{}}
+
+// Storage account required by Azure Functions runtime
+resource funcStorage 'Microsoft.Storage/storageAccounts@2023-05-01' = {{
+  name: replace('${{functionAppName}}st', '-', '')
+  location: location
+  tags: tags
+  kind: 'StorageV2'
+  sku: {{
+    name: 'Standard_LRS'
+  }}
+  properties: {{
+    supportsHttpsTrafficOnly: true
+    minimumTlsVersion: 'TLS1_2'
+    allowBlobPublicAccess: false
+  }}
+}}
+
+resource hostingPlan 'Microsoft.Web/serverfarms@2023-12-01' = {{
+  name: appServicePlanName
+  location: location
+  tags: tags
+  kind: 'functionapp'
+  sku: {{
+    name: 'Y1'
+    tier: 'Dynamic'
+  }}
+  properties: {{
+    reserved: true
+  }}
+}}
+
+resource functionApp 'Microsoft.Web/sites@2023-12-01' = {{
+  name: functionAppName
+  location: location
+  tags: tags
+  kind: 'functionapp,linux'
+  identity: {{
+    type: 'UserAssigned'
+    userAssignedIdentities: {{
+      '${{managedIdentityId}}': {{}}
+    }}
+  }}
+  properties: {{
+    serverFarmId: hostingPlan.id
+    httpsOnly: true
+    siteConfig: {{
+      linuxFxVersion: ''
+      minTlsVersion: '1.2'
+      ftpsState: 'Disabled'
+      appSettings: [
+        {{
+          name: 'AzureWebJobsStorage'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${{funcStorage.name}};EndpointSuffix=${{az.environment().suffixes.storage}};AccountKey=${{funcStorage.listKeys().keys[0].value}}'
+        }}
+        {{
+          name: 'FUNCTIONS_EXTENSION_VERSION'
+          value: '~4'
+        }}
+        {{
+          name: 'FUNCTIONS_WORKER_RUNTIME'
+          value: functionRuntime
+        }}
+        {{
+          name: 'AZURE_CLIENT_ID'
+          value: managedIdentityClientId
+        }}
+        {{
+          name: 'KEY_VAULT_NAME'
+          value: keyVaultName
+        }}
+      ]
+    }}
+  }}
+}}
+
+// Diagnostic settings
+resource diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {{
+  scope: functionApp
+  name: '${{functionAppName}}-diagnostics'
+  properties: {{
+    workspaceId: logAnalyticsWorkspaceId
+    logs: [
+      {{
+        category: 'FunctionAppLogs'
+        enabled: true
+      }}
+    ]
+    metrics: [
+      {{
+        category: 'AllMetrics'
+        enabled: true
+      }}
+    ]
+  }}
+}}
+
+output defaultHostName string = functionApp.properties.defaultHostName
+output appName string = functionApp.name
+output appId string = functionApp.id
 """
 
     def _parameters(self, spec: IntentSpec, env: str) -> str:

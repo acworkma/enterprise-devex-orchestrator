@@ -22,8 +22,10 @@ from src.orchestrator.intent_schema import (
     AuthModel,
     CICDRequirements,
     ComplianceFramework,
+    ComputeTarget,
     DataStore,
     IntentSpec,
+    LANGUAGE_FRAMEWORKS,
     NetworkingModel,
     ObservabilityRequirements,
     SecurityRequirements,
@@ -177,6 +179,13 @@ class IntentParserAgent:
         # Detect AI usage
         uses_ai = any(kw in intent_lower for kw in ["ai ", "ml ", "machine learning", "model", "llm", "gpt", "openai"])
 
+        # Detect programming language
+        language = self._detect_language(intent_lower)
+        framework = LANGUAGE_FRAMEWORKS.get(language, "fastapi")
+
+        # Detect compute target
+        compute_target = self._detect_compute_target(intent_lower)
+
         # Detect networking
         networking = NetworkingModel.PRIVATE
         if "public" in intent_lower:
@@ -189,8 +198,9 @@ class IntentParserAgent:
             description=raw_intent[:200],
             raw_intent=raw_intent,
             app_type=app_type,
-            language="python",
-            framework="fastapi",
+            language=language,
+            framework=framework,
+            compute_target=compute_target,
             data_stores=data_stores,
             uses_ai=uses_ai,
             security=SecurityRequirements(
@@ -203,14 +213,14 @@ class IntentParserAgent:
             azure_region=self.config.azure.location,
             resource_group_name=self.config.azure.resource_group,
             assumptions=[
-                "Using Python + FastAPI as default stack",
-                "Azure Container Apps as compute target",
+                f"Using {language.capitalize()} + {framework} as application stack",
+                f"Azure {compute_target.value.replace('_', ' ').title()} as compute target",
                 "Managed Identity for authentication",
                 "Key Vault for secret management",
                 "Log Analytics for observability",
             ],
             decisions=[
-                "Selected Container Apps over App Service for cloud-native alignment",
+                f"Selected {compute_target.value.replace('_', ' ').title()} based on intent signals",
                 "Private networking by default for security posture",
                 "Bicep for infrastructure as code (Azure-native)",
             ],
@@ -310,3 +320,27 @@ class IntentParserAgent:
         if "fedramp" in intent:
             return ComplianceFramework.FEDRAMP_GUIDANCE
         return ComplianceFramework.GENERAL
+
+    @staticmethod
+    def _detect_language(intent: str) -> str:
+        """Detect programming language from intent text."""
+        def _has(keyword: str) -> bool:
+            return bool(re.search(rf"\b{re.escape(keyword)}\b", intent))
+
+        if any(_has(kw) for kw in ["node", "nodejs", "javascript", "typescript", "express"]):
+            return "node"
+        if any(_has(kw) for kw in ["dotnet", ".net", "csharp", "c#", "aspnet", "asp.net"]):
+            return "dotnet"
+        return "python"
+
+    @staticmethod
+    def _detect_compute_target(intent: str) -> ComputeTarget:
+        """Detect Azure compute target from intent text."""
+        def _has(keyword: str) -> bool:
+            return bool(re.search(rf"\b{re.escape(keyword)}\b", intent))
+
+        if any(_has(kw) for kw in ["app service", "webapp", "web app"]):
+            return ComputeTarget.APP_SERVICE
+        if any(_has(kw) for kw in ["function", "functions", "serverless", "consumption"]):
+            return ComputeTarget.FUNCTIONS
+        return ComputeTarget.CONTAINER_APPS

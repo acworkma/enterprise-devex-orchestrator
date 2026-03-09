@@ -1020,6 +1020,142 @@ def _show_version_history(vm: VersionManager) -> None:
     console.print(table)
 
 
+@cli.command()
+@click.option(
+    "--output",
+    "-o",
+    type=click.Path(),
+    default="out",
+    help="Output directory. Default: ./out",
+)
+def interactive(output: str) -> None:
+    """Interactively build a project intent through guided questions.
+
+    Walks you through each decision (project name, language, compute target,
+    data stores, security, etc.) and generates the scaffold at the end.
+
+    Example:
+        devex interactive
+        devex interactive -o ./my-project
+    """
+    _banner()
+    console.print(
+        "[bold]Interactive mode[/] — answer a few questions and we'll generate "
+        "your full production scaffold.\n"
+    )
+
+    # ── Project basics ──────────────────────────────────────────────
+    project_name = click.prompt(
+        "Project name (kebab-case, e.g. my-secure-api)",
+        default="my-secure-api",
+    )
+    description = click.prompt(
+        "One-sentence description of what you're building",
+        default="A secure REST API for enterprise data processing",
+    )
+
+    # ── Language ────────────────────────────────────────────────────
+    language = click.prompt(
+        "Programming language",
+        type=click.Choice(["python", "node", "dotnet"], case_sensitive=False),
+        default="python",
+    )
+
+    # ── App Type ────────────────────────────────────────────────────
+    app_type = click.prompt(
+        "Application type",
+        type=click.Choice(["api", "web", "worker", "function"], case_sensitive=False),
+        default="api",
+    )
+
+    # ── Compute Target ──────────────────────────────────────────────
+    compute = click.prompt(
+        "Azure compute target",
+        type=click.Choice(["container_apps", "app_service", "functions"], case_sensitive=False),
+        default="container_apps",
+    )
+
+    # ── Data Stores ─────────────────────────────────────────────────
+    ds_choices = click.prompt(
+        "Data stores (comma-separated: blob, cosmos, sql, redis, none)",
+        default="blob",
+    )
+    data_stores_raw = [s.strip().lower() for s in ds_choices.split(",")]
+    ds_map = {
+        "blob": "blob_storage",
+        "cosmos": "cosmos_db",
+        "sql": "sql",
+        "redis": "redis",
+        "none": "none",
+    }
+    data_stores = [ds_map.get(d, d) for d in data_stores_raw]
+
+    # ── Security ────────────────────────────────────────────────────
+    auth = click.prompt(
+        "Authentication model",
+        type=click.Choice(["managed-identity", "entra-id", "api-key"], case_sensitive=False),
+        default="managed-identity",
+    )
+    compliance = click.prompt(
+        "Compliance guidance",
+        type=click.Choice(["general", "hipaa", "soc2", "fedramp"], case_sensitive=False),
+        default="general",
+    )
+
+    # ── Region ──────────────────────────────────────────────────────
+    region = click.prompt("Azure region", default="eastus2")
+    environment = click.prompt(
+        "Environment",
+        type=click.Choice(["dev", "staging", "prod"], case_sensitive=False),
+        default="dev",
+    )
+
+    # ── Confirmation ────────────────────────────────────────────────
+    console.print()
+    summary = Table(title="Your Configuration", border_style="cyan")
+    summary.add_column("Setting", style="bold")
+    summary.add_column("Value")
+    summary.add_row("Project", project_name)
+    summary.add_row("Language", language)
+    summary.add_row("App Type", app_type)
+    summary.add_row("Compute", compute)
+    summary.add_row("Data Stores", ", ".join(data_stores_raw))
+    summary.add_row("Auth", auth)
+    summary.add_row("Compliance", compliance)
+    summary.add_row("Region", region)
+    summary.add_row("Environment", environment)
+    console.print(summary)
+    console.print()
+
+    if not click.confirm("Generate scaffold with these settings?", default=True):
+        console.print("[dim]Cancelled.[/]")
+        return
+
+    # ── Build intent string ─────────────────────────────────────────
+    auth_clean = auth.replace("-", " ")
+    intent = (
+        f"Build a {app_type} called {project_name}: {description}. "
+        f"Use {language} with {compute.replace('_', ' ')} compute. "
+        f"Data stores: {', '.join(data_stores_raw)}. "
+        f"Auth: {auth_clean}. Compliance: {compliance}. "
+        f"Region: {region}, environment: {environment}."
+    )
+
+    config = _load_config()
+    out_dir = Path(output)
+    start = time.time()
+
+    spec, plan, gov_report, waf_report = _run_pipeline(
+        intent=intent,
+        config=config,
+        output_dir=out_dir,
+    )
+
+    elapsed = time.time() - start
+    console.print(f"\n[green bold]✓ Scaffold complete[/] in {elapsed:.1f}s")
+    console.print(f"  Output: [cyan]{out_dir.resolve()}[/]\n")
+    _show_improvement_suggestions(spec, plan, gov_report, waf_report)
+
 
 if __name__ == "__main__":
     cli()

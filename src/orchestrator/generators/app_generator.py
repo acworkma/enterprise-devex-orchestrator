@@ -1,13 +1,18 @@
 """Application Generator — produces sample application code.
 
-Generates a minimal but production-grade FastAPI application with:
+Generates a minimal but production-grade application with:
     - Health endpoint
     - Managed Identity integration
     - Key Vault client
     - Storage client (if applicable)
     - Structured logging
     - Dockerfile
-    - Requirements file
+    - Dependency file
+
+Supports multiple languages:
+    - Python (FastAPI)  — default
+    - Node.js (Express)
+    - .NET (ASP.NET Core minimal API)
 """
 
 from __future__ import annotations
@@ -19,23 +24,63 @@ logger = get_logger(__name__)
 
 
 class AppGenerator:
-    """Generates application scaffold."""
+    """Generates application scaffold — multi-language support."""
 
     def generate(self, spec: IntentSpec) -> dict[str, str]:
-        """Generate application files."""
-        logger.info("app_generator.start", project=spec.project_name)
+        """Generate application files based on spec.language."""
+        logger.info("app_generator.start", project=spec.project_name, language=spec.language)
 
-        files: dict[str, str] = {}
+        language = spec.language.lower()
+        if language == "node":
+            files = self._generate_node(spec)
+        elif language == "dotnet":
+            files = self._generate_dotnet(spec)
+        else:
+            files = self._generate_python(spec)
 
-        files["src/app/main.py"] = self._main_app(spec)
-        files["src/app/requirements.txt"] = self._requirements(spec)
-        files["src/app/Dockerfile"] = self._dockerfile(spec)
-        files["src/app/__init__.py"] = '"""Generated application package."""\n'
-
-        logger.info("app_generator.complete", file_count=len(files))
+        logger.info("app_generator.complete", file_count=len(files), language=language)
         return files
 
-    def _main_app(self, spec: IntentSpec) -> str:
+    # ═══════════════════════════════════════════════════════════════
+    # Python / FastAPI
+    # ═══════════════════════════════════════════════════════════════
+
+    def _generate_python(self, spec: IntentSpec) -> dict[str, str]:
+        """Generate Python/FastAPI scaffold."""
+        files: dict[str, str] = {}
+        files["src/app/main.py"] = self._python_main(spec)
+        files["src/app/requirements.txt"] = self._python_requirements(spec)
+        files["src/app/Dockerfile"] = self._python_dockerfile(spec)
+        files["src/app/__init__.py"] = '"""Generated application package."""\n'
+        return files
+
+    # ═══════════════════════════════════════════════════════════════
+    # Node.js / Express
+    # ═══════════════════════════════════════════════════════════════
+
+    def _generate_node(self, spec: IntentSpec) -> dict[str, str]:
+        """Generate Node.js/Express scaffold."""
+        files: dict[str, str] = {}
+        files["src/app/index.js"] = self._node_main(spec)
+        files["src/app/package.json"] = self._node_package_json(spec)
+        files["src/app/Dockerfile"] = self._node_dockerfile(spec)
+        files["src/app/.env.example"] = self._node_env_example(spec)
+        return files
+
+    # ═══════════════════════════════════════════════════════════════
+    # .NET / ASP.NET Core
+    # ═══════════════════════════════════════════════════════════════
+
+    def _generate_dotnet(self, spec: IntentSpec) -> dict[str, str]:
+        """Generate .NET/ASP.NET Core minimal API scaffold."""
+        files: dict[str, str] = {}
+        files["src/app/Program.cs"] = self._dotnet_program(spec)
+        files[f"src/app/{spec.project_name}.csproj"] = self._dotnet_csproj(spec)
+        files["src/app/Dockerfile"] = self._dotnet_dockerfile(spec)
+        files["src/app/appsettings.json"] = self._dotnet_appsettings(spec)
+        return files
+
+    def _python_main(self, spec: IntentSpec) -> str:
         storage_imports = ""
         storage_client = ""
         storage_endpoint = ""
@@ -198,7 +243,7 @@ if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=port)
 """
 
-    def _requirements(self, spec: IntentSpec) -> str:
+    def _python_requirements(self, spec: IntentSpec) -> str:
         reqs = """# Enterprise DevEx Orchestrator — Generated Application Dependencies
 fastapi>=0.109.0
 uvicorn[standard]>=0.27.0
@@ -214,7 +259,7 @@ python-dotenv>=1.0.0
 
         return reqs
 
-    def _dockerfile(self, spec: IntentSpec) -> str:
+    def _python_dockerfile(self, spec: IntentSpec) -> str:
         return f"""# ═══════════════════════════════════════════════════════════════════
 # Dockerfile — {spec.project_name}
 # Multi-stage build for minimal production image
@@ -255,3 +300,323 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \\
 # Start application
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
 """
+
+    # ═══════════════════════════════════════════════════════════════
+    # Node.js / Express — implementation methods
+    # ═══════════════════════════════════════════════════════════════
+
+    def _node_main(self, spec: IntentSpec) -> str:
+        storage_require = ""
+        storage_route = ""
+
+        if DataStore.BLOB_STORAGE in spec.data_stores:
+            storage_require = 'const { BlobServiceClient } = require("@azure/storage-blob");\n'
+            storage_route = f"""
+// ── Storage Status ──────────────────────────────────────────────────
+app.get("/storage/status", async (req, res) => {{
+  try {{
+    const credential = new DefaultAzureCredential();
+    const blobClient = new BlobServiceClient(
+      process.env.STORAGE_ACCOUNT_URL || "",
+      credential
+    );
+    const iter = blobClient.listContainers({{ maxPageSize: 1 }});
+    await iter.next();
+    res.json({{ status: "connected", containers_accessible: true }});
+  }} catch (err) {{
+    console.error("Storage health check failed:", err.message);
+    res.status(503).json({{ status: "error", detail: err.message }});
+  }}
+}});
+"""
+
+        return f"""// ═══════════════════════════════════════════════════════════════════
+// Enterprise DevEx Orchestrator — Generated Application (Node.js)
+//
+// Project: {spec.project_name}
+// Description: {spec.description}
+// ═══════════════════════════════════════════════════════════════════
+
+const express = require("express");
+const {{ DefaultAzureCredential }} = require("@azure/identity");
+const {{ SecretClient }} = require("@azure/keyvault-secrets");
+{storage_require}
+const app = express();
+const APP_NAME = "{spec.project_name}";
+const VERSION = "1.0.0";
+const PORT = parseInt(process.env.PORT || "8000", 10);
+
+app.use(express.json());
+
+// ── Health Endpoint ─────────────────────────────────────────────────
+app.get("/health", (req, res) => {{
+  res.json({{
+    status: "healthy",
+    service: APP_NAME,
+    version: VERSION,
+    timestamp: new Date().toISOString(),
+  }});
+}});
+
+// ── Root Endpoint ───────────────────────────────────────────────────
+app.get("/", (req, res) => {{
+  res.json({{
+    service: APP_NAME,
+    version: VERSION,
+    status: "running",
+  }});
+}});
+
+// ── Key Vault Status ────────────────────────────────────────────────
+app.get("/keyvault/status", async (req, res) => {{
+  try {{
+    const credential = new DefaultAzureCredential();
+    const vaultName = process.env.KEY_VAULT_NAME || "";
+    if (!vaultName) throw new Error("KEY_VAULT_NAME not set");
+    const client = new SecretClient(
+      `https://${{vaultName}}.vault.azure.net`,
+      credential
+    );
+    const iter = client.listPropertiesOfSecrets({{ maxPageSize: 1 }});
+    await iter.next();
+    res.json({{ status: "connected", vault_accessible: true }});
+  }} catch (err) {{
+    console.error("Key Vault health check failed:", err.message);
+    res.status(503).json({{ status: "error", detail: err.message }});
+  }}
+}});
+{storage_route}
+app.listen(PORT, () => {{
+  console.log(`${{APP_NAME}} v${{VERSION}} listening on port ${{PORT}}`);
+}});
+"""
+
+    def _node_package_json(self, spec: IntentSpec) -> str:
+        deps = {
+            "express": "^4.18.0",
+            "@azure/identity": "^4.0.0",
+            "@azure/keyvault-secrets": "^4.8.0",
+        }
+        if DataStore.BLOB_STORAGE in spec.data_stores:
+            deps["@azure/storage-blob"] = "^12.17.0"
+        if DataStore.COSMOS_DB in spec.data_stores:
+            deps["@azure/cosmos"] = "^4.0.0"
+
+        import json as _json
+
+        deps_str = _json.dumps(deps, indent=4)
+
+        return f"""{{
+  "name": "{spec.project_name}",
+  "version": "1.0.0",
+  "description": "{spec.description}",
+  "main": "index.js",
+  "scripts": {{
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "jest --coverage"
+  }},
+  "dependencies": {deps_str},
+  "devDependencies": {{
+    "jest": "^29.7.0"
+  }},
+  "engines": {{
+    "node": ">=20.0.0"
+  }}
+}}
+"""
+
+    def _node_dockerfile(self, spec: IntentSpec) -> str:
+        return f"""# ═══════════════════════════════════════════════════════════════════
+# Dockerfile — {spec.project_name} (Node.js)
+# Multi-stage build for minimal production image
+# ═══════════════════════════════════════════════════════════════════
+
+FROM node:20-slim AS builder
+WORKDIR /build
+COPY package*.json ./
+RUN npm ci --only=production
+
+FROM node:20-slim AS runtime
+RUN groupadd -r appuser && useradd -r -g appuser -d /app -s /sbin/nologin appuser
+WORKDIR /app
+COPY --from=builder /build/node_modules ./node_modules
+COPY . .
+USER appuser
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \\
+    CMD node -e "require('http').get('http://localhost:8000/health', r => r.statusCode === 200 ? process.exit(0) : process.exit(1))"
+CMD ["node", "index.js"]
+"""
+
+    def _node_env_example(self, spec: IntentSpec) -> str:
+        lines = [
+            "# Application configuration",
+            "PORT=8000",
+            f"ENVIRONMENT={spec.environment}",
+            "",
+            "# Azure Managed Identity",
+            "AZURE_CLIENT_ID=",
+            "",
+            "# Key Vault",
+            "KEY_VAULT_NAME=",
+        ]
+        if DataStore.BLOB_STORAGE in spec.data_stores:
+            lines += ["", "# Storage", "STORAGE_ACCOUNT_URL="]
+        return "\n".join(lines) + "\n"
+
+    # ═══════════════════════════════════════════════════════════════
+    # .NET / ASP.NET Core — implementation methods
+    # ═══════════════════════════════════════════════════════════════
+
+    def _dotnet_program(self, spec: IntentSpec) -> str:
+        storage_usings = ""
+        storage_services = ""
+        storage_endpoint = ""
+
+        if DataStore.BLOB_STORAGE in spec.data_stores:
+            storage_usings = "using Azure.Storage.Blobs;\n"
+            storage_services = """
+builder.Services.AddSingleton(sp =>
+{{
+    var credential = new DefaultAzureCredential();
+    var accountUrl = builder.Configuration["STORAGE_ACCOUNT_URL"] ?? "";
+    return new BlobServiceClient(new Uri(accountUrl), credential);
+}});
+"""
+            storage_endpoint = """
+app.MapGet("/storage/status", async (BlobServiceClient blobClient) =>
+{{
+    try
+    {{
+        await foreach (var _ in blobClient.GetBlobContainersAsync().AsPages(pageSizeHint: 1))
+        {{ break; }}
+        return Results.Ok(new {{ status = "connected", containers_accessible = true }});
+    }}
+    catch (Exception ex)
+    {{
+        return Results.Json(new {{ status = "error", detail = ex.Message }}, statusCode: 503);
+    }}
+}});
+"""
+
+        return f"""// ═══════════════════════════════════════════════════════════════════
+// Enterprise DevEx Orchestrator — Generated Application (.NET)
+//
+// Project: {spec.project_name}
+// Description: {spec.description}
+// ═══════════════════════════════════════════════════════════════════
+
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
+{storage_usings}
+var builder = WebApplication.CreateBuilder(args);
+
+var appName = "{spec.project_name}";
+var version = "1.0.0";
+
+// ── Key Vault Client ────────────────────────────────────────────────
+builder.Services.AddSingleton(sp =>
+{{
+    var credential = new DefaultAzureCredential();
+    var vaultName = builder.Configuration["KEY_VAULT_NAME"] ?? "";
+    var vaultUri = new Uri($"https://{{vaultName}}.vault.azure.net");
+    return new SecretClient(vaultUri, credential);
+}});
+{storage_services}
+var app = builder.Build();
+
+// ── Health Endpoint ─────────────────────────────────────────────────
+app.MapGet("/health", () => Results.Ok(new
+{{
+    status = "healthy",
+    service = appName,
+    version,
+    timestamp = DateTime.UtcNow.ToString("o"),
+}}));
+
+// ── Root Endpoint ───────────────────────────────────────────────────
+app.MapGet("/", () => Results.Ok(new
+{{
+    service = appName,
+    version,
+    status = "running",
+}}));
+
+// ── Key Vault Status ────────────────────────────────────────────────
+app.MapGet("/keyvault/status", async (SecretClient kvClient) =>
+{{
+    try
+    {{
+        await foreach (var _ in kvClient.GetPropertiesOfSecretsAsync().AsPages(pageSizeHint: 1))
+        {{ break; }}
+        return Results.Ok(new {{ status = "connected", vault_accessible = true }});
+    }}
+    catch (Exception ex)
+    {{
+        return Results.Json(new {{ status = "error", detail = ex.Message }}, statusCode: 503);
+    }}
+}});
+{storage_endpoint}
+app.Run();
+"""
+
+    def _dotnet_csproj(self, spec: IntentSpec) -> str:
+        storage_pkg = ""
+        if DataStore.BLOB_STORAGE in spec.data_stores:
+            storage_pkg = '    <PackageReference Include="Azure.Storage.Blobs" Version="12.19.0" />\n'
+        cosmos_pkg = ""
+        if DataStore.COSMOS_DB in spec.data_stores:
+            cosmos_pkg = '    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.37.0" />\n'
+
+        return f"""<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" Version="1.11.0" />
+    <PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.6.0" />
+{storage_pkg}{cosmos_pkg}  </ItemGroup>
+</Project>
+"""
+
+    def _dotnet_dockerfile(self, spec: IntentSpec) -> str:
+        return f"""# ═══════════════════════════════════════════════════════════════════
+# Dockerfile — {spec.project_name} (.NET)
+# Multi-stage build for minimal production image
+# ═══════════════════════════════════════════════════════════════════
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS builder
+WORKDIR /build
+COPY *.csproj ./
+RUN dotnet restore
+COPY . .
+RUN dotnet publish -c Release -o /publish --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+RUN groupadd -r appuser && useradd -r -g appuser -d /app -s /sbin/nologin appuser
+WORKDIR /app
+COPY --from=builder /publish .
+USER appuser
+EXPOSE 8000
+ENV ASPNETCORE_URLS=http://+:8000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \\
+    CMD curl -f http://localhost:8000/health || exit 1
+CMD ["dotnet", "{spec.project_name}.dll"]
+"""
+
+    def _dotnet_appsettings(self, spec: IntentSpec) -> str:
+        import json as _json
+
+        settings: dict = {
+            "Logging": {
+                "LogLevel": {"Default": "Information", "Microsoft.AspNetCore": "Warning"}
+            },
+            "ENVIRONMENT": spec.environment,
+            "KEY_VAULT_NAME": "",
+        }
+        if DataStore.BLOB_STORAGE in spec.data_stores:
+            settings["STORAGE_ACCOUNT_URL"] = ""
+        return _json.dumps(settings, indent=2) + "\n"

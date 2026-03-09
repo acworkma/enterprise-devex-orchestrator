@@ -20,6 +20,30 @@ class AppType(str, Enum):
     FUNCTION = "function"
 
 
+class ComputeTarget(str, Enum):
+    """Supported Azure compute targets."""
+
+    CONTAINER_APPS = "container_apps"
+    APP_SERVICE = "app_service"
+    FUNCTIONS = "functions"
+
+
+class Language(str, Enum):
+    """Supported programming languages."""
+
+    PYTHON = "python"
+    NODE = "node"
+    DOTNET = "dotnet"
+
+
+# Language → default framework mapping
+LANGUAGE_FRAMEWORKS: dict[str, str] = {
+    "python": "fastapi",
+    "node": "express",
+    "dotnet": "aspnet",
+}
+
+
 class DataStore(str, Enum):
     """Supported data stores."""
 
@@ -108,6 +132,10 @@ class IntentSpec(BaseModel):
     app_type: AppType = Field(default=AppType.API, description="Type of application to scaffold")
     language: str = Field(default="python", description="Primary programming language")
     framework: str = Field(default="fastapi", description="Application framework")
+    compute_target: ComputeTarget = Field(
+        default=ComputeTarget.CONTAINER_APPS,
+        description="Azure compute target (container_apps, app_service, functions)",
+    )
     data_stores: list[DataStore] = Field(
         default_factory=lambda: [DataStore.BLOB_STORAGE], description="Required data stores"
     )

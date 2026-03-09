@@ -63,6 +63,7 @@ class InfrastructureGeneratorAgent:
         from src.orchestrator.generators.app_generator import AppGenerator
         from src.orchestrator.generators.bicep_generator import BicepGenerator
         from src.orchestrator.generators.cicd_generator import CICDGenerator
+        from src.orchestrator.generators.cost_estimator import CostEstimator
         from src.orchestrator.generators.docs_generator import DocsGenerator
         from src.orchestrator.generators.test_generator import TestGenerator
 
@@ -73,6 +74,7 @@ class InfrastructureGeneratorAgent:
         docs_gen = DocsGenerator()
         test_gen = TestGenerator()
         alert_gen = AlertGenerator()
+        cost_est = CostEstimator()
 
         files.update(bicep_gen.generate(spec, plan))
         files.update(cicd_gen.generate(spec))
@@ -80,6 +82,10 @@ class InfrastructureGeneratorAgent:
         files.update(docs_gen.generate(spec, plan, governance=gov_report, waf_report=waf_report))
         files.update(test_gen.generate(spec))
         files.update(alert_gen.generate(spec))
+
+        # Cost estimate report
+        estimate = cost_est.estimate(spec, plan)
+        files["docs/cost-estimate.md"] = estimate.to_markdown()
 
         logger.info("infrastructure_generator.complete", file_count=len(files))
         return files
