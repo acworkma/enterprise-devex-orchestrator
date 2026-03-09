@@ -30,6 +30,7 @@ Thumbs.db
 
 # Output
 out/
+deploy-test/
 demo-output/
 my-project/
 test-enterprise/
