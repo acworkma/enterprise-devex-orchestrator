@@ -28,6 +28,8 @@ param logRetentionDays int = 30
 
 var resourcePrefix = '${projectName}-${environment}'
 var uniqueSuffix = substring(uniqueString(subscription().id, resourceGroup().id, projectName, environment), 0, 6)
+var normalizedPrefix = replace(resourcePrefix, '-', '')
+var keyVaultPrefix = substring(normalizedPrefix, 0, min(length(normalizedPrefix), 16))
 var tags = {
   project: projectName
   environment: environment
@@ -59,7 +61,7 @@ module managedIdentity 'modules/managed-identity.bicep' = {
 module keyVault 'modules/keyvault.bicep' = {
   name: 'key-vault'
   params: {
-    keyVaultName: replace('${resourcePrefix}-kv-${uniqueSuffix}', '-', '')
+    keyVaultName: '${keyVaultPrefix}kv${uniqueSuffix}'
     location: location
     managedIdentityPrincipalId: managedIdentity.outputs.principalId
     logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
