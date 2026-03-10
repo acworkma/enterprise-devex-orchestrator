@@ -124,10 +124,11 @@ jobs:
   deploy-infra:
     name: Deploy Infrastructure
     needs: [validate, validate-infra]
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.event.inputs.skip_deploy != 'true' && env.AZURE_CLIENT_ID != '' && env.AZURE_TENANT_ID != '' && env.AZURE_SUBSCRIPTION_ID != ''
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.event.inputs.skip_deploy != 'true'
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'dev' }}
     outputs:
+      has-azure-creds: ${{ steps.azure-creds.outputs.hasAzureCreds }}
       acr-login-server: ${{ steps.deploy.outputs.acrLoginServer }}
       acr-name: ${{ steps.extract-acr.outputs.acrName }}
       container-app-name: ${{ steps.extract-app.outputs.appName }}
@@ -136,7 +137,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check Azure credentials availability
+        id: azure-creds
+        run: |
+          if [ -n "$AZURE_CLIENT_ID" ] && [ -n "$AZURE_TENANT_ID" ] && [ -n "$AZURE_SUBSCRIPTION_ID" ]; then
+            echo "hasAzureCreds=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "hasAzureCreds=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip deploy notice
+        if: steps.azure-creds.outputs.hasAzureCreds != 'true'
+        run: |
+          echo "Azure credentials are not configured in repository secrets."
+          echo "Skipping deployment jobs."
+
       - name: Login to Azure
+        if: steps.azure-creds.outputs.hasAzureCreds == 'true'
         uses: azure/login@v2
         with:
           client-id: ${{ env.AZURE_CLIENT_ID }}
@@ -144,6 +161,7 @@ jobs:
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
       - name: Ensure resource group exists
+        if: steps.azure-creds.outputs.hasAzureCreds == 'true'
         run: |
           az group create \
             --name ${{ env.AZURE_RESOURCE_GROUP }} \
@@ -152,6 +170,7 @@ jobs:
 
       - name: Deploy Bicep templates
         id: deploy
+        if: steps.azure-creds.outputs.hasAzureCreds == 'true'
         run: |
           result=$(az deployment group create \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
@@ -170,6 +189,7 @@ jobs:
 
       - name: Extract ACR name
         id: extract-acr
+        if: steps.azure-creds.outputs.hasAzureCreds == 'true'
         run: |
           acrName=$(az acr list \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
@@ -179,6 +199,7 @@ jobs:
 
       - name: Extract Container App name
         id: extract-app
+        if: steps.azure-creds.outputs.hasAzureCreds == 'true'
         run: |
           appName=$(az containerapp list \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
@@ -197,6 +218,7 @@ jobs:
   build-image:
     name: Build & Push Container
     needs: deploy-infra
+    if: needs.deploy-infra.outputs.has-azure-creds == 'true'
     runs-on: ubuntu-latest
     outputs:
       image-tag: ${{ steps.meta.outputs.imageTag }}
@@ -243,6 +265,7 @@ jobs:
   deploy-app:
     name: Deploy Application
     needs: [deploy-infra, build-image]
+    if: needs.deploy-infra.outputs.has-azure-creds == 'true'
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'dev' }}
     steps:
