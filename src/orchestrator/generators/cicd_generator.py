@@ -80,17 +80,17 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          pip install -r src/app/requirements.txt -r tests/requirements-test.txt ruff mypy
 
       - name: Lint with Ruff
-        run: ruff check src/ tests/
+        run: ruff check src/app tests/
 
       - name: Type check with mypy
-        run: mypy src/ --ignore-missing-imports
+        run: mypy src/app --ignore-missing-imports
         continue-on-error: true
 
       - name: Run tests
-        run: pytest tests/ -v --tb=short --cov=src --cov-report=xml
+        run: pytest tests/ -v --tb=short --cov=src/app --cov-report=xml
 
       - name: Upload coverage
         uses: actions/upload-artifact@v4
@@ -193,6 +193,8 @@ jobs:
     outputs:
       containerAppFqdn: ${{{{ steps.deploy.outputs.containerAppFqdn }}}}
       containerAppName: ${{{{ steps.deploy.outputs.containerAppName }}}}
+      containerRegistryName: ${{{{ steps.deploy.outputs.containerRegistryName }}}}
+      containerRegistryLoginServer: ${{{{ steps.deploy.outputs.containerRegistryLoginServer }}}}
     steps:
       - uses: actions/checkout@v4
 
@@ -222,6 +224,8 @@ jobs:
 
           echo "containerAppFqdn=$(echo $RESULT | jq -r '.containerAppFqdn.value')" >> $GITHUB_OUTPUT
           echo "containerAppName=$(echo $RESULT | jq -r '.containerAppName.value')" >> $GITHUB_OUTPUT
+          echo "containerRegistryName=$(echo $RESULT | jq -r '.containerRegistryName.value')" >> $GITHUB_OUTPUT
+          echo "containerRegistryLoginServer=$(echo $RESULT | jq -r '.containerRegistryLoginServer.value')" >> $GITHUB_OUTPUT
 
       - name: Deployment summary
         run: |
@@ -251,8 +255,8 @@ jobs:
       - name: Get ACR login server
         id: acr
         run: |
-          ACR_NAME=$(echo "${{{{ env.PROJECT_NAME }}}}" | tr -d '-')acr
-          LOGIN_SERVER=$(az acr show --name $ACR_NAME --query loginServer --output tsv)
+          ACR_NAME="${{{{ needs.deploy-infrastructure.outputs.containerRegistryName }}}}"
+          LOGIN_SERVER="${{{{ needs.deploy-infrastructure.outputs.containerRegistryLoginServer }}}}"
           echo "loginServer=$LOGIN_SERVER" >> $GITHUB_OUTPUT
           echo "acrName=$ACR_NAME" >> $GITHUB_OUTPUT
 
@@ -267,9 +271,14 @@ jobs:
       - name: Update Container App
         run: |
           az containerapp update \\
-            --name ${{{{ env.PROJECT_NAME }}}} \\
+            --name ${{{{ needs.deploy-infrastructure.outputs.containerAppName }}}} \
             --resource-group ${{{{ env.AZURE_RESOURCE_GROUP }}}} \\
             --image ${{{{ steps.acr.outputs.loginServer }}}}/${{{{ env.PROJECT_NAME }}}}:${{{{ github.sha }}}}
+
+      - name: Verify application health
+        run: |
+          APP_FQDN="${{{{ needs.deploy-infrastructure.outputs.containerAppFqdn }}}}"
+          curl --fail --retry 10 --retry-delay 10 "https://$APP_FQDN/health"
 """
 
     def _dependabot_config(self) -> str:

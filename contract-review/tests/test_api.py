@@ -5,45 +5,41 @@ Project: intent-legal-contract-review
 
 from __future__ import annotations
 
-from fastapi.testclient import TestClient
-
 
 class TestRootEndpoint:
     """Tests for / root endpoint."""
 
-    def test_root_returns_200(self, client: TestClient) -> None:
+    def test_root_returns_200(self, client) -> None:
         """Root endpoint returns 200 OK."""
         response = client.get("/")
         assert response.status_code == 200
 
-    def test_root_response_structure(self, client: TestClient) -> None:
-        """Root response contains required fields."""
+    def test_root_returns_html(self, client) -> None:
+        """Root endpoint returns HTML landing page."""
         response = client.get("/")
-        data = response.json()
-        assert "service" in data
-        assert "version" in data
-        assert "status" in data
+        assert "text/html" in response.headers.get("content-type", "")
+        assert "<!DOCTYPE html>" in response.text
 
-    def test_root_status_running(self, client: TestClient) -> None:
-        """Root status is 'running'."""
+    def test_root_contains_app_name(self, client) -> None:
+        """Root HTML contains the application name."""
         response = client.get("/")
-        assert response.json()["status"] == "running"
+        assert "intent-legal-contract-review" in response.text
 
-    def test_root_has_docs_link(self, client: TestClient) -> None:
-        """Root response includes docs URL."""
+    def test_root_has_docs_link(self, client) -> None:
+        """Root HTML includes docs URL."""
         response = client.get("/")
-        assert response.json()["docs"] == "/docs"
+        assert 'href="/docs"' in response.text
 
 
 class TestDocsEndpoint:
     """Tests for /docs OpenAPI endpoint."""
 
-    def test_docs_returns_200(self, client: TestClient) -> None:
+    def test_docs_returns_200(self, client) -> None:
         """Docs endpoint is accessible."""
         response = client.get("/docs")
         assert response.status_code == 200
 
-    def test_redoc_disabled(self, client: TestClient) -> None:
+    def test_redoc_disabled(self, client) -> None:
         """ReDoc is disabled as configured."""
         response = client.get("/redoc")
         assert response.status_code == 404
@@ -52,7 +48,7 @@ class TestDocsEndpoint:
 class TestNotFound:
     """Tests for undefined routes."""
 
-    def test_undefined_route_returns_404(self, client: TestClient) -> None:
+    def test_undefined_route_returns_404(self, client) -> None:
         """Undefined routes return 404."""
         response = client.get("/nonexistent")
         assert response.status_code == 404

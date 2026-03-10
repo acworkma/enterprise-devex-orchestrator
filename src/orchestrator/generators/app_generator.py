@@ -143,7 +143,7 @@ from datetime import datetime, timezone
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 {storage_imports}
 # -- Configuration ----------------------------------------------------
 APP_NAME = "{spec.project_name}"
@@ -168,15 +168,30 @@ app = FastAPI(
 
 # -- Key Vault Client ------------------------------------------------
 def get_keyvault_client() -> SecretClient:
-    \"\"\"Create an authenticated Key Vault client using Managed Identity.\"\"\"
+    \"\"\"Create an authenticated Key Vault client using Managed Identity.
+    
+    Supports two configuration patterns:
+    1. KEY_VAULT_URI - full vault URL (https://vault-name.vault.azure.net)
+    2. KEY_VAULT_NAME - vault name only (will construct URL)
+    \"\"\"
     credential = DefaultAzureCredential(
         managed_identity_client_id=os.getenv("AZURE_CLIENT_ID")
     )
+    
+    # Try full URI first (recommended)
+    vault_uri = os.getenv("KEY_VAULT_URI", "")
+    if vault_uri:
+        return SecretClient(vault_url=vault_uri, credential=credential)
+    
+    # Fallback to name-based construction
     vault_name = os.getenv("KEY_VAULT_NAME", "")
     if not vault_name:
-        raise ValueError("KEY_VAULT_NAME environment variable not set")
-    vault_url = f"https://{{vault_name}}.vault.azure.net"
-    return SecretClient(vault_url=vault_url, credential=credential)
+        raise ValueError("Either KEY_VAULT_URI or KEY_VAULT_NAME must be set")
+    
+    return SecretClient(
+        vault_url=f"https://{{vault_name}}.vault.azure.net",
+        credential=credential
+    )
 
 {storage_client}
 # -- Health Endpoint --------------------------------------------------
@@ -191,16 +206,35 @@ async def health():
     }}
 
 
-# -- Info Endpoint ----------------------------------------------------
+# -- Root Endpoint (HTML Landing Page) ------
 @app.get("/")
 async def root():
-    \"\"\"Root endpoint with service information.\"\"\"
-    return {{
-        "service": APP_NAME,
-        "version": VERSION,
-        "status": "running",
-        "docs": "/docs",
-    }}
+    \"\"\"Root endpoint with basic HTML response.\"\"\"
+    html = f\"\"\"<!DOCTYPE html>
+<html>
+<head>
+    <title>{{APP_NAME}}</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }}
+        .container {{ background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; }}
+        h1 {{ color: #333; }}
+        a {{ display: inline-block; margin-top: 10px; padding: 10px 15px; background: #0078d4; color: white; text-decoration: none; border-radius: 4px; }}
+        a:hover {{ background: #106ebe; }}
+    </style>
+</head>
+<body>
+    <div class=\"container\">
+        <h1>{{APP_NAME}}</h1>
+        <p>Version: {{VERSION}}</p>
+        <p>Status: Running</p>
+        <a href=\"/docs\">📚 API Documentation</a>
+        <a href=\"/health\">💚 Health Check</a>
+        <a href=\"/keyvault/status\">🔐 Key Vault Status</a>
+    </div>
+</body>
+</html>
+\"\"\"
+    return HTMLResponse(content=html)
 
 
 # -- Key Vault Status ------------------------------------------------

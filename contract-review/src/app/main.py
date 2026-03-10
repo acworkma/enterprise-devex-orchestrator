@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import logging
 import os
-from datetime import datetime, timezone
+from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
@@ -21,12 +22,26 @@ logging.basicConfig(
 )
 logger = logging.getLogger(APP_NAME)
 
+
+@asynccontextmanager
+async def lifespan_context(app: FastAPI):
+    """Manage application startup and shutdown events."""
+    # Startup
+    logger.info("%s v%s starting up", APP_NAME, VERSION)
+    logger.info("Environment: %s", os.getenv("ENVIRONMENT", "unknown"))
+    logger.info("Managed Identity authentication enabled")
+    yield
+    # Shutdown
+    logger.info("%s shutting down", APP_NAME)
+
+
 app = FastAPI(
     title=APP_NAME,
     version=VERSION,
     description="Legal Contract Review and Redlining API",
     docs_url="/docs",
     redoc_url=None,
+    lifespan=lifespan_context,
 )
 
 
@@ -62,7 +77,7 @@ async def health():
         "status": "healthy",
         "service": APP_NAME,
         "version": VERSION,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
@@ -122,19 +137,8 @@ async def storage_status():
         return JSONResponse(status_code=503, content={"status": "error", "detail": str(exc)})
 
 
-@app.on_event("startup")
-async def startup():
-    logger.info("%s v%s starting up", APP_NAME, VERSION)
-    logger.info("Environment: %s", os.getenv("ENVIRONMENT", "unknown"))
-
-
-@app.on_event("shutdown")
-async def shutdown():
-    logger.info("%s shutting down", APP_NAME)
-
-
 if __name__ == "__main__":
     import uvicorn
 
     port = int(os.getenv("PORT", "8000"))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=port)  # noqa: S104

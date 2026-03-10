@@ -219,6 +219,18 @@ class TestAppGenerator:
         main = files["src/app/main.py"]
         assert "/health" in main
 
+    def test_main_has_html_root_response(self) -> None:
+        files = self.gen.generate(_make_spec())
+        main = files["src/app/main.py"]
+        assert "HTMLResponse" in main
+        assert "<!DOCTYPE html>" in main
+
+    def test_main_supports_key_vault_uri(self) -> None:
+        files = self.gen.generate(_make_spec())
+        main = files["src/app/main.py"]
+        assert "KEY_VAULT_URI" in main
+        assert "KEY_VAULT_NAME" in main
+
     def test_dockerfile_has_nonroot_user(self) -> None:
         files = self.gen.generate(_make_spec())
         dockerfile = files["src/app/Dockerfile"]

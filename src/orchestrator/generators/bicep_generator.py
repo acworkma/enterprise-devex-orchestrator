@@ -134,6 +134,21 @@ output functionAppDefaultHostName string = functionApp.outputs.defaultHostName
 output functionAppName string = functionApp.outputs.appName
 """
         else:
+            storage_module = ""
+            if DataStore.BLOB_STORAGE in spec.data_stores:
+                storage_module = """
+// -- Storage Account ------------------------------------------------
+module storage 'modules/storage.bicep' = {
+  name: 'storage-deployment'
+  params: {
+    location: location
+    storageAccountName: stName
+    managedIdentityPrincipalId: identity.outputs.principalId
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
+    tags: tags
+  }
+}
+"""
             compute_params = """
 @description('Container image to deploy')
 param containerImage string = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
@@ -141,7 +156,7 @@ param containerImage string = 'mcr.microsoft.com/azuredocs/containerapps-hellowo
 @description('Container app port')
 param containerPort int = 8000
 """
-            compute_module = """
+            compute_module = f"""
 // -- Container Registry ---------------------------------------------
 module containerRegistry 'modules/container-registry.bicep' = {{
   name: 'acr-deployment'
@@ -174,6 +189,8 @@ module containerApp 'modules/container-app.bicep' = {{
             compute_outputs = """
 output containerAppFqdn string = containerApp.outputs.fqdn
 output containerAppName string = containerApp.outputs.appName
+output containerRegistryName string = containerRegistry.outputs.registryName
+output containerRegistryLoginServer string = containerRegistry.outputs.loginServer
 """
         # For App Service and Functions, storage goes directly in main
         storage_section = ""

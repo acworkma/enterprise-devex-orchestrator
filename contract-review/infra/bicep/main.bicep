@@ -96,21 +96,33 @@ module keyVault 'modules/keyvault.bicep' = {
 }
 
 // -- Container Registry ---------------------------------------------
-module containerRegistry 'modules/container-registry.bicep' = {{
+module containerRegistry 'modules/container-registry.bicep' = {
   name: 'acr-deployment'
-  params: {{
+  params: {
     location: location
     registryName: crName
     managedIdentityPrincipalId: identity.outputs.principalId
     logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
     tags: tags
-  }}
-}}
-{storage_module}
+  }
+}
+
+// -- Storage Account ------------------------------------------------
+module storage 'modules/storage.bicep' = {
+  name: 'storage-deployment'
+  params: {
+    location: location
+    storageAccountName: stName
+    managedIdentityPrincipalId: identity.outputs.principalId
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
+    tags: tags
+  }
+}
+
 // -- Container App --------------------------------------------------
-module containerApp 'modules/container-app.bicep' = {{
+module containerApp 'modules/container-app.bicep' = {
   name: 'container-app-deployment'
-  params: {{
+  params: {
     location: location
     appName: caName
     environmentName: caeName
@@ -121,13 +133,15 @@ module containerApp 'modules/container-app.bicep' = {{
     logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
     keyVaultName: keyVault.outputs.keyVaultName
     tags: tags
-  }}
-}}
+  }
+}
 
 // -- Outputs --------------------------------------------------------
 
 output containerAppFqdn string = containerApp.outputs.fqdn
 output containerAppName string = containerApp.outputs.appName
+output containerRegistryName string = containerRegistry.outputs.registryName
+output containerRegistryLoginServer string = containerRegistry.outputs.loginServer
 
 output keyVaultName string = keyVault.outputs.keyVaultName
 output logAnalyticsWorkspaceId string = logAnalytics.outputs.workspaceId

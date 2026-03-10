@@ -1,0 +1,74 @@
+name: Contract Review Validate
+
+on:
+  pull_request:
+    paths:
+      - 'contract-review/**'
+      - '.github/workflows/contract-review-validate.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'contract-review/**'
+      - '.github/workflows/contract-review-validate.yml'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  PYTHON_VERSION: '3.11'
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP || 'rg-intent-legal-contract-review-dev' }}
+
+jobs:
+  lint-test-and-bicep:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contract-review
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            contract-review/src/app/requirements.txt
+            contract-review/tests/requirements-test.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r src/app/requirements.txt -r tests/requirements-test.txt ruff mypy
+
+      - name: Lint
+        run: ruff check src/app tests/
+
+      - name: Type check
+        run: mypy src/app --ignore-missing-imports
+        continue-on-error: true
+
+      - name: Test
+        run: pytest tests/ -v --tb=short --cov=src/app --cov-report=xml
+
+      - name: Build Bicep
+        run: az bicep build --file infra/bicep/main.bicep
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        continue-on-error: true
+
+      - name: Validate deployment
+        if: success()
+        run: |
+          az deployment group validate \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --template-file infra/bicep/main.bicep \
+            --parameters infra/bicep/parameters/dev.parameters.json
+        continue-on-error: true

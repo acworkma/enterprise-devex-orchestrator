@@ -145,6 +145,18 @@ class TestMultiLanguageAppGenerator:
         files = self.gen.generate(_make_spec(language="node"))
         assert "/health" in files["src/app/index.js"]
 
+    def test_node_root_has_html_landing_page(self) -> None:
+        files = self.gen.generate(_make_spec(language="node"))
+        index_js = files["src/app/index.js"]
+        assert "<!DOCTYPE html>" in index_js
+        assert "res.send(html)" in index_js
+
+    def test_node_supports_key_vault_uri(self) -> None:
+        files = self.gen.generate(_make_spec(language="node"))
+        index_js = files["src/app/index.js"]
+        assert "KEY_VAULT_URI" in index_js
+        assert "KEY_VAULT_NAME" in index_js
+
     def test_node_dockerfile_has_node(self) -> None:
         files = self.gen.generate(_make_spec(language="node"))
         assert "node:" in files["src/app/Dockerfile"].lower()
@@ -163,6 +175,18 @@ class TestMultiLanguageAppGenerator:
     def test_dotnet_has_health_endpoint(self) -> None:
         files = self.gen.generate(_make_spec(language="dotnet"))
         assert "/health" in files["src/app/Program.cs"]
+
+    def test_dotnet_root_has_html_landing_page(self) -> None:
+        files = self.gen.generate(_make_spec(language="dotnet"))
+        program_cs = files["src/app/Program.cs"]
+        assert "<!DOCTYPE html>" in program_cs
+        assert 'Results.Content(html, "text/html")' in program_cs
+
+    def test_dotnet_supports_key_vault_uri(self) -> None:
+        files = self.gen.generate(_make_spec(language="dotnet"))
+        program_cs = files["src/app/Program.cs"]
+        assert "KEY_VAULT_URI" in program_cs
+        assert "KEY_VAULT_NAME" in program_cs
 
     def test_dotnet_dockerfile_has_dotnet(self) -> None:
         files = self.gen.generate(_make_spec(language="dotnet"))
