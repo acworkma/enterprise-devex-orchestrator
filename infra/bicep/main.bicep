@@ -27,6 +27,7 @@ param logRetentionDays int = 30
 // ─── Variables ───
 
 var resourcePrefix = '${projectName}-${environment}'
+var uniqueSuffix = substring(uniqueString(subscription().id, resourceGroup().id, projectName, environment), 0, 6)
 var tags = {
   project: projectName
   environment: environment
@@ -58,7 +59,7 @@ module managedIdentity 'modules/managed-identity.bicep' = {
 module keyVault 'modules/keyvault.bicep' = {
   name: 'key-vault'
   params: {
-    keyVaultName: replace('${resourcePrefix}-kv', '-', '')
+    keyVaultName: replace('${resourcePrefix}-kv-${uniqueSuffix}', '-', '')
     location: location
     managedIdentityPrincipalId: managedIdentity.outputs.principalId
     logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
@@ -69,7 +70,7 @@ module keyVault 'modules/keyvault.bicep' = {
 module containerRegistry 'modules/container-registry.bicep' = {
   name: 'container-registry'
   params: {
-    registryName: replace('${resourcePrefix}acr', '-', '')
+    registryName: replace('${resourcePrefix}acr${uniqueSuffix}', '-', '')
     location: location
     managedIdentityPrincipalId: managedIdentity.outputs.principalId
     tags: tags
