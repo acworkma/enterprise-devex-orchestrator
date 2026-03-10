@@ -40,7 +40,7 @@ var tags = {
 // ─── Modules ───
 
 module logAnalytics 'modules/log-analytics.bicep' = {
-  name: 'log-analytics'
+  name: 'log-analytics-${deployment().name}'
   params: {
     workspaceName: '${resourcePrefix}-law'
     location: location
@@ -50,7 +50,7 @@ module logAnalytics 'modules/log-analytics.bicep' = {
 }
 
 module managedIdentity 'modules/managed-identity.bicep' = {
-  name: 'managed-identity'
+  name: 'managed-identity-${deployment().name}'
   params: {
     identityName: '${resourcePrefix}-id'
     location: location
@@ -59,7 +59,7 @@ module managedIdentity 'modules/managed-identity.bicep' = {
 }
 
 module keyVault 'modules/keyvault.bicep' = {
-  name: 'key-vault'
+  name: 'key-vault-${deployment().name}'
   params: {
     keyVaultName: '${keyVaultPrefix}kv${uniqueSuffix}'
     location: location
@@ -70,7 +70,7 @@ module keyVault 'modules/keyvault.bicep' = {
 }
 
 module containerRegistry 'modules/container-registry.bicep' = {
-  name: 'container-registry'
+  name: 'container-registry-${deployment().name}'
   params: {
     registryName: replace('${resourcePrefix}acr${uniqueSuffix}', '-', '')
     location: location
@@ -80,7 +80,7 @@ module containerRegistry 'modules/container-registry.bicep' = {
 }
 
 module containerApp 'modules/container-app.bicep' = {
-  name: 'container-app'
+  name: 'container-app-${deployment().name}'
   params: {
     appName: resourcePrefix
     location: location
