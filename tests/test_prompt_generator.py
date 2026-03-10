@@ -20,30 +20,20 @@ def sample_project(tmp_path: Path) -> Path:
     """Create a sample project structure for scanning."""
     # Python files
     (tmp_path / "src").mkdir()
-    (tmp_path / "src" / "app.py").write_text(
-        "from fastapi import FastAPI\napp = FastAPI()\n"
-    )
-    (tmp_path / "src" / "config.py").write_text(
-        'import os\nDB_URL = os.getenv("DATABASE_URL")\n'
-    )
+    (tmp_path / "src" / "app.py").write_text("from fastapi import FastAPI\napp = FastAPI()\n")
+    (tmp_path / "src" / "config.py").write_text('import os\nDB_URL = os.getenv("DATABASE_URL")\n')
     (tmp_path / "src" / "auth.py").write_text(
         "from azure.identity import DefaultAzureCredential\ncred = DefaultAzureCredential()\n"
     )
 
     # JS files
     (tmp_path / "frontend").mkdir()
-    (tmp_path / "frontend" / "index.ts").write_text(
-        "import React from 'react';\nexport default App;\n"
-    )
-    (tmp_path / "frontend" / "package.json").write_text(
-        '{"name": "frontend", "dependencies": {"react": "^18"}}\n'
-    )
+    (tmp_path / "frontend" / "index.ts").write_text("import React from 'react';\nexport default App;\n")
+    (tmp_path / "frontend" / "package.json").write_text('{"name": "frontend", "dependencies": {"react": "^18"}}\n')
 
     # Tests
     (tmp_path / "tests").mkdir()
-    (tmp_path / "tests" / "test_app.py").write_text(
-        "import pytest\ndef test_health(): pass\n"
-    )
+    (tmp_path / "tests" / "test_app.py").write_text("import pytest\ndef test_health(): pass\n")
 
     # Config files
     (tmp_path / "Dockerfile").write_text("FROM python:3.12\n")
@@ -174,6 +164,7 @@ class TestPromptGenerator:
         ctx = gen.get_context_json()
         assert isinstance(ctx, str)
         import json
+
         data = json.loads(ctx)
         assert "primary_language" in data
 

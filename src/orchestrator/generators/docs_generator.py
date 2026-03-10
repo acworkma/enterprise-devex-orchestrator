@@ -57,9 +57,7 @@ class DocsGenerator:
 
         # Always generate improvement suggestions for the next iteration
         suggestions = self.generate_improvement_suggestions(spec, plan, governance, waf_report)
-        files["docs/improvement-suggestions.md"] = self._improvement_suggestions_md(
-            spec, suggestions
-        )
+        files["docs/improvement-suggestions.md"] = self._improvement_suggestions_md(spec, suggestions)
 
         logger.info("docs_generator.complete", file_count=len(files))
         return files
@@ -89,9 +87,7 @@ class DocsGenerator:
         if governance:
             for check in governance.checks:
                 if not check.passed:
-                    suggestions.append(
-                        f"[Governance] {check.name}: {check.details}"
-                    )
+                    suggestions.append(f"[Governance] {check.name}: {check.details}")
             for rec in governance.recommendations:
                 if rec not in suggestions:
                     suggestions.append(f"[Governance] {rec}")
@@ -102,28 +98,22 @@ class DocsGenerator:
             for pillar, info in scores.items():
                 pct = info["pct"]
                 if pct < 80.0:
-                    gap_items = [
-                        item for item in waf_report.gaps()
-                        if item.pillar == pillar
-                    ]
+                    gap_items = [item for item in waf_report.gaps() if item.pillar == pillar]
                     gap_names = [g.name for g in gap_items[:3]]
                     if gap_names:
                         suggestions.append(
-                            f"[WAF/{pillar.value}] Coverage {pct:.0f}% -- "
-                            f"add coverage for: {', '.join(gap_names)}"
+                            f"[WAF/{pillar.value}] Coverage {pct:.0f}% -- add coverage for: {', '.join(gap_names)}"
                         )
 
         # -- Security posture suggestions --------------------------
         sec = spec.security
         if not sec.enable_waf:
             suggestions.append(
-                "[Security] Consider enabling Web Application Firewall (WAF) "
-                "for public-facing endpoints"
+                "[Security] Consider enabling Web Application Firewall (WAF) for public-facing endpoints"
             )
         if sec.networking.value == "public_restricted":
             suggestions.append(
-                "[Security] Consider moving to private networking with "
-                "private endpoints for production workloads"
+                "[Security] Consider moving to private networking with private endpoints for production workloads"
             )
         if sec.data_classification == "public":
             suggestions.append(
@@ -140,8 +130,7 @@ class DocsGenerator:
             )
         if not obs.dashboard:
             suggestions.append(
-                "[Observability] Add an Azure Monitor dashboard for real-time "
-                "visibility into application health"
+                "[Observability] Add an Azure Monitor dashboard for real-time visibility into application health"
             )
 
         # -- Architecture suggestions ------------------------------
@@ -149,30 +138,24 @@ class DocsGenerator:
 
         if "azure redis cache" not in component_names and len(spec.data_stores) > 0:
             suggestions.append(
-                "[Performance] Consider adding Azure Redis Cache for response "
-                "caching and session management"
+                "[Performance] Consider adding Azure Redis Cache for response caching and session management"
             )
 
         if len(plan.threat_model) < 4:
             suggestions.append(
-                "[Security] Expand threat model to cover at least 4 STRIDE "
-                "categories for comprehensive risk coverage"
+                "[Security] Expand threat model to cover at least 4 STRIDE categories for comprehensive risk coverage"
             )
 
         # -- CI/CD suggestions -------------------------------------
         if not spec.cicd.deploy_on_merge:
             suggestions.append(
-                "[CI/CD] Consider enabling automatic deployment on merge "
-                "to main for faster feedback loops"
+                "[CI/CD] Consider enabling automatic deployment on merge to main for faster feedback loops"
             )
 
         # -- Data store suggestions --------------------------------
         store_values = {d.value for d in spec.data_stores}
         if "cosmos_db" not in store_values and spec.app_type.value in ("api", "web"):
-            suggestions.append(
-                "[Data] Consider Cosmos DB for globally distributed "
-                "low-latency data access"
-            )
+            suggestions.append("[Data] Consider Cosmos DB for globally distributed low-latency data access")
 
         logger.info("improvement_suggestions.generated", count=len(suggestions))
         return suggestions
@@ -186,7 +169,7 @@ class DocsGenerator:
         if not suggestions:
             items = "No improvements identified -- architecture is well-defined."
         else:
-            items = "\n".join(f"{i+1}. {s}" for i, s in enumerate(suggestions))
+            items = "\n".join(f"{i + 1}. {s}" for i, s in enumerate(suggestions))
 
         return f"""# Improvement Suggestions -- {spec.project_name}
 

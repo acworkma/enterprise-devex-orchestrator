@@ -127,10 +127,7 @@ class ExecutionPlan:
     @property
     def is_complete(self) -> bool:
         """Check if all tasks are done or skipped."""
-        return all(
-            t.status in (TaskStatus.COMPLETED, TaskStatus.SKIPPED)
-            for t in self.tasks
-        )
+        return all(t.status in (TaskStatus.COMPLETED, TaskStatus.SKIPPED) for t in self.tasks)
 
     @property
     def has_failures(self) -> bool:
@@ -148,14 +145,9 @@ class ExecutionPlan:
     @property
     def next_task(self) -> PlanTask | None:
         """Get the next pending task whose dependencies are met."""
-        completed_ids = {
-            t.task_id for t in self.tasks
-            if t.status in (TaskStatus.COMPLETED, TaskStatus.SKIPPED)
-        }
+        completed_ids = {t.task_id for t in self.tasks if t.status in (TaskStatus.COMPLETED, TaskStatus.SKIPPED)}
         for t in self.tasks:
-            if t.status == TaskStatus.PENDING and all(
-                dep in completed_ids for dep in t.dependencies
-            ):
+            if t.status == TaskStatus.PENDING and all(dep in completed_ids for dep in t.dependencies):
                 return t
         return None
 
@@ -164,10 +156,7 @@ class ExecutionPlan:
         """Completion percentage."""
         if not self.tasks:
             return 0.0
-        done = sum(
-            1 for t in self.tasks
-            if t.status in (TaskStatus.COMPLETED, TaskStatus.SKIPPED)
-        )
+        done = sum(1 for t in self.tasks if t.status in (TaskStatus.COMPLETED, TaskStatus.SKIPPED))
         return (done / len(self.tasks)) * 100
 
     def summary(self) -> dict[str, int]:
@@ -389,7 +378,9 @@ class PersistentPlanner:
         logger.info("planner.created", plan_id=plan.plan_id, tasks=len(plan.tasks))
         return plan
 
-    def execute_task(self, task_id: str, handler: Callable[..., dict[str, Any]] | None = None, **kwargs: Any) -> PlanTask:
+    def execute_task(
+        self, task_id: str, handler: Callable[..., dict[str, Any]] | None = None, **kwargs: Any
+    ) -> PlanTask:
         """Execute a single task with checkpointing.
 
         Args:
@@ -427,7 +418,8 @@ class PersistentPlanner:
             task.duration_ms = duration
             task.output_summary = str(result.get("summary", ""))[:200] if isinstance(result, dict) else ""
             task.checkpoint_data = {
-                k: v for k, v in (result if isinstance(result, dict) else {}).items()
+                k: v
+                for k, v in (result if isinstance(result, dict) else {}).items()
                 if k != "summary" and _is_serializable(v)
             }
 
@@ -470,10 +462,7 @@ class PersistentPlanner:
         if not self.plan:
             return []
 
-        completed_ids = {
-            t.task_id for t in self.plan.tasks
-            if t.status in (TaskStatus.COMPLETED, TaskStatus.SKIPPED)
-        }
+        completed_ids = {t.task_id for t in self.plan.tasks if t.status in (TaskStatus.COMPLETED, TaskStatus.SKIPPED)}
 
         resumable = []
         for t in self.plan.tasks:

@@ -77,9 +77,7 @@ class BicepGenerator:
         # Generate naming convention variables
         naming_vars = self.naming.to_bicep_variables()
         # Generate tagging variable
-        tagging_vars = self.tagging.to_bicep_variable(
-            include_optional=self.standards.tagging.include_optional
-        )
+        tagging_vars = self.tagging.to_bicep_variable(include_optional=self.standards.tagging.include_optional)
 
         # Compute-target-specific parameters and modules
         compute = getattr(spec, "compute_target", ComputeTarget.CONTAINER_APPS)
@@ -1048,10 +1046,7 @@ output appId string = functionApp.id
     def _standards_doc(self, spec: IntentSpec) -> str:
         """Generate enterprise standards documentation."""
         names = self.naming.generate_all()
-        name_rows = "\n".join(
-            f"| {rt.value} | `{name}` |"
-            for rt, name in names.items()
-        )
+        name_rows = "\n".join(f"| {rt.value} | `{name}` |" for rt, name in names.items())
 
         tag_catalog = self.tagging.get_tag_catalog()
         required_rows = "\n".join(

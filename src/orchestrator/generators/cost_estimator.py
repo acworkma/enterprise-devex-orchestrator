@@ -19,41 +19,41 @@ logger = get_logger(__name__)
 # These are approximate starting prices; actual cost depends on usage.
 _BASELINE_PRICES: dict[str, dict[str, float]] = {
     "container_apps": {
-        "compute": 30.0,         # ~0.5 vCPU, 1 GiB, always-on
-        "environment": 0.0,      # included
+        "compute": 30.0,  # ~0.5 vCPU, 1 GiB, always-on
+        "environment": 0.0,  # included
     },
     "app_service": {
-        "B1_plan": 13.14,        # Basic B1
-        "B2_plan": 26.28,        # Basic B2
-        "S1_plan": 69.35,        # Standard S1
+        "B1_plan": 13.14,  # Basic B1
+        "B2_plan": 26.28,  # Basic B2
+        "S1_plan": 69.35,  # Standard S1
     },
     "functions": {
-        "consumption": 0.0,      # free tier: 1M executions, 400K GB-s
-        "premium_EP1": 146.00,   # Elastic Premium EP1
+        "consumption": 0.0,  # free tier: 1M executions, 400K GB-s
+        "premium_EP1": 146.00,  # Elastic Premium EP1
     },
     "log_analytics": {
-        "workspace": 2.76,       # first 5 GB/month free; ~$2.76/GB
+        "workspace": 2.76,  # first 5 GB/month free; ~$2.76/GB
     },
     "managed_identity": {
-        "identity": 0.0,         # free
+        "identity": 0.0,  # free
     },
     "keyvault": {
-        "standard": 0.03,        # per 10K operations
+        "standard": 0.03,  # per 10K operations
     },
     "container_registry": {
-        "standard": 5.00,        # Standard SKU
+        "standard": 5.00,  # Standard SKU
     },
     "blob_storage": {
-        "hot_lrs": 2.08,         # per 100 GB hot LRS
+        "hot_lrs": 2.08,  # per 100 GB hot LRS
     },
     "cosmos_db": {
-        "serverless": 0.25,      # per 1M RUs
+        "serverless": 0.25,  # per 1M RUs
     },
     "sql": {
-        "basic": 4.90,           # Basic DTU
+        "basic": 4.90,  # Basic DTU
     },
     "redis": {
-        "basic_C0": 16.00,       # Basic C0 250 MB
+        "basic_C0": 16.00,  # Basic C0 250 MB
     },
 }
 
@@ -89,14 +89,14 @@ class CostEstimate:
             "|----------|-----------|--------------------:|-------|",
         ]
         for item in self.items:
-            lines.append(
-                f"| {item.resource} | {item.sku} | ${item.monthly_usd:,.2f} | {item.notes} |"
-            )
+            lines.append(f"| {item.resource} | {item.sku} | ${item.monthly_usd:,.2f} | {item.notes} |")
         lines.append(f"| **Total** | | **${self.total_monthly:,.2f}** | |")
         lines.append("")
-        lines.append("*Prices are approximate USD baseline for East US. "
-                      "Use the [Azure Pricing Calculator](https://azure.microsoft.com/pricing/calculator/) "
-                      "for detailed estimates.*")
+        lines.append(
+            "*Prices are approximate USD baseline for East US. "
+            "Use the [Azure Pricing Calculator](https://azure.microsoft.com/pricing/calculator/) "
+            "for detailed estimates.*"
+        )
         return "\n".join(lines)
 
 

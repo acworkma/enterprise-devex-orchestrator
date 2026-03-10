@@ -292,41 +292,27 @@ class TestCostEstimator:
         assert result.total_monthly == sum(i.monthly_usd for i in result.items)
 
     def test_container_apps_includes_acr(self) -> None:
-        result = self.est.estimate(
-            _make_spec(compute_target=ComputeTarget.CONTAINER_APPS), _make_plan()
-        )
+        result = self.est.estimate(_make_spec(compute_target=ComputeTarget.CONTAINER_APPS), _make_plan())
         resources = [i.resource for i in result.items]
         assert "Container Registry" in resources
 
     def test_app_service_cheaper_than_container_apps(self) -> None:
-        ca_cost = self.est.estimate(
-            _make_spec(compute_target=ComputeTarget.CONTAINER_APPS), _make_plan()
-        ).total_monthly
-        as_cost = self.est.estimate(
-            _make_spec(compute_target=ComputeTarget.APP_SERVICE), _make_plan()
-        ).total_monthly
+        ca_cost = self.est.estimate(_make_spec(compute_target=ComputeTarget.CONTAINER_APPS), _make_plan()).total_monthly
+        as_cost = self.est.estimate(_make_spec(compute_target=ComputeTarget.APP_SERVICE), _make_plan()).total_monthly
         assert as_cost < ca_cost
 
     def test_functions_cheapest(self) -> None:
-        fn_cost = self.est.estimate(
-            _make_spec(compute_target=ComputeTarget.FUNCTIONS), _make_plan()
-        ).total_monthly
-        ca_cost = self.est.estimate(
-            _make_spec(compute_target=ComputeTarget.CONTAINER_APPS), _make_plan()
-        ).total_monthly
+        fn_cost = self.est.estimate(_make_spec(compute_target=ComputeTarget.FUNCTIONS), _make_plan()).total_monthly
+        ca_cost = self.est.estimate(_make_spec(compute_target=ComputeTarget.CONTAINER_APPS), _make_plan()).total_monthly
         assert fn_cost < ca_cost
 
     def test_blob_storage_adds_cost(self) -> None:
         no_blob = self.est.estimate(_make_spec(data_stores=[]), _make_plan()).total_monthly
-        with_blob = self.est.estimate(
-            _make_spec(data_stores=[DataStore.BLOB_STORAGE]), _make_plan()
-        ).total_monthly
+        with_blob = self.est.estimate(_make_spec(data_stores=[DataStore.BLOB_STORAGE]), _make_plan()).total_monthly
         assert with_blob > no_blob
 
     def test_multiple_data_stores_additive(self) -> None:
-        one_store = self.est.estimate(
-            _make_spec(data_stores=[DataStore.BLOB_STORAGE]), _make_plan()
-        ).total_monthly
+        one_store = self.est.estimate(_make_spec(data_stores=[DataStore.BLOB_STORAGE]), _make_plan()).total_monthly
         two_stores = self.est.estimate(
             _make_spec(data_stores=[DataStore.BLOB_STORAGE, DataStore.REDIS]), _make_plan()
         ).total_monthly

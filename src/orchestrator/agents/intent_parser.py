@@ -324,6 +324,7 @@ class IntentParserAgent:
     @staticmethod
     def _detect_language(intent: str) -> str:
         """Detect programming language from intent text."""
+
         def _has(keyword: str) -> bool:
             return bool(re.search(rf"\b{re.escape(keyword)}\b", intent))
 
@@ -336,6 +337,7 @@ class IntentParserAgent:
     @staticmethod
     def _detect_compute_target(intent: str) -> ComputeTarget:
         """Detect Azure compute target from intent text."""
+
         def _has(keyword: str) -> bool:
             return bool(re.search(rf"\b{re.escape(keyword)}\b", intent))
 

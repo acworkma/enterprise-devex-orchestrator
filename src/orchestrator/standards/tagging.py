@@ -328,11 +328,13 @@ class TaggingEngine:
         ]
 
         if include_optional:
-            lines.extend([
-                "  // Optional tags (recommended)",
-                f"  complianceScope: '{self.compliance_scope}'",
-                f"  criticality: '{self.criticality}'",
-            ])
+            lines.extend(
+                [
+                    "  // Optional tags (recommended)",
+                    f"  complianceScope: '{self.compliance_scope}'",
+                    f"  criticality: '{self.criticality}'",
+                ]
+            )
             if self.department:
                 lines.append(f"  department: '{self.department}'")
             if self.team:

@@ -159,44 +159,30 @@ class NamingConvention:
 
 # Default Azure CAF naming conventions
 DEFAULT_CONVENTIONS: dict[ResourceType, NamingConvention] = {
-    ResourceType.RESOURCE_GROUP: NamingConvention(
-        ResourceType.RESOURCE_GROUP, "{prefix}-{workload}-{env}-{region}"
-    ),
-    ResourceType.LOG_ANALYTICS: NamingConvention(
-        ResourceType.LOG_ANALYTICS, "{prefix}-{workload}-{env}-{region}"
-    ),
+    ResourceType.RESOURCE_GROUP: NamingConvention(ResourceType.RESOURCE_GROUP, "{prefix}-{workload}-{env}-{region}"),
+    ResourceType.LOG_ANALYTICS: NamingConvention(ResourceType.LOG_ANALYTICS, "{prefix}-{workload}-{env}-{region}"),
     ResourceType.MANAGED_IDENTITY: NamingConvention(
         ResourceType.MANAGED_IDENTITY, "{prefix}-{workload}-{env}-{region}"
     ),
-    ResourceType.KEY_VAULT: NamingConvention(
-        ResourceType.KEY_VAULT, "{prefix}-{workload}-{env}-{region}"
-    ),
+    ResourceType.KEY_VAULT: NamingConvention(ResourceType.KEY_VAULT, "{prefix}-{workload}-{env}-{region}"),
     ResourceType.CONTAINER_REGISTRY: NamingConvention(
-        ResourceType.CONTAINER_REGISTRY, "{prefix}{workload}{env}{region}",
+        ResourceType.CONTAINER_REGISTRY,
+        "{prefix}{workload}{env}{region}",
         separator="",
     ),
-    ResourceType.CONTAINER_APP: NamingConvention(
-        ResourceType.CONTAINER_APP, "{prefix}-{workload}-{env}-{region}"
-    ),
+    ResourceType.CONTAINER_APP: NamingConvention(ResourceType.CONTAINER_APP, "{prefix}-{workload}-{env}-{region}"),
     ResourceType.CONTAINER_APP_ENV: NamingConvention(
         ResourceType.CONTAINER_APP_ENV, "{prefix}-{workload}-{env}-{region}"
     ),
     ResourceType.STORAGE_ACCOUNT: NamingConvention(
-        ResourceType.STORAGE_ACCOUNT, "{prefix}{workload}{env}{region}",
+        ResourceType.STORAGE_ACCOUNT,
+        "{prefix}{workload}{env}{region}",
         separator="",
     ),
-    ResourceType.COSMOS_DB: NamingConvention(
-        ResourceType.COSMOS_DB, "{prefix}-{workload}-{env}-{region}"
-    ),
-    ResourceType.SQL_SERVER: NamingConvention(
-        ResourceType.SQL_SERVER, "{prefix}-{workload}-{env}-{region}"
-    ),
-    ResourceType.REDIS_CACHE: NamingConvention(
-        ResourceType.REDIS_CACHE, "{prefix}-{workload}-{env}-{region}"
-    ),
-    ResourceType.APP_INSIGHTS: NamingConvention(
-        ResourceType.APP_INSIGHTS, "{prefix}-{workload}-{env}-{region}"
-    ),
+    ResourceType.COSMOS_DB: NamingConvention(ResourceType.COSMOS_DB, "{prefix}-{workload}-{env}-{region}"),
+    ResourceType.SQL_SERVER: NamingConvention(ResourceType.SQL_SERVER, "{prefix}-{workload}-{env}-{region}"),
+    ResourceType.REDIS_CACHE: NamingConvention(ResourceType.REDIS_CACHE, "{prefix}-{workload}-{env}-{region}"),
+    ResourceType.APP_INSIGHTS: NamingConvention(ResourceType.APP_INSIGHTS, "{prefix}-{workload}-{env}-{region}"),
 }
 
 
@@ -317,9 +303,7 @@ class NamingEngine:
             )
 
         if not re.match(constraints["pattern"], name):
-            errors.append(
-                f"{resource_type.value}: Name '{name}' does not match pattern {constraints['pattern']}"
-            )
+            errors.append(f"{resource_type.value}: Name '{name}' does not match pattern {constraints['pattern']}")
 
         return errors
 

@@ -420,9 +420,7 @@ class TestEnterpriseStandardsConfig:
 
     def test_tagging_engine_override_owner(self) -> None:
         config = EnterpriseStandardsConfig()
-        engine = config.create_tagging_engine(
-            "test", "dev", owner="override@example.com"
-        )
+        engine = config.create_tagging_engine("test", "dev", owner="override@example.com")
         assert engine.owner == "override@example.com"
 
     def test_to_dict_and_from_dict_roundtrip(self) -> None:
@@ -454,9 +452,7 @@ class TestConfigLoading:
             "tagging": {"default_cost_center": "TEST-001"},
             "governance": {"max_remediation_iterations": 5},
         }
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False, encoding="utf-8"
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False, encoding="utf-8") as f:
             json.dump(data, f)
             f.flush()
 
@@ -480,9 +476,7 @@ class TestConfigLoading:
             "naming": {"include_region": True},
             "tagging": {"default_owner": "yaml-test@example.com"},
         }
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".yaml", delete=False, encoding="utf-8"
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False, encoding="utf-8") as f:
             yaml.dump(data, f)
             f.flush()
 

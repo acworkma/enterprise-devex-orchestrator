@@ -169,10 +169,7 @@ class SubagentDispatcher:
         # Execute independent tasks in parallel
         if independent:
             with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
-                futures = {
-                    executor.submit(self.spawn, task): task
-                    for task in independent
-                }
+                futures = {executor.submit(self.spawn, task): task for task in independent}
                 for future in as_completed(futures):
                     task = futures[future]
                     result = future.result()
@@ -182,8 +179,7 @@ class SubagentDispatcher:
         for task in dependent:
             # Check if dependencies are met
             deps_met = all(
-                dep_id in results and results[dep_id].status == SubagentStatus.COMPLETED
-                for dep_id in task.dependencies
+                dep_id in results and results[dep_id].status == SubagentStatus.COMPLETED for dep_id in task.dependencies
             )
             if deps_met:
                 # Inject dependency outputs into task input
@@ -237,9 +233,7 @@ class SubagentDispatcher:
                             aggregated[key].append(value)
             elif result.status == SubagentStatus.FAILED:
                 aggregated["stats"]["failed"] += 1
-                aggregated["errors"].append(
-                    {"task_id": result.task_id, "error": result.error}
-                )
+                aggregated["errors"].append({"task_id": result.task_id, "error": result.error})
             elif result.status == SubagentStatus.CANCELLED:
                 aggregated["stats"]["cancelled"] += 1
 
@@ -294,10 +288,7 @@ class BicepModuleSubagent:
         generator = BicepGenerator()
         all_files = generator.generate(spec, plan)
         # Filter to just the requested module
-        module_files = {
-            k: v for k, v in all_files.items()
-            if module_name in k or not module_name
-        }
+        module_files = {k: v for k, v in all_files.items() if module_name in k or not module_name}
 
         return SubagentResult(
             task_id=task.task_id,
@@ -340,9 +331,7 @@ class ComplianceCheckSubagent:
 
         # Filter checks by domain
         domain_checks = [
-            c for c in report.checks
-            if domain.lower() in c.check_id.lower()
-            or domain.lower() in c.name.lower()
+            c for c in report.checks if domain.lower() in c.check_id.lower() or domain.lower() in c.name.lower()
         ]
 
         return SubagentResult(
@@ -377,7 +366,12 @@ class CostEstimationSubagent:
 
         # Estimated monthly costs by service type (conservative estimates)
         cost_estimates: dict[str, dict[str, float]] = {
-            "Azure Container Apps": {"base": 0.0, "per_vcpu_hr": 0.0876, "per_gb_hr": 0.0109, "estimated_monthly": 45.0},
+            "Azure Container Apps": {
+                "base": 0.0,
+                "per_vcpu_hr": 0.0876,
+                "per_gb_hr": 0.0109,
+                "estimated_monthly": 45.0,
+            },
             "Azure Key Vault": {"base": 0.0, "per_10k_ops": 0.03, "estimated_monthly": 5.0},
             "Azure Log Analytics": {"per_gb_ingested": 2.76, "estimated_monthly": 25.0},
             "Azure Container Registry": {"basic_monthly": 5.0, "standard_monthly": 20.0, "estimated_monthly": 20.0},
@@ -439,8 +433,7 @@ class SecurityScanSubagent:
                 "issues_found": len([c for c in report.checks if not c.passed]),
                 "status": report.status,
                 "checks": [
-                    {"id": c.check_id, "name": c.name, "passed": c.passed, "details": c.details}
-                    for c in report.checks
+                    {"id": c.check_id, "name": c.name, "passed": c.passed, "details": c.details} for c in report.checks
                 ],
             },
             subagent_name=self.name,
@@ -505,18 +498,66 @@ class AlertRuleSubagent:
 
         alert_templates: dict[str, list[dict[str, Any]]] = {
             "container-app": [
-                {"name": f"High CPU - {project_name}", "metric": "UsageNanoCores", "operator": "GreaterThan", "threshold": 80, "severity": 2},
-                {"name": f"High Memory - {project_name}", "metric": "UsageBytes", "operator": "GreaterThan", "threshold": 85, "severity": 2},
-                {"name": f"5xx Errors - {project_name}", "metric": "Requests", "operator": "GreaterThan", "threshold": 10, "severity": 1},
-                {"name": f"Response Time - {project_name}", "metric": "RequestDuration", "operator": "GreaterThan", "threshold": 5000, "severity": 3},
+                {
+                    "name": f"High CPU - {project_name}",
+                    "metric": "UsageNanoCores",
+                    "operator": "GreaterThan",
+                    "threshold": 80,
+                    "severity": 2,
+                },
+                {
+                    "name": f"High Memory - {project_name}",
+                    "metric": "UsageBytes",
+                    "operator": "GreaterThan",
+                    "threshold": 85,
+                    "severity": 2,
+                },
+                {
+                    "name": f"5xx Errors - {project_name}",
+                    "metric": "Requests",
+                    "operator": "GreaterThan",
+                    "threshold": 10,
+                    "severity": 1,
+                },
+                {
+                    "name": f"Response Time - {project_name}",
+                    "metric": "RequestDuration",
+                    "operator": "GreaterThan",
+                    "threshold": 5000,
+                    "severity": 3,
+                },
             ],
             "key-vault": [
-                {"name": f"KV Availability - {project_name}", "metric": "Availability", "operator": "LessThan", "threshold": 99, "severity": 1},
-                {"name": f"KV Saturation - {project_name}", "metric": "SaturationShoebox", "operator": "GreaterThan", "threshold": 75, "severity": 2},
+                {
+                    "name": f"KV Availability - {project_name}",
+                    "metric": "Availability",
+                    "operator": "LessThan",
+                    "threshold": 99,
+                    "severity": 1,
+                },
+                {
+                    "name": f"KV Saturation - {project_name}",
+                    "metric": "SaturationShoebox",
+                    "operator": "GreaterThan",
+                    "threshold": 75,
+                    "severity": 2,
+                },
             ],
             "storage": [
-                {"name": f"Storage Availability - {project_name}", "metric": "Availability", "operator": "LessThan", "threshold": 99, "severity": 1},
-                {"name": f"Storage Latency - {project_name}", "metric": "SuccessE2ELatency", "operator": "GreaterThan", "threshold": 1000, "severity": 3},
+                {
+                    "name": f"Storage Availability - {project_name}",
+                    "metric": "Availability",
+                    "operator": "LessThan",
+                    "threshold": 99,
+                    "severity": 1,
+                },
+                {
+                    "name": f"Storage Latency - {project_name}",
+                    "metric": "SuccessE2ELatency",
+                    "operator": "GreaterThan",
+                    "threshold": 1000,
+                    "severity": 3,
+                },
             ],
         }
 

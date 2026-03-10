@@ -180,9 +180,9 @@ class CodebaseScanResult:
         if self.has_docker:
             lines.append("Containerization: Docker detected")
         if self.has_cicd:
-            ci_tools = [t for t in self.config_tools if t in (
-                "github-actions", "azure-pipelines", "gitlab-ci", "jenkins"
-            )]
+            ci_tools = [
+                t for t in self.config_tools if t in ("github-actions", "azure-pipelines", "gitlab-ci", "jenkins")
+            ]
             lines.append(f"CI/CD: {', '.join(ci_tools)}")
         if self.has_iac:
             iac_tools = [t for t in self.config_tools if t.endswith("-iac")]
@@ -206,9 +206,19 @@ class CodebaseScanResult:
 
 
 IGNORE_DIRS = {
-    "__pycache__", ".git", ".venv", "venv", "node_modules",
-    ".tox", ".mypy_cache", ".pytest_cache", "dist", "build",
-    ".eggs", "*.egg-info", ".devex",
+    "__pycache__",
+    ".git",
+    ".venv",
+    "venv",
+    "node_modules",
+    ".tox",
+    ".mypy_cache",
+    ".pytest_cache",
+    "dist",
+    "build",
+    ".eggs",
+    "*.egg-info",
+    ".devex",
 }
 
 
@@ -252,9 +262,7 @@ class CodebaseScanner:
         for path in self.root.rglob("*"):
             if len(files) >= self.max_files:
                 break
-            if path.is_file() and not any(
-                part in IGNORE_DIRS for part in path.parts
-            ):
+            if path.is_file() and not any(part in IGNORE_DIRS for part in path.parts):
                 files.append(path)
         return files
 
@@ -295,9 +303,9 @@ class CodebaseScanner:
 
         result.config_tools = list(dict.fromkeys(result.config_tools))
         result.has_docker = any(t.startswith("docker") for t in result.config_tools)
-        result.has_cicd = any(t in result.config_tools for t in [
-            "github-actions", "azure-pipelines", "gitlab-ci", "jenkins"
-        ])
+        result.has_cicd = any(
+            t in result.config_tools for t in ["github-actions", "azure-pipelines", "gitlab-ci", "jenkins"]
+        )
         result.has_iac = any(t.endswith("-iac") for t in result.config_tools)
 
     def _detect_security(self, files: list[Path], result: CodebaseScanResult) -> None:
@@ -326,8 +334,10 @@ class CodebaseScanner:
     def _detect_tests(self, files: list[Path], result: CodebaseScanResult) -> None:
         """Detect test framework and test files."""
         test_files = [
-            f for f in files
-            if "test" in f.name.lower() or "spec" in f.name.lower()
+            f
+            for f in files
+            if "test" in f.name.lower()
+            or "spec" in f.name.lower()
             or any(p in str(f) for p in ["tests/", "test/", "__tests__/", "spec/"])
         ]
 
@@ -377,7 +387,6 @@ Pay attention to:
 - Existing CI/CD setup to extend rather than replace
 
 {base_instructions}""",
-
     "architecture_planner": """You are an Azure Solutions Architect.
 {codebase_context}
 
@@ -391,7 +400,6 @@ Given the user's existing project context:
 Design the architecture to complement existing infrastructure.
 
 {base_instructions}""",
-
     "governance_reviewer": """You are an enterprise governance reviewer.
 {codebase_context}
 
@@ -402,7 +410,6 @@ Evaluate the architecture plan against enterprise policies, considering
 what the project already has in place.
 
 {base_instructions}""",
-
     "infra_generator": """You are an infrastructure code generator.
 {codebase_context}
 
@@ -483,10 +490,7 @@ class PromptGenerator:
             Map of agent_name -> enriched prompt.
         """
         base = base_prompts or {}
-        return {
-            name: self.generate_prompt(name, base.get(name, ""))
-            for name in AGENT_PROMPT_TEMPLATES
-        }
+        return {name: self.generate_prompt(name, base.get(name, "")) for name in AGENT_PROMPT_TEMPLATES}
 
     def get_context_json(self) -> str:
         """Return scan result as JSON for debugging/logging."""

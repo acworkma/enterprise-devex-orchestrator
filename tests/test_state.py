@@ -26,6 +26,7 @@ from src.orchestrator.state import (
 # FileRecord
 # ---------------------------------------------------------------------------
 
+
 class TestFileRecord:
     """Tests for the FileRecord dataclass."""
 
@@ -41,15 +42,14 @@ class TestFileRecord:
         assert rec.size_bytes == 1024
 
     def test_generated_at(self) -> None:
-        rec = FileRecord(
-            path="f.txt", content_hash="x", size_bytes=0, generated_at="ts"
-        )
+        rec = FileRecord(path="f.txt", content_hash="x", size_bytes=0, generated_at="ts")
         assert rec.generated_at == "ts"
 
 
 # ---------------------------------------------------------------------------
 # GenerationEvent
 # ---------------------------------------------------------------------------
+
 
 class TestGenerationEvent:
     """Tests for the GenerationEvent dataclass."""
@@ -86,6 +86,7 @@ class TestGenerationEvent:
 # DriftResult
 # ---------------------------------------------------------------------------
 
+
 class TestDriftResult:
     """Tests for the DriftResult dataclass."""
 
@@ -116,6 +117,7 @@ class TestDriftResult:
 # ---------------------------------------------------------------------------
 # ProjectState serialization
 # ---------------------------------------------------------------------------
+
 
 class TestProjectState:
     """Tests for ProjectState serialisation round-trip."""
@@ -186,6 +188,7 @@ class TestProjectState:
 # StateManager -- core functionality
 # ---------------------------------------------------------------------------
 
+
 class TestStateManagerBasics:
     """Tests for StateManager initialization and persistence."""
 
@@ -220,6 +223,7 @@ class TestStateManagerBasics:
 # ---------------------------------------------------------------------------
 # StateManager -- record_generation
 # ---------------------------------------------------------------------------
+
 
 class TestStateManagerRecordGeneration:
     """Tests for StateManager.record_generation()."""
@@ -365,6 +369,7 @@ class TestStateManagerRecordGeneration:
 # StateManager -- drift detection
 # ---------------------------------------------------------------------------
 
+
 class TestStateManagerDriftDetection:
     """Tests for StateManager.detect_drift()."""
 
@@ -478,6 +483,7 @@ class TestStateManagerDriftDetection:
 # ---------------------------------------------------------------------------
 # StateManager -- hash function
 # ---------------------------------------------------------------------------
+
 
 class TestStateManagerHash:
     """Tests for the _hash static method."""

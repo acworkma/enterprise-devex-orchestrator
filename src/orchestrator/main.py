@@ -81,7 +81,9 @@ def _run_pipeline(
     if output_dir and output_dir.exists():
         try:
             prompt_gen.scan(output_dir)
-            logger.info("pipeline.codebase_scanned", files=prompt_gen.scan_result.total_files if prompt_gen.scan_result else 0)
+            logger.info(
+                "pipeline.codebase_scanned", files=prompt_gen.scan_result.total_files if prompt_gen.scan_result else 0
+            )
         except Exception:
             logger.debug("pipeline.codebase_scan_skipped")
 
@@ -116,7 +118,9 @@ def _run_pipeline(
         planner = ArchitecturePlannerAgent(config)
         plan = planner.plan(spec)
         if planner_mgr:
-            planner_mgr.execute_task("plan-architecture", handler=lambda: {"summary": f"{len(plan.components)} components"})
+            planner_mgr.execute_task(
+                "plan-architecture", handler=lambda: {"summary": f"{len(plan.components)} components"}
+            )
         progress.update(task, completed=True, description="[green][ok] Architecture planned")
 
         _show_plan_summary(plan)
@@ -135,7 +139,9 @@ def _run_pipeline(
         task = progress.add_task("[cyan]Assessing WAF alignment...", total=None)
         waf_report = reviewer.assess_waf(spec, plan, gov_report)
         if planner_mgr:
-            planner_mgr.execute_task("assess-waf", handler=lambda: {"summary": f"{waf_report.coverage_pct:.0f}% coverage"})
+            planner_mgr.execute_task(
+                "assess-waf", handler=lambda: {"summary": f"{waf_report.coverage_pct:.0f}% coverage"}
+            )
         progress.update(
             task,
             completed=True,
@@ -152,8 +158,14 @@ def _run_pipeline(
 
             # Checkpoint generation tasks
             if planner_mgr:
-                for task_id in ("generate-bicep", "generate-cicd", "generate-app",
-                                "generate-tests", "generate-alerts", "generate-docs"):
+                for task_id in (
+                    "generate-bicep",
+                    "generate-cicd",
+                    "generate-app",
+                    "generate-tests",
+                    "generate-alerts",
+                    "generate-docs",
+                ):
                     planner_mgr.execute_task(task_id, handler=lambda: {"summary": "generated"})
 
             # Write .devex metadata so `validate` can re-load later
@@ -329,9 +341,12 @@ def _show_improvement_suggestions(
     console.print(
         Panel.fit(
             f"[bold yellow]Improvement Suggestions ({len(suggestions)})[/]\n\n"
-            + "\n".join(f"  {i+1}. {s}" for i, s in enumerate(suggestions[:8]))
-            + (f"\n  [dim]... and {len(suggestions) - 8} more (see docs/improvement-suggestions.md)[/]"
-               if len(suggestions) > 8 else "")
+            + "\n".join(f"  {i + 1}. {s}" for i, s in enumerate(suggestions[:8]))
+            + (
+                f"\n  [dim]... and {len(suggestions) - 8} more (see docs/improvement-suggestions.md)[/]"
+                if len(suggestions) > 8
+                else ""
+            )
             + "\n\n[dim]Review docs/improvement-suggestions.md, update intent.md, and re-run.[/]",
             border_style="yellow",
             title="Next Iteration",
@@ -348,7 +363,9 @@ def _resolve_intent(intent: str | None, intent_file: str | None) -> str:
         if result.project_name:
             console.print(f"  [dim]Project: {result.project_name}[/]")
         if result.version_info.version > 1:
-            console.print(f"  [dim]Version: {result.version_info.version} (based on v{result.version_info.based_on})[/]")
+            console.print(
+                f"  [dim]Version: {result.version_info.version} (based on v{result.version_info.based_on})[/]"
+            )
         return result.full_intent
     if intent:
         return intent
@@ -356,9 +373,7 @@ def _resolve_intent(intent: str | None, intent_file: str | None) -> str:
     sys.exit(1)
 
 
-def _resolve_intent_with_meta(
-    intent: str | None, intent_file: str | None
-) -> tuple[str, IntentFileResult | None]:
+def _resolve_intent_with_meta(intent: str | None, intent_file: str | None) -> tuple[str, IntentFileResult | None]:
     """Resolve intent and also return parsed file metadata (if from file)."""
     if intent_file:
         parser = IntentFileParser()
@@ -368,8 +383,7 @@ def _resolve_intent_with_meta(
             console.print(f"  [dim]Project: {result.project_name}[/]")
         if result.version_info.version > 1:
             console.print(
-                f"  [dim]Version: v{result.version_info.version} "
-                f"(upgrade from v{result.version_info.based_on})[/]"
+                f"  [dim]Version: v{result.version_info.version} (upgrade from v{result.version_info.based_on})[/]"
             )
 
         # Show enterprise requirements completeness
@@ -465,9 +479,7 @@ def plan(intent: str | None, intent_file: str | None, output: str | None, output
                 "coverage_pct": waf_report.coverage_pct,
                 "covered": waf_report.covered_count,
                 "total": waf_report.total_principles,
-                "pillar_scores": {
-                    p.value: s for p, s in waf_report.pillar_scores().items()
-                },
+                "pillar_scores": {p.value: s for p, s in waf_report.pillar_scores().items()},
             },
         }
         console.print_json(json.dumps(result, indent=2))
@@ -544,9 +556,7 @@ def scaffold(intent: str | None, intent_file: str | None, output: str, dry_run: 
             vm = VersionManager(out_dir)
             file_count = len(list(out_dir.rglob("*")))
             vm.record_version(parsed_intent, file_count, gov_report.status)
-            console.print(
-                f"  [cyan]Version {parsed_intent.version_info.version} recorded[/]"
-            )
+            console.print(f"  [cyan]Version {parsed_intent.version_info.version} recorded[/]")
 
     console.print(f"\n[green bold][ok] Scaffold complete[/] in {elapsed:.1f}s")
     if not dry_run:
@@ -871,12 +881,13 @@ def upgrade(intent_file: str, output: str, dry_run: bool) -> None:
         plan = vm.plan_upgrade(parsed)
 
         console.print()
-        console.print(Panel(
-            f"[bold]{plan.summary}[/]\n\n"
-            + "\n".join(f"  * {n}" for n in plan.notes),
-            title="Upgrade Plan",
-            border_style="cyan",
-        ))
+        console.print(
+            Panel(
+                f"[bold]{plan.summary}[/]\n\n" + "\n".join(f"  * {n}" for n in plan.notes),
+                title="Upgrade Plan",
+                border_style="cyan",
+            )
+        )
     else:
         console.print("[dim]No previous version found -- full scaffold will be generated.[/]")
 
@@ -1042,8 +1053,7 @@ def interactive(output: str) -> None:
     """
     _banner()
     console.print(
-        "[bold]Interactive mode[/] -- answer a few questions and we'll generate "
-        "your full production scaffold.\n"
+        "[bold]Interactive mode[/] -- answer a few questions and we'll generate your full production scaffold.\n"
     )
 
     # -- Project basics ----------------------------------------------

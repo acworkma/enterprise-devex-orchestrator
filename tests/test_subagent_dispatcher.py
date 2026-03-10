@@ -111,10 +111,7 @@ class TestSubagentFanOut:
     def test_fan_out_parallel(self) -> None:
         d = SubagentDispatcher(max_workers=2)
         d.register(_EchoSubagent("echo"))
-        tasks = [
-            SubagentTask(task_id=f"p{i}", task_type="echo", description=f"task {i}")
-            for i in range(4)
-        ]
+        tasks = [SubagentTask(task_id=f"p{i}", task_type="echo", description=f"task {i}") for i in range(4)]
         results = d.fan_out(tasks)
         assert len(results) == 4
         assert all(r.status == SubagentStatus.COMPLETED for r in results)

@@ -87,9 +87,7 @@ class VersionState:
         return {
             "project_name": self.project_name,
             "current_version": self.current_version,
-            "versions": {
-                str(v): rec.to_dict() for v, rec in self.versions.items()
-            },
+            "versions": {str(v): rec.to_dict() for v, rec in self.versions.items()},
         }
 
     @classmethod
@@ -282,9 +280,7 @@ class VersionManager:
         # Always add promotion workflow for upgrades
         if from_version > 0:
             plan.add_promotion_workflow = True
-            plan.notes.append(
-                "Adding revision-based promotion workflow for safe deployment"
-            )
+            plan.notes.append("Adding revision-based promotion workflow for safe deployment")
 
         logger.info(
             "version.upgrade_planned",
@@ -329,15 +325,17 @@ class VersionManager:
         result = []
         for v in sorted(self.state.versions.keys()):
             rec = self.state.versions[v]
-            result.append({
-                "version": rec.version,
-                "status": rec.status,
-                "changes": rec.changes,
-                "created_at": rec.created_at,
-                "files": rec.file_count,
-                "governance": rec.governance_status,
-                "based_on": rec.based_on,
-            })
+            result.append(
+                {
+                    "version": rec.version,
+                    "status": rec.status,
+                    "changes": rec.changes,
+                    "created_at": rec.created_at,
+                    "files": rec.file_count,
+                    "governance": rec.governance_status,
+                    "based_on": rec.based_on,
+                }
+            )
         return result
 
     @staticmethod

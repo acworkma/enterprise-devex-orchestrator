@@ -256,9 +256,7 @@ class TestTemplateGeneration:
 
     def test_generate_v2_template(self) -> None:
         """Generate a v2 template."""
-        template = generate_intent_template(
-            project_name="test-api", version=2, based_on=1
-        )
+        template = generate_intent_template(project_name="test-api", version=2, based_on=1)
         assert "**Version**: 2" in template
         assert "**Based On**: 1" in template
         assert "Describe your changes" in template
@@ -294,17 +292,13 @@ class TestTemplateGeneration:
 class TestVersionManager:
     """Test versioned project iterations."""
 
-    def _make_intent_result(
-        self, version: int = 1, based_on: int | None = None, changes: str = ""
-    ) -> IntentFileResult:
+    def _make_intent_result(self, version: int = 1, based_on: int | None = None, changes: str = "") -> IntentFileResult:
         """Create a mock IntentFileResult for testing."""
         return IntentFileResult(
             intent="Build a secure API",
             project_name="test-project",
             config={"app_type": "api", "region": "eastus2"},
-            version_info=IntentFileVersion(
-                version=version, based_on=based_on, changes=changes
-            ),
+            version_info=IntentFileVersion(version=version, based_on=based_on, changes=changes),
         )
 
     def test_initial_state_empty(self, tmp_path: Path) -> None:
@@ -335,9 +329,7 @@ class TestVersionManager:
         v1_intent = self._make_intent_result(version=1, changes="Initial")
         vm.record_version(v1_intent, file_count=40)
 
-        v2_intent = self._make_intent_result(
-            version=2, based_on=1, changes="Add Redis"
-        )
+        v2_intent = self._make_intent_result(version=2, based_on=1, changes="Add Redis")
         vm.record_version(v2_intent, file_count=45)
 
         assert vm.current_version == 2
@@ -362,9 +354,7 @@ class TestVersionManager:
         v1 = self._make_intent_result(version=1, changes="Initial")
         vm.record_version(v1, file_count=40)
 
-        v2 = self._make_intent_result(
-            version=2, based_on=1, changes="Add Redis cache"
-        )
+        v2 = self._make_intent_result(version=2, based_on=1, changes="Add Redis cache")
         plan = vm.plan_upgrade(v2)
 
         assert plan.from_version == 1

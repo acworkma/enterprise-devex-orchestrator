@@ -131,10 +131,12 @@ class TestWAFAlignmentReport:
         assert report.gaps() == []
 
     def test_all_covered(self) -> None:
-        items = self._make_items([
-            (WAFPillar.SECURITY, True),
-            (WAFPillar.RELIABILITY, True),
-        ])
+        items = self._make_items(
+            [
+                (WAFPillar.SECURITY, True),
+                (WAFPillar.RELIABILITY, True),
+            ]
+        )
         report = WAFAlignmentReport(items=items)
         assert report.total_principles == 2
         assert report.covered_count == 2
@@ -142,12 +144,14 @@ class TestWAFAlignmentReport:
         assert report.gaps() == []
 
     def test_partial_coverage(self) -> None:
-        items = self._make_items([
-            (WAFPillar.SECURITY, True),
-            (WAFPillar.SECURITY, False),
-            (WAFPillar.RELIABILITY, True),
-            (WAFPillar.RELIABILITY, False),
-        ])
+        items = self._make_items(
+            [
+                (WAFPillar.SECURITY, True),
+                (WAFPillar.SECURITY, False),
+                (WAFPillar.RELIABILITY, True),
+                (WAFPillar.RELIABILITY, False),
+            ]
+        )
         report = WAFAlignmentReport(items=items)
         assert report.total_principles == 4
         assert report.covered_count == 2
@@ -155,12 +159,14 @@ class TestWAFAlignmentReport:
         assert len(report.gaps()) == 2
 
     def test_pillar_scores(self) -> None:
-        items = self._make_items([
-            (WAFPillar.SECURITY, True),
-            (WAFPillar.SECURITY, True),
-            (WAFPillar.SECURITY, False),
-            (WAFPillar.RELIABILITY, True),
-        ])
+        items = self._make_items(
+            [
+                (WAFPillar.SECURITY, True),
+                (WAFPillar.SECURITY, True),
+                (WAFPillar.SECURITY, False),
+                (WAFPillar.RELIABILITY, True),
+            ]
+        )
         report = WAFAlignmentReport(items=items)
         scores = report.pillar_scores()
         assert scores[WAFPillar.SECURITY]["covered"] == 2
@@ -182,10 +188,12 @@ class TestWAFAlignmentReport:
             assert scores[pillar]["pct"] == 0.0
 
     def test_gaps_returns_uncovered_only(self) -> None:
-        items = self._make_items([
-            (WAFPillar.COST_OPTIMIZATION, True),
-            (WAFPillar.COST_OPTIMIZATION, False),
-        ])
+        items = self._make_items(
+            [
+                (WAFPillar.COST_OPTIMIZATION, True),
+                (WAFPillar.COST_OPTIMIZATION, False),
+            ]
+        )
         report = WAFAlignmentReport(items=items)
         gaps = report.gaps()
         assert len(gaps) == 1

@@ -139,9 +139,7 @@ class SkillRegistry:
         for cap in skill.metadata.capabilities:
             cap_lower = cap.lower()
             if cap_lower in self._capability_index:
-                self._capability_index[cap_lower] = [
-                    n for n in self._capability_index[cap_lower] if n != name
-                ]
+                self._capability_index[cap_lower] = [n for n in self._capability_index[cap_lower] if n != name]
         logger.info("skill.unregistered", name=name)
         return True
 
@@ -174,9 +172,7 @@ class SkillRegistry:
 
         # Sort by priority (lower = higher priority)
         candidates_with_priority = [
-            (self._skills[name].metadata.priority, name)
-            for name in candidates
-            if name in self._skills
+            (self._skills[name].metadata.priority, name) for name in candidates if name in self._skills
         ]
         candidates_with_priority.sort()
 
@@ -194,11 +190,7 @@ class SkillRegistry:
                 candidates.extend(skill_names)
 
         candidates = list(dict.fromkeys(candidates))
-        skills = [
-            self._skills[name]
-            for name in candidates
-            if name in self._skills
-        ]
+        skills = [self._skills[name] for name in candidates if name in self._skills]
         skills.sort(key=lambda s: s.metadata.priority)
         return skills
 
@@ -241,11 +233,7 @@ class SkillRegistry:
 
     def list_by_category(self, category: SkillCategory) -> list[SkillMetadata]:
         """Return skills filtered by category."""
-        return [
-            s.metadata
-            for s in self._skills.values()
-            if s.metadata.category == category
-        ]
+        return [s.metadata for s in self._skills.values() if s.metadata.category == category]
 
     def list_capabilities(self) -> list[str]:
         """Return all registered capabilities."""
@@ -466,9 +454,7 @@ class NamingSkill:
             environment=spec.environment or "dev",
             region=spec.azure_region or "eastus2",
         )
-        names = {
-            rt.value: engine.name(rt) for rt in ResourceType
-        }
+        names = {rt.value: engine.name(rt) for rt in ResourceType}
         return {"names": names, "count": len(names)}
 
 

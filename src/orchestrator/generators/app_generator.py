@@ -611,9 +611,7 @@ CMD ["dotnet", "{spec.project_name}.dll"]
         import json as _json
 
         settings: dict = {
-            "Logging": {
-                "LogLevel": {"Default": "Information", "Microsoft.AspNetCore": "Warning"}
-            },
+            "Logging": {"LogLevel": {"Default": "Information", "Microsoft.AspNetCore": "Warning"}},
             "ENVIRONMENT": spec.environment,
             "KEY_VAULT_NAME": "",
         }

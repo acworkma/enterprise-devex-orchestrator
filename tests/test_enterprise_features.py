@@ -575,9 +575,7 @@ class TestImprovementSuggestionsMd(unittest.TestCase):
             cicd=CICDRequirements(),
         )
         gen = DocsGenerator()
-        md = gen._improvement_suggestions_md(
-            spec, ["Suggestion A", "Suggestion B"]
-        )
+        md = gen._improvement_suggestions_md(spec, ["Suggestion A", "Suggestion B"])
         assert "# Improvement Suggestions -- md-test" in md
         assert "1. Suggestion A" in md
         assert "2. Suggestion B" in md

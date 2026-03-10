@@ -64,7 +64,11 @@ ERROR_PATTERNS: list[tuple[str, ErrorCategory, str]] = [
     (r"AADSTS\d+", ErrorCategory.AUTHENTICATION, "Re-authenticate with `az login`"),
     (r"AuthorizationFailed|does not have authorization", ErrorCategory.AUTHORIZATION, "Check RBAC role assignments"),
     (r"QuotaExceeded|exceeds.*quota", ErrorCategory.QUOTA, "Request quota increase or change SKU/region"),
-    (r"Conflict|already exists", ErrorCategory.CONFLICT, "Resource exists -- use incremental deployment or delete first"),
+    (
+        r"Conflict|already exists",
+        ErrorCategory.CONFLICT,
+        "Resource exists -- use incremental deployment or delete first",
+    ),
     (r"InvalidTemplate|validation failed", ErrorCategory.VALIDATION, "Fix Bicep template errors"),
     (r"timeout|ETIMEDOUT|connection refused", ErrorCategory.NETWORK, "Check network connectivity"),
     (r"InternalServerError|ServiceUnavailable|BadGateway", ErrorCategory.TRANSIENT, "Retry after 30 seconds"),
@@ -196,10 +200,12 @@ class DeployOrchestrator:
         ]
 
         if not dry_run:
-            stages.extend([
-                (DeployStage.DEPLOY_INFRA, lambda: self._deploy_infra(full_bicep, full_params)),
-                (DeployStage.VERIFY, lambda: self._verify()),
-            ])
+            stages.extend(
+                [
+                    (DeployStage.DEPLOY_INFRA, lambda: self._deploy_infra(full_bicep, full_params)),
+                    (DeployStage.VERIFY, lambda: self._verify()),
+                ]
+            )
 
         start = time.perf_counter()
 
@@ -310,8 +316,11 @@ class DeployOrchestrator:
     def _validate(self, bicep_path: Path, params_path: Path) -> str:
         """Run az deployment group validate."""
         cmd = self._build_az_cmd(
-            "deployment", "group", "validate",
-            "--template-file", str(bicep_path),
+            "deployment",
+            "group",
+            "validate",
+            "--template-file",
+            str(bicep_path),
         )
         if params_path.exists():
             cmd.extend(["--parameters", f"@{params_path}"])
@@ -328,8 +337,11 @@ class DeployOrchestrator:
     def _what_if(self, bicep_path: Path, params_path: Path) -> str:
         """Run az deployment group what-if."""
         cmd = self._build_az_cmd(
-            "deployment", "group", "what-if",
-            "--template-file", str(bicep_path),
+            "deployment",
+            "group",
+            "what-if",
+            "--template-file",
+            str(bicep_path),
         )
         if params_path.exists():
             cmd.extend(["--parameters", f"@{params_path}"])
@@ -347,10 +359,15 @@ class DeployOrchestrator:
         """Run az deployment group create."""
         deployment_name = f"devex-{datetime.now(tz=UTC).strftime('%Y%m%d%H%M%S')}"
         cmd = self._build_az_cmd(
-            "deployment", "group", "create",
-            "--template-file", str(bicep_path),
-            "--name", deployment_name,
-            "--mode", "Incremental",
+            "deployment",
+            "group",
+            "create",
+            "--template-file",
+            str(bicep_path),
+            "--name",
+            deployment_name,
+            "--mode",
+            "Incremental",
         )
         if params_path.exists():
             cmd.extend(["--parameters", f"@{params_path}"])
@@ -367,8 +384,10 @@ class DeployOrchestrator:
     def _verify(self) -> str:
         """Post-deployment verification -- list deployed resources."""
         cmd = self._build_az_cmd(
-            "resource", "list",
-            "--output", "json",
+            "resource",
+            "list",
+            "--output",
+            "json",
         )
         proc = subprocess.run(
             cmd,
@@ -386,8 +405,11 @@ class DeployOrchestrator:
     def get_deployment_status(self, deployment_name: str = "") -> dict[str, Any]:
         """Query deployment status from Azure."""
         cmd = self._build_az_cmd(
-            "deployment", "group", "list",
-            "--output", "json",
+            "deployment",
+            "group",
+            "list",
+            "--output",
+            "json",
         )
         try:
             proc = subprocess.run(

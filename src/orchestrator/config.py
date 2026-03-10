@@ -23,9 +23,7 @@ _load_env()
 class AzureConfig:
     """Azure-specific configuration."""
 
-    subscription_id: str = field(
-        default_factory=lambda: os.getenv("AZURE_SUBSCRIPTION_ID", "")
-    )
+    subscription_id: str = field(default_factory=lambda: os.getenv("AZURE_SUBSCRIPTION_ID", ""))
     resource_group: str = field(
         default_factory=lambda: os.getenv("AZURE_RESOURCE_GROUP", "rg-enterprise-devex-orchestrator-dev")
     )

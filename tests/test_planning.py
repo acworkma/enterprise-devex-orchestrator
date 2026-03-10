@@ -61,8 +61,7 @@ class TestExecutionPlan:
         return ExecutionPlan(
             plan_id="test",
             tasks=[
-                PlanTask(task_id=f"t{i}", name=f"Task {i}", description="", status=s)
-                for i, s in enumerate(statuses)
+                PlanTask(task_id=f"t{i}", name=f"Task {i}", description="", status=s) for i, s in enumerate(statuses)
             ],
         )
 
