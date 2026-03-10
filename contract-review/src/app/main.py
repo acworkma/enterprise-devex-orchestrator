@@ -98,6 +98,7 @@ async def health():
 
 
 # -- Info Endpoint ----------------------------------------------------
+from fastapi.responses import JSONResponse, HTMLResponse
 @app.get("/")
 async def root():
     """Root endpoint with service information."""
@@ -112,14 +113,39 @@ async def root():
 # -- Key Vault Status ------------------------------------------------
 @app.get("/keyvault/status")
 async def keyvault_status():
-    """Check Key Vault connectivity via Managed Identity."""
-    try:
-        client = get_keyvault_client()
-        # List secrets to verify access (limited to 1)
-        secrets = list(client.list_properties_of_secrets(max_page_size=1))
-        return {
-            "status": "connected",
-            "vault_accessible": True,
+async def root():
+    """Root endpoint with HTML landing page."""
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>{APP_NAME}</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }}
+            .container {{ max-width: 600px; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+            h1 {{ color: #0078d4; }}
+            .status {{ color: #107c10; font-weight: bold; }}
+            .links {{ margin-top: 20px; }}
+            .links a {{ display: block; margin: 10px 0; padding: 10px; background: #0078d4; color: white; text-decoration: none; border-radius: 4px; text-align: center; }}
+            .links a:hover {{ background: #106ebe; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>{APP_NAME}</h1>
+            <p><strong>Version:</strong> {VERSION}</p>
+            <p><strong>Status:</strong> <span class="status">✓ Running</span></p>
+            <div class="links">
+                <a href="/docs">📚 API Documentation (Swagger UI)</a>
+                <a href="/health">❤️ Health Check</a>
+                <a href="/keyvault/status">🔐 Key Vault Status</a>
+                <a href="/storage/status">📦 Storage Account Status</a>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html)
         }
     except Exception as e:
         logger.error(f"Key Vault health check failed: {e}")
