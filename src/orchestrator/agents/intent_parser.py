@@ -18,6 +18,7 @@ import re
 from src.orchestrator.agent import AgentRuntime
 from src.orchestrator.config import AppConfig
 from src.orchestrator.intent_schema import (
+    LANGUAGE_FRAMEWORKS,
     AppType,
     AuthModel,
     CICDRequirements,
@@ -25,7 +26,6 @@ from src.orchestrator.intent_schema import (
     ComputeTarget,
     DataStore,
     IntentSpec,
-    LANGUAGE_FRAMEWORKS,
     NetworkingModel,
     ObservabilityRequirements,
     SecurityRequirements,

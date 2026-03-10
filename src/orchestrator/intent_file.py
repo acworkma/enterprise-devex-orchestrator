@@ -60,8 +60,8 @@ Supported format::
 
 from __future__ import annotations
 
-from contextlib import suppress
 import re
+from contextlib import suppress
 from dataclasses import dataclass, field
 from pathlib import Path
 

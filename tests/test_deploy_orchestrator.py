@@ -147,7 +147,7 @@ class TestDeployOrchestratorInit:
 
     def test_custom_params(self) -> None:
         orch = DeployOrchestrator(
-            output_dir="/tmp/out",
+            output_dir="out",
             resource_group="my-rg",
             region="westus2",
             subscription="sub-123",

@@ -1083,13 +1083,6 @@ def interactive(output: str) -> None:
         default="blob",
     )
     data_stores_raw = [s.strip().lower() for s in ds_choices.split(",")]
-    ds_map = {
-        "blob": "blob_storage",
-        "cosmos": "cosmos_db",
-        "sql": "sql",
-        "redis": "redis",
-        "none": "none",
-    }
     # -- Security ----------------------------------------------------
     auth = click.prompt(
         "Authentication model",

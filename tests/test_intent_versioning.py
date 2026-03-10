@@ -11,9 +11,12 @@ from __future__ import annotations
 
 import json
 import textwrap
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 from src.orchestrator.intent_file import (
     IntentFileParser,
@@ -28,7 +31,6 @@ from src.orchestrator.versioning import (
     VersionRecord,
     VersionState,
 )
-
 
 # ===============================================
 # Intent File Parser Tests

@@ -8,6 +8,7 @@ from src.orchestrator.generators.app_generator import AppGenerator
 from src.orchestrator.generators.bicep_generator import BicepGenerator
 from src.orchestrator.generators.cost_estimator import CostEstimate, CostEstimator
 from src.orchestrator.intent_schema import (
+    LANGUAGE_FRAMEWORKS,
     AppType,
     AuthModel,
     CICDRequirements,
@@ -16,7 +17,6 @@ from src.orchestrator.intent_schema import (
     ComputeTarget,
     DataStore,
     IntentSpec,
-    LANGUAGE_FRAMEWORKS,
     NetworkingModel,
     ObservabilityRequirements,
     PlanOutput,

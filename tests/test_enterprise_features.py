@@ -16,7 +16,6 @@ Covers:
 from __future__ import annotations
 
 import unittest
-from unittest.mock import MagicMock
 
 from src.orchestrator.intent_file import (
     IntentFileParser,
@@ -24,7 +23,6 @@ from src.orchestrator.intent_file import (
     generate_intent_template,
     generate_upgrade_template,
 )
-
 
 # -- IntentFileResult dataclass tests --------------------------
 
@@ -428,19 +426,19 @@ class TestImprovementSuggestions(unittest.TestCase):
             SecurityRequirements,
         )
 
-        defaults = dict(
-            project_name="test-project",
-            description="Test project",
-            raw_intent="Build a test project",
-            app_type=AppType.API,
-            data_stores=[],
-            security=SecurityRequirements(
+        defaults = {
+            "project_name": "test-project",
+            "description": "Test project",
+            "raw_intent": "Build a test project",
+            "app_type": AppType.API,
+            "data_stores": [],
+            "security": SecurityRequirements(
                 auth_model=AuthModel.MANAGED_IDENTITY,
                 compliance_framework=ComplianceFramework.SOC2_GUIDANCE,
             ),
-            observability=ObservabilityRequirements(),
-            cicd=CICDRequirements(),
-        )
+            "observability": ObservabilityRequirements(),
+            "cicd": CICDRequirements(),
+        }
         defaults.update(overrides)
         return IntentSpec(**defaults)
 
@@ -730,7 +728,6 @@ All endpoints < 300ms under load, zero critical CVEs, CI green.
 # -- Import guard ---------------------------------------------
 
 import pytest  # noqa: E402 -- needed for approx
-
 
 if __name__ == "__main__":
     unittest.main()

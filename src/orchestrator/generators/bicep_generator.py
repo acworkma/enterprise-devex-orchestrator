@@ -81,22 +81,6 @@ class BicepGenerator:
             include_optional=self.standards.tagging.include_optional
         )
 
-        storage_module = ""
-        if DataStore.BLOB_STORAGE in spec.data_stores:
-            storage_module = """
-// -- Storage Account ------------------------------------------------
-module storage 'modules/storage.bicep' = {
-  name: 'storage-deployment'
-  params: {
-    location: location
-    storageAccountName: stName
-    managedIdentityPrincipalId: identity.outputs.principalId
-    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
-    tags: tags
-  }
-}
-"""
-
         # Compute-target-specific parameters and modules
         compute = getattr(spec, "compute_target", ComputeTarget.CONTAINER_APPS)
         if compute == ComputeTarget.APP_SERVICE:
