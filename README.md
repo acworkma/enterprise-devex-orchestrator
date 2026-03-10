@@ -1,4 +1,4 @@
-# Enterprise DevEx Orchestrator
+﻿﻿# Enterprise DevEx Orchestrator
 
 > **Transform business intent into production-ready Azure workloads**  
 > Reusable 4-agent framework | 486 tests | Zero-credential architecture
@@ -454,6 +454,4 @@ MIT License. See `LICENSE` for details.
 *Built with GitHub Copilot SDK | Deployed on Azure Container Apps*  
 *486 tests | 25 governance policies | 26 WAF principles | 135/135 scorecard*  
 *GitHub Copilot SDK Enterprise Challenge, Q3 FY26*
-#   e n t e r p r i s e - d e v e x - o r c h e s t r a t o r  
- #   e n t e r p r i s e - d e v e x - o r c h e s t r a t o r  
- 
+
