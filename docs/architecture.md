@@ -127,21 +127,21 @@ graph LR
 ```mermaid
 graph TD
     subgraph "Identity & Access"
-        MI[Managed Identity<br>devex-orchestrator-dev-id]
+        MI[Managed Identity<br>project-env-id]
         RBAC[RBAC Assignments]
     end
 
     subgraph "Secrets Management"
-        KV[Key Vault<br>devexorchestratordevkv]
+        KV[Key Vault<br>projectenvkv]
     end
 
     subgraph "Compute"
-        CA[Container App<br>devex-orchestrator-dev]
-        ACR[Container Registry<br>devexorchestratordevacr]
+        CA[Container App<br>project-env]
+        ACR[Container Registry<br>projectenvacr]
     end
 
     subgraph "Observability"
-        LA[Log Analytics<br>devex-orchestrator-dev-law]
+        LA[Log Analytics<br>project-env-law]
     end
 
     subgraph "CI/CD"

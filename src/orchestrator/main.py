@@ -71,6 +71,7 @@ def _run_pipeline(
     config: AppConfig,
     output_dir: Path | None = None,
     plan_only: bool = False,
+    parsed_file: "IntentFileResult | None" = None,
 ) -> tuple[IntentSpec, PlanOutput, GovernanceReport, WAFAlignmentReport]:
     """Execute the full agent pipeline."""
     setup_logging(level=config.log_level)
@@ -107,6 +108,11 @@ def _run_pipeline(
         task = progress.add_task("[cyan]Parsing business intent...", total=None)
         parser = IntentParserAgent(config)
         spec = parser.parse(intent)
+
+        # Apply structured overrides from intent file (if parsed from .md)
+        if parsed_file:
+            spec = _apply_file_overrides(spec, parsed_file)
+
         if planner_mgr:
             planner_mgr.execute_task("parse-intent", handler=lambda: {"summary": f"Parsed: {spec.project_name}"})
         progress.update(task, completed=True, description="[green][ok] Intent parsed")
@@ -354,6 +360,105 @@ def _show_improvement_suggestions(
     )
 
 
+def _apply_file_overrides(spec: IntentSpec, parsed_file: "IntentFileResult") -> IntentSpec:
+    """Apply structured overrides from an intent file onto a parsed IntentSpec.
+
+    The rule-based parser extracts what it can from flattened text, but the
+    intent file parser has structured data (project name from H1, explicit
+    config fields) that should take precedence.
+    """
+    from src.orchestrator.intent_schema import (
+        AuthModel,
+        ComplianceFramework,
+        DataStore,
+    )
+
+    overrides: dict[str, object] = {}
+
+    # Project name from H1 heading
+    if parsed_file.project_name:
+        import re
+        name = parsed_file.project_name.strip().lower()
+        name = re.sub(r"[^a-z0-9\s-]", "", name)
+        name = re.sub(r"\s+", "-", name)[:39]
+        if re.match(r"^[a-z][a-z0-9-]{2,38}$", name):
+            overrides["project_name"] = name
+
+    cfg = parsed_file.config
+
+    # Region from config
+    if cfg.get("region"):
+        overrides["azure_region"] = cfg["region"].strip()
+
+    # Environment from config
+    if cfg.get("environment"):
+        overrides["environment"] = cfg["environment"].strip().lower()
+
+    # Auth model from config
+    auth_map = {
+        "managed-identity": AuthModel.MANAGED_IDENTITY,
+        "managed_identity": AuthModel.MANAGED_IDENTITY,
+        "entra-id": AuthModel.ENTRA_ID,
+        "entra_id": AuthModel.ENTRA_ID,
+        "azure-ad": AuthModel.ENTRA_ID,
+        "api-key": AuthModel.API_KEY,
+        "api_key": AuthModel.API_KEY,
+    }
+    if cfg.get("auth") and cfg["auth"].strip().lower() in auth_map:
+        sec_dict = spec.security.model_dump()
+        sec_dict["auth_model"] = auth_map[cfg["auth"].strip().lower()]
+        from src.orchestrator.intent_schema import SecurityRequirements
+        overrides["security"] = SecurityRequirements(**sec_dict)
+
+    # Compliance from config
+    compliance_map = {
+        "hipaa": ComplianceFramework.HIPAA_GUIDANCE,
+        "soc2": ComplianceFramework.SOC2_GUIDANCE,
+        "soc 2": ComplianceFramework.SOC2_GUIDANCE,
+        "fedramp": ComplianceFramework.FEDRAMP_GUIDANCE,
+    }
+    if cfg.get("compliance"):
+        comp_key = cfg["compliance"].strip().lower()
+        if comp_key in compliance_map:
+            sec_obj = overrides.get("security", spec.security)
+            sec_dict = sec_obj.model_dump() if hasattr(sec_obj, "model_dump") else spec.security.model_dump()
+            sec_dict["compliance_framework"] = compliance_map[comp_key]
+            from src.orchestrator.intent_schema import SecurityRequirements
+            overrides["security"] = SecurityRequirements(**sec_dict)
+
+    # Data stores from config
+    if cfg.get("data_stores"):
+        store_map = {
+            "blob": DataStore.BLOB_STORAGE,
+            "blob_storage": DataStore.BLOB_STORAGE,
+            "cosmos": DataStore.COSMOS_DB,
+            "cosmos_db": DataStore.COSMOS_DB,
+            "cosmosdb": DataStore.COSMOS_DB,
+            "sql": DataStore.SQL,
+            "redis": DataStore.REDIS,
+            "table": DataStore.TABLE_STORAGE,
+            "table_storage": DataStore.TABLE_STORAGE,
+        }
+        raw_stores = [s.strip().lower() for s in cfg["data_stores"].split(",")]
+        detected_stores = [store_map[s] for s in raw_stores if s in store_map]
+        if detected_stores:
+            overrides["data_stores"] = detected_stores
+
+    # Apply overrides by creating a new IntentSpec
+    if overrides:
+        data = spec.model_dump()
+        for key, value in overrides.items():
+            if key == "security":
+                data["security"] = value.model_dump()
+            else:
+                data[key] = value
+        # Clear resource_group_name so model_post_init regenerates it
+        data["resource_group_name"] = ""
+        spec = IntentSpec(**data)
+
+    return spec
+
+
 def _resolve_intent(intent: str | None, intent_file: str | None) -> str:
     """Resolve intent string from CLI arg or --file flag."""
     if intent_file:
@@ -461,13 +566,14 @@ def plan(intent: str | None, intent_file: str | None, output: str | None, output
     out_dir = Path(output) if output else Path("out")
 
     # Resolve intent from file or argument
-    intent_str = _resolve_intent(intent, intent_file)
+    intent_str, parsed_intent = _resolve_intent_with_meta(intent, intent_file)
 
     spec, architecture_plan, gov_report, waf_report = _run_pipeline(
         intent=intent_str,
         config=config,
         output_dir=out_dir,
         plan_only=True,
+        parsed_file=parsed_intent,
     )
 
     if output_format == "json":
@@ -539,6 +645,7 @@ def scaffold(intent: str | None, intent_file: str | None, output: str, dry_run: 
         config=config,
         output_dir=None if dry_run else out_dir,
         plan_only=dry_run,
+        parsed_file=parsed_intent,
     )
 
     elapsed = time.time() - start
@@ -904,6 +1011,7 @@ def upgrade(intent_file: str, output: str, dry_run: bool) -> None:
         config=config,
         output_dir=out_dir,
         plan_only=False,
+        parsed_file=parsed,
     )
 
     elapsed = time.time() - start

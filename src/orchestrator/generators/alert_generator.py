@@ -10,7 +10,7 @@ Generates comprehensive monitoring alert rules including:
 
 from __future__ import annotations
 
-from src.orchestrator.intent_schema import DataStore, IntentSpec
+from src.orchestrator.intent_schema import ComputeTarget, DataStore, IntentSpec
 from src.orchestrator.logging import get_logger
 
 logger = get_logger(__name__)
@@ -118,6 +118,236 @@ resource storageLatencyAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {
             storage_param = """
 @description('Storage Account resource ID for alert scoping')
 param storageAccountId string
+"""
+
+        compute = getattr(spec, "compute_target", ComputeTarget.CONTAINER_APPS)
+        if compute == ComputeTarget.CONTAINER_APPS:
+            compute_param = """
+@description('Container App resource ID for alert scoping')
+param containerAppId string
+"""
+            compute_alerts = f"""
+// --- Container App Alerts --------------------------------------------
+
+resource containerAppRestartAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {{{{
+  name: 'alert-${{{{projectName}}}}-restarts'
+  location: 'global'
+  tags: tags
+  properties: {{{{
+    description: 'Container App restart count exceeds threshold'
+    severity: 2
+    enabled: true
+    scopes: [
+      containerAppId
+    ]
+    evaluationFrequency: 'PT5M'
+    windowSize: 'PT15M'
+    criteria: {{{{
+      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
+      allOf: [
+        {{{{
+          name: 'RestartCount'
+          metricName: 'RestartCount'
+          operator: 'GreaterThan'
+          threshold: 3
+          timeAggregation: 'Total'
+          criterionType: 'StaticThresholdCriterion'
+        }}}}
+      ]
+    }}}}
+    actions: [
+      {{{{
+        actionGroupId: actionGroupId
+      }}}}
+    ]
+  }}}}
+}}}}
+
+resource containerAppReplicaAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {{{{
+  name: 'alert-${{{{projectName}}}}-replicas'
+  location: 'global'
+  tags: tags
+  properties: {{{{
+    description: 'Container App running replicas dropped to 0'
+    severity: 1
+    enabled: true
+    scopes: [
+      containerAppId
+    ]
+    evaluationFrequency: 'PT1M'
+    windowSize: 'PT5M'
+    criteria: {{{{
+      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
+      allOf: [
+        {{{{
+          name: 'RunningReplicas'
+          metricName: 'Replicas'
+          operator: 'LessThan'
+          threshold: 1
+          timeAggregation: 'Average'
+          criterionType: 'StaticThresholdCriterion'
+        }}}}
+      ]
+    }}}}
+    actions: [
+      {{{{
+        actionGroupId: actionGroupId
+      }}}}
+    ]
+  }}}}
+}}}}
+
+resource containerAppResponseTimeAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {{{{
+  name: 'alert-${{{{projectName}}}}-response-time'
+  location: 'global'
+  tags: tags
+  properties: {{{{
+    description: 'Average response time exceeds 2 seconds'
+    severity: 2
+    enabled: true
+    scopes: [
+      containerAppId
+    ]
+    evaluationFrequency: 'PT5M'
+    windowSize: 'PT15M'
+    criteria: {{{{
+      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
+      allOf: [
+        {{{{
+          name: 'ResponseTime'
+          metricName: 'Requests'
+          operator: 'GreaterThan'
+          threshold: 2000
+          timeAggregation: 'Average'
+          criterionType: 'StaticThresholdCriterion'
+        }}}}
+      ]
+    }}}}
+    actions: [
+      {{{{
+        actionGroupId: actionGroupId
+      }}}}
+    ]
+  }}}}
+}}}}
+"""
+        elif compute == ComputeTarget.APP_SERVICE:
+            compute_param = """
+@description('App Service resource ID for alert scoping')
+param appServiceId string
+"""
+            compute_alerts = f"""
+// --- App Service Alerts ----------------------------------------------
+
+resource appServiceResponseTimeAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {{{{
+  name: 'alert-${{{{projectName}}}}-response-time'
+  location: 'global'
+  tags: tags
+  properties: {{{{
+    description: 'Average response time exceeds 2 seconds'
+    severity: 2
+    enabled: true
+    scopes: [
+      appServiceId
+    ]
+    evaluationFrequency: 'PT5M'
+    windowSize: 'PT15M'
+    criteria: {{{{
+      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
+      allOf: [
+        {{{{
+          name: 'ResponseTime'
+          metricName: 'HttpResponseTime'
+          operator: 'GreaterThan'
+          threshold: 2
+          timeAggregation: 'Average'
+          criterionType: 'StaticThresholdCriterion'
+        }}}}
+      ]
+    }}}}
+    actions: [
+      {{{{
+        actionGroupId: actionGroupId
+      }}}}
+    ]
+  }}}}
+}}}}
+
+resource appServiceErrorAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {{{{
+  name: 'alert-${{{{projectName}}}}-http-errors'
+  location: 'global'
+  tags: tags
+  properties: {{{{
+    description: 'HTTP 5xx error rate exceeds threshold'
+    severity: 1
+    enabled: true
+    scopes: [
+      appServiceId
+    ]
+    evaluationFrequency: 'PT5M'
+    windowSize: 'PT15M'
+    criteria: {{{{
+      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
+      allOf: [
+        {{{{
+          name: 'Http5xx'
+          metricName: 'Http5xx'
+          operator: 'GreaterThan'
+          threshold: 10
+          timeAggregation: 'Total'
+          criterionType: 'StaticThresholdCriterion'
+        }}}}
+      ]
+    }}}}
+    actions: [
+      {{{{
+        actionGroupId: actionGroupId
+      }}}}
+    ]
+  }}}}
+}}}}
+"""
+        else:  # Functions
+            compute_param = """
+@description('Function App resource ID for alert scoping')
+param functionAppId string
+"""
+            compute_alerts = f"""
+// --- Function App Alerts --------------------------------------------
+
+resource functionAppErrorAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {{{{
+  name: 'alert-${{{{projectName}}}}-func-errors'
+  location: 'global'
+  tags: tags
+  properties: {{{{
+    description: 'Function execution failure rate exceeds threshold'
+    severity: 1
+    enabled: true
+    scopes: [
+      functionAppId
+    ]
+    evaluationFrequency: 'PT5M'
+    windowSize: 'PT15M'
+    criteria: {{{{
+      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
+      allOf: [
+        {{{{
+          name: 'FunctionErrors'
+          metricName: 'FunctionExecutionCount'
+          operator: 'GreaterThan'
+          threshold: 50
+          timeAggregation: 'Total'
+          criterionType: 'StaticThresholdCriterion'
+        }}}}
+      ]
+    }}}}
+    actions: [
+      {{{{
+        actionGroupId: actionGroupId
+      }}}}
+    ]
+  }}}}
+}}}}
 """
 
         return f"""// ===================================================================
@@ -408,7 +638,7 @@ param projectName string
 param environment string
 
 @description('Alert notification email address')
-param alertEmail string = 'ops-team@contoso.com'
+param alertEmail string
 
 @description('Resource tags')
 param tags object

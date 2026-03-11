@@ -1,7 +1,0 @@
-# SLHS Voice Agent -- Application Dependencies
-fastapi>=0.109.0
-uvicorn[standard]>=0.27.0
-azure-identity>=1.15.0
-azure-keyvault-secrets>=4.8.0
-pydantic>=2.5.0
-python-dotenv>=1.0.0

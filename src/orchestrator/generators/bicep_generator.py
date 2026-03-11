@@ -11,7 +11,7 @@ ownership tracking, and compliance classification.
 
 from __future__ import annotations
 
-from src.orchestrator.intent_schema import ComputeTarget, DataStore, IntentSpec, PlanOutput
+from src.orchestrator.intent_schema import ComputeTarget, DataStore, IntentSpec, NetworkingModel, PlanOutput
 from src.orchestrator.logging import get_logger
 from src.orchestrator.standards.config import EnterpriseStandardsConfig
 
@@ -63,6 +63,12 @@ class BicepGenerator:
         # Data stores
         if DataStore.BLOB_STORAGE in spec.data_stores:
             files["infra/bicep/modules/storage.bicep"] = self._storage_module()
+        if DataStore.COSMOS_DB in spec.data_stores:
+            files["infra/bicep/modules/cosmos-db.bicep"] = self._cosmos_db_module(spec)
+        if DataStore.REDIS in spec.data_stores:
+            files["infra/bicep/modules/redis.bicep"] = self._redis_module(spec)
+        if DataStore.SQL in spec.data_stores:
+            files["infra/bicep/modules/sql.bicep"] = self._sql_module(spec)
 
         # Parameters
         files["infra/bicep/parameters/dev.parameters.json"] = self._parameters(spec, "dev")
@@ -149,6 +155,52 @@ module storage 'modules/storage.bicep' = {
   }
 }
 """
+            cosmos_module = ""
+            if DataStore.COSMOS_DB in spec.data_stores:
+                cosmos_module = """
+// -- Cosmos DB ------------------------------------------------------
+module cosmosDb 'modules/cosmos-db.bicep' = {
+  name: 'cosmos-db-deployment'
+  params: {
+    location: location
+    accountName: '${projectName}-cosmos'
+    managedIdentityPrincipalId: identity.outputs.principalId
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
+    tags: tags
+  }
+}
+"""
+            redis_module = ""
+            if DataStore.REDIS in spec.data_stores:
+                redis_module = """
+// -- Redis Cache ----------------------------------------------------
+module redis 'modules/redis.bicep' = {
+  name: 'redis-deployment'
+  params: {
+    location: location
+    redisName: '${projectName}-redis'
+    managedIdentityPrincipalId: identity.outputs.principalId
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
+    tags: tags
+  }
+}
+"""
+            sql_module = ""
+            if DataStore.SQL in spec.data_stores:
+                sql_module = """
+// -- SQL Database ---------------------------------------------------
+module sqlDb 'modules/sql.bicep' = {
+  name: 'sql-deployment'
+  params: {
+    location: location
+    serverName: '${projectName}-sql'
+    databaseName: '${projectName}-db'
+    managedIdentityPrincipalId: identity.outputs.principalId
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
+    tags: tags
+  }
+}
+"""
             compute_params = """
 @description('Container image to deploy')
 param containerImage string = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
@@ -168,7 +220,7 @@ module containerRegistry 'modules/container-registry.bicep' = {{
     tags: tags
   }}
 }}
-{storage_module}
+{storage_module}{cosmos_module}{redis_module}{sql_module}
 // -- Container App --------------------------------------------------
 module containerApp 'modules/container-app.bicep' = {{
   name: 'container-app-deployment'
@@ -192,16 +244,59 @@ output containerAppName string = containerApp.outputs.appName
 output containerRegistryName string = containerRegistry.outputs.registryName
 output containerRegistryLoginServer string = containerRegistry.outputs.loginServer
 """
-        # For App Service and Functions, storage goes directly in main
+        # For App Service and Functions, data stores go directly in main
         storage_section = ""
         if compute != ComputeTarget.CONTAINER_APPS and DataStore.BLOB_STORAGE in spec.data_stores:
-            storage_section = """
+            storage_section += """
 // -- Storage Account ------------------------------------------------
 module storage 'modules/storage.bicep' = {
   name: 'storage-deployment'
   params: {
     location: location
     storageAccountName: stName
+    managedIdentityPrincipalId: identity.outputs.principalId
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
+    tags: tags
+  }
+}
+"""
+        if compute != ComputeTarget.CONTAINER_APPS and DataStore.COSMOS_DB in spec.data_stores:
+            storage_section += """
+// -- Cosmos DB ------------------------------------------------------
+module cosmosDb 'modules/cosmos-db.bicep' = {
+  name: 'cosmos-db-deployment'
+  params: {
+    location: location
+    accountName: '${projectName}-cosmos'
+    managedIdentityPrincipalId: identity.outputs.principalId
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
+    tags: tags
+  }
+}
+"""
+        if compute != ComputeTarget.CONTAINER_APPS and DataStore.REDIS in spec.data_stores:
+            storage_section += """
+// -- Redis Cache ----------------------------------------------------
+module redis 'modules/redis.bicep' = {
+  name: 'redis-deployment'
+  params: {
+    location: location
+    redisName: '${projectName}-redis'
+    managedIdentityPrincipalId: identity.outputs.principalId
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
+    tags: tags
+  }
+}
+"""
+        if compute != ComputeTarget.CONTAINER_APPS and DataStore.SQL in spec.data_stores:
+            storage_section += """
+// -- SQL Database ---------------------------------------------------
+module sqlDb 'modules/sql.bicep' = {
+  name: 'sql-deployment'
+  params: {
+    location: location
+    serverName: '${projectName}-sql'
+    databaseName: '${projectName}-db'
     managedIdentityPrincipalId: identity.outputs.principalId
     logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
     tags: tags
@@ -608,8 +703,314 @@ output storageAccountId string = storageAccount.id
 output blobEndpoint string = storageAccount.properties.primaryEndpoints.blob
 """
 
-    def _container_app_module(self, spec: IntentSpec) -> str:
+    def _cosmos_db_module(self, spec: IntentSpec) -> str:
+        """Generate Azure Cosmos DB Bicep module."""
         return """// ===================================================================
+// Azure Cosmos DB Module
+// NoSQL database with managed identity access and diagnostics.
+// ===================================================================
+
+@description('Azure region')
+param location string
+
+@description('Cosmos DB account name')
+@maxLength(44)
+param accountName string
+
+@description('Managed Identity principal ID for data access')
+param managedIdentityPrincipalId string
+
+@description('Log Analytics workspace ID for diagnostics')
+param logAnalyticsWorkspaceId string
+
+@description('Resource tags')
+param tags object = {}
+
+@description('Database name')
+param databaseName string = 'appdb'
+
+resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2024-02-15-preview' = {
+  name: accountName
+  location: location
+  tags: tags
+  kind: 'GlobalDocumentDB'
+  properties: {
+    databaseAccountOfferType: 'Standard'
+    consistencyPolicy: {
+      defaultConsistencyLevel: 'Session'
+    }
+    locations: [
+      {
+        locationName: location
+        failoverPriority: 0
+        isZoneRedundant: false
+      }
+    ]
+    disableLocalAuth: true
+    publicNetworkAccess: 'Disabled'
+    minimalTlsVersion: 'Tls12'
+  }
+}
+
+resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-02-15-preview' = {
+  parent: cosmosAccount
+  name: databaseName
+  properties: {
+    resource: {
+      id: databaseName
+    }
+  }
+}
+
+// Grant Cosmos DB Built-in Data Contributor role to Managed Identity
+resource cosmosDataRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: cosmosAccount
+  name: guid(cosmosAccount.id, managedIdentityPrincipalId, '00000000-0000-0000-0000-000000000002')
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '00000000-0000-0000-0000-000000000002')
+    principalId: managedIdentityPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Diagnostic settings
+resource diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: cosmosAccount
+  name: '${accountName}-diagnostics'
+  properties: {
+    workspaceId: logAnalyticsWorkspaceId
+    logs: [
+      {
+        categoryGroup: 'allLogs'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'Requests'
+        enabled: true
+      }
+    ]
+  }
+}
+
+output accountName string = cosmosAccount.name
+output accountEndpoint string = cosmosAccount.properties.documentEndpoint
+output accountId string = cosmosAccount.id
+output databaseName string = database.name
+"""
+
+    def _redis_module(self, spec: IntentSpec) -> str:
+        """Generate Azure Cache for Redis Bicep module."""
+        return """// ===================================================================
+// Azure Cache for Redis Module
+// In-memory cache with managed identity access and diagnostics.
+// ===================================================================
+
+@description('Azure region')
+param location string
+
+@description('Redis cache name')
+param redisName string
+
+@description('Managed Identity principal ID for data access')
+param managedIdentityPrincipalId string
+
+@description('Log Analytics workspace ID for diagnostics')
+param logAnalyticsWorkspaceId string
+
+@description('Resource tags')
+param tags object = {}
+
+@description('Redis SKU name')
+@allowed(['Basic', 'Standard', 'Premium'])
+param skuName string = 'Standard'
+
+@description('Redis SKU family')
+@allowed(['C', 'P'])
+param skuFamily string = 'C'
+
+@description('Redis cache capacity')
+param skuCapacity int = 1
+
+resource redis 'Microsoft.Cache/redis@2024-03-01' = {
+  name: redisName
+  location: location
+  tags: tags
+  properties: {
+    sku: {
+      name: skuName
+      family: skuFamily
+      capacity: skuCapacity
+    }
+    enableNonSslPort: false
+    minimumTlsVersion: '1.2'
+    publicNetworkAccess: 'Disabled'
+    redisConfiguration: {
+      'aad-enabled': 'true'
+    }
+  }
+}
+
+// Grant Redis Data Contributor role to Managed Identity
+resource redisDataRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: redis
+  name: guid(redis.id, managedIdentityPrincipalId, 'e12a1235-c1e0-4df4-bd93-48c3e0f1b4f9')
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'e12a1235-c1e0-4df4-bd93-48c3e0f1b4f9')
+    principalId: managedIdentityPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Diagnostic settings
+resource diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: redis
+  name: '${redisName}-diagnostics'
+  properties: {
+    workspaceId: logAnalyticsWorkspaceId
+    logs: [
+      {
+        category: 'ConnectedClientList'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
+  }
+}
+
+output redisName string = redis.name
+output redisHostName string = redis.properties.hostName
+output redisId string = redis.id
+output redisSslPort int = redis.properties.sslPort
+"""
+
+    def _sql_module(self, spec: IntentSpec) -> str:
+        """Generate Azure SQL Database Bicep module."""
+        return """// ===================================================================
+// Azure SQL Database Module
+// Managed SQL database with managed identity access and diagnostics.
+// ===================================================================
+
+@description('Azure region')
+param location string
+
+@description('SQL Server name')
+param serverName string
+
+@description('Database name')
+param databaseName string
+
+@description('Managed Identity principal ID for admin access')
+param managedIdentityPrincipalId string
+
+@description('Log Analytics workspace ID for diagnostics')
+param logAnalyticsWorkspaceId string
+
+@description('Resource tags')
+param tags object = {}
+
+@description('Database SKU name')
+param skuName string = 'GP_S_Gen5_1'
+
+@description('Database SKU tier')
+param skuTier string = 'GeneralPurpose'
+
+resource sqlServer 'Microsoft.Sql/servers@2023-08-01-preview' = {
+  name: serverName
+  location: location
+  tags: tags
+  properties: {
+    minimalTlsVersion: '1.2'
+    publicNetworkAccess: 'Disabled'
+    administrators: {
+      administratorType: 'ActiveDirectory'
+      azureADOnlyAuthentication: true
+      principalType: 'Application'
+      sid: managedIdentityPrincipalId
+      login: 'managed-identity-admin'
+      tenantId: subscription().tenantId
+    }
+  }
+}
+
+resource database 'Microsoft.Sql/servers/databases@2023-08-01-preview' = {
+  parent: sqlServer
+  name: databaseName
+  location: location
+  tags: tags
+  sku: {
+    name: skuName
+    tier: skuTier
+  }
+  properties: {
+    collation: 'SQL_Latin1_General_CP1_CI_AS'
+    maxSizeBytes: 34359738368  // 32 GB
+    zoneRedundant: false
+  }
+}
+
+// Diagnostic settings for SQL Server
+resource serverDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: sqlServer
+  name: '${serverName}-diagnostics'
+  properties: {
+    workspaceId: logAnalyticsWorkspaceId
+    logs: [
+      {
+        category: 'SQLSecurityAuditEvents'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
+  }
+}
+
+// Diagnostic settings for database
+resource dbDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: database
+  name: '${databaseName}-diagnostics'
+  properties: {
+    workspaceId: logAnalyticsWorkspaceId
+    logs: [
+      {
+        category: 'SQLInsights'
+        enabled: true
+      }
+      {
+        category: 'QueryStoreRuntimeStatistics'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'Basic'
+        enabled: true
+      }
+    ]
+  }
+}
+
+output serverName string = sqlServer.name
+output serverFqdn string = sqlServer.properties.fullyQualifiedDomainName
+output databaseName string = database.name
+output serverId string = sqlServer.id
+"""
+
+    def _container_app_module(self, spec: IntentSpec) -> str:
+        networking = getattr(spec.security, "networking", NetworkingModel.PRIVATE)
+        external = "true" if networking == NetworkingModel.PUBLIC_RESTRICTED else "false"
+        template = """// ===================================================================
 // Azure Container Apps Module
 // Managed container platform with auto-scaling, managed identity,
 // and integrated logging.
@@ -688,7 +1089,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
     managedEnvironmentId: environment.id
     configuration: {
       ingress: {
-        external: false
+        external: EXTERNAL_PLACEHOLDER
         targetPort: containerPort
         transport: 'http'
         allowInsecure: false
@@ -769,6 +1170,7 @@ output appName string = containerApp.name
 output appId string = containerApp.id
 output environmentId string = environment.id
 """
+        return template.replace("EXTERNAL_PLACEHOLDER", external)
 
     def _app_service_module(self, spec: IntentSpec) -> str:
         """Generate Azure App Service Bicep module."""

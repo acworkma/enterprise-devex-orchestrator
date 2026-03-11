@@ -1,4 +1,5 @@
 # Enterprise DevEx Orchestrator
+
 # Python
 __pycache__/
 *.py[cod]
@@ -28,13 +29,16 @@ Thumbs.db
 # Azure
 .azure/
 
-# Output (generated scaffolds)
+# Generated scaffold outputs (disposable -- regenerate with `devex scaffold`)
 out/
+contract-review/
+slhs-voice-agent/
+doc-intelligence/
+fresh-enterprise-docs/
+my-intent/
 deploy-test/
 demo-output/
 my-project/
-doc-intelligence/
-fresh-enterprise-docs/
 my-first-output/
 test-enterprise/
 test-inline/
@@ -43,27 +47,30 @@ test-upgrade/
 test-iot-pipeline/
 my-test/
 
+# Generated infra at root (use `devex scaffold -o <dir>` to output elsewhere)
+/infra/
+/intent.md
+
 # State
 .devex/
 
 # Ruff
 .ruff_cache/
 
-# Testing
+# Testing artifacts
 .coverage
 htmlcov/
 .pytest_cache/
 .mypy_cache/
 test_results.txt
 test_run.txt
+test_full.txt
+test_parser_results.txt
+test_parser2.txt
 
 # Temp scripts
 fix_encoding.py
-
-# Intent test files
 test-intent.md
 
-# Node (if Streamlit frontend added later)
+# Node
 node_modules/
-
-test_results.txt

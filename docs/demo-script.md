@@ -89,27 +89,24 @@ cat demo-output/docs/waf-report.md | head -30
 
 ## Segment 4: Live Deployment (1.5 min)
 
-**Narration:** "This exact pipeline deployed the SLHS Voice Agent running in production."
+**Narration:** "This exact pipeline deploys to Azure Container Apps with enterprise security."
 
 ```bash
+# Deploy the generated scaffold
+devex deploy --output-dir ./demo-output --resource-group $RG --region eastus2
+
 # Show the live app
-curl https://<container-app-fqdn>/health
+APP_URL=$(az containerapp show --name <project>-dev --resource-group $RG --query properties.configuration.ingress.fqdn -o tsv)
+curl https://$APP_URL/health
 ```
 
-**Open in browser:** `https://<container-app-fqdn>`
-
-**Demo the app:**
-1. Click microphone -- speak "Show me Maria Garcia's information"
-2. Type "What medications is Maria taking?"
-3. Type "Show vitals for patient P-1002"
-4. Type "What lab results are available?"
+**Open in browser:** `https://$APP_URL`
 
 **What to highlight:**
-- Cross-browser voice recognition with auto-retry (3 attempts)
-- Patient lookup with clinical data (medications, vitals, lab results)
-- HTML card rendering for structured medical data
-- Multi-turn conversation context
+- Working health endpoint confirms deployment
 - Non-root container, Managed Identity, HTTPS-only
+- All infrastructure created from Bicep templates
+- Observability configured from day one (Log Analytics, diagnostics)
 
 ---
 
@@ -139,7 +136,7 @@ pytest tests/ -v --tb=short 2>&1 | tail -5
 If demo environment is unavailable:
 
 1. Run `devex plan` locally (no Azure required)
-2. Show `deploy-test/` directory as pre-generated scaffold
+2. Show a pre-generated scaffold directory
 3. Walk through Bicep templates and governance report
 4. Show test results: `pytest tests/ -v`
 

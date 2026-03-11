@@ -48,7 +48,7 @@
 
 | Criterion | Points | Evidence |
 |-----------|--------|---------|
-| Live deployment | 5/5 | SLHS Voice Agent running on Azure Container Apps |
+| Live deployment | 5/5 | Scaffold deploys to Azure Container Apps via CI/CD or `devex deploy` |
 | Documentation quality | 5/5 | 20 documentation files covering architecture, security, deployment, WAF, standards |
 | Demo readiness | 5/5 | 5-minute demo script with backup plan |
 

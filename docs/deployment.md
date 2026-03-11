@@ -113,22 +113,22 @@ Generated scaffolds include 4 workflows:
 
 All workflows use **OIDC federation** -- no stored credentials.
 
-## Live Deployment Reference
+## Example Deployment Reference
 
-The SLHS Voice Agent is deployed using this exact pattern:
+After scaffolding, your deployment resources follow this pattern:
 
-| Resource | Value |
-|----------|-------|
-| Resource Group | `rg-enterprise-devex-orchestrator-dev` |
-| Region | `eastus2` |
-| Container App | `devex-orchestrator-dev` |
-| ACR | `devexorchestratordevacr` |
-| Image | `devexorchestratordevacr.azurecr.io/devex-orchestrator:v3.0.1` |
+| Resource | Naming Convention |
+|----------|------------------|
+| Resource Group | `rg-<project>-<env>` |
+| Region | As specified in intent |
+| Container App | `<project>-<env>` |
+| ACR | `<project><env>acr` |
+| Image | `<acr-name>.azurecr.io/<project>:<version>` |
 | URL | `https://<container-app-fqdn>` |
 
 ```bash
-# Actual deploy command used
-az acr build --registry devexorchestratordevacr --image devex-orchestrator:v3.0.1 --no-logs slhs-voice-agent/src/app/
+# Example deploy command
+az acr build --registry <acr-name> --image <project>:v1.0.0 --no-logs <output-dir>/src/app/
 ```
 
 ## Rollback

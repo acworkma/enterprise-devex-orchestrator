@@ -1,1 +1,0 @@
-"""Generated test package."""

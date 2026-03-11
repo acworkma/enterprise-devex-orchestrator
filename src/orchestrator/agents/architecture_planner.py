@@ -176,6 +176,36 @@ class ArchitecturePlannerAgent:
                         security_controls=["Managed Identity", "Encryption", "Private Endpoint"],
                     )
                 )
+            elif store == DataStore.REDIS:
+                components.append(
+                    ComponentSpec(
+                        name="redis-cache",
+                        azure_service="Azure Redis Cache",
+                        purpose="In-memory cache for low-latency data access and session management",
+                        bicep_module="redis.bicep",
+                        security_controls=["Managed Identity", "TLS Only", "Private Endpoint", "Non-Public Access"],
+                    )
+                )
+            elif store == DataStore.SQL:
+                components.append(
+                    ComponentSpec(
+                        name="sql-database",
+                        azure_service="Azure SQL Database",
+                        purpose="Relational database for structured application data",
+                        bicep_module="sql.bicep",
+                        security_controls=["Managed Identity", "TDE Encryption", "Private Endpoint", "Auditing"],
+                    )
+                )
+            elif store == DataStore.TABLE_STORAGE:
+                components.append(
+                    ComponentSpec(
+                        name="table-storage",
+                        azure_service="Azure Table Storage",
+                        purpose="NoSQL key-value storage for structured data",
+                        bicep_module="table-storage.bicep",
+                        security_controls=["Managed Identity Access", "Encryption at Rest", "HTTPS Only"],
+                    )
+                )
 
         return components
 
@@ -318,20 +348,24 @@ class ArchitecturePlannerAgent:
     end
 """
 
-        # Add data store nodes
+        # Add data store nodes (collect all stores into one Data Layer subgraph)
+        data_layer_nodes = []
         for store in spec.data_stores:
             if store == DataStore.BLOB_STORAGE:
-                diagram += """
-    subgraph "Data Layer"
-        SA[Storage Account]
-    end
-"""
+                data_layer_nodes.append("        SA[Storage Account]")
             elif store == DataStore.COSMOS_DB:
-                diagram += """
-    subgraph "Data Layer"
-        CDB[Cosmos DB]
-    end
-"""
+                data_layer_nodes.append("        CDB[Cosmos DB]")
+            elif store == DataStore.REDIS:
+                data_layer_nodes.append("        REDIS[Redis Cache]")
+            elif store == DataStore.SQL:
+                data_layer_nodes.append("        SQLDB[SQL Database]")
+            elif store == DataStore.TABLE_STORAGE:
+                data_layer_nodes.append("        TS[Table Storage]")
+
+        if data_layer_nodes:
+            diagram += '\n    subgraph "Data Layer"\n'
+            diagram += "\n".join(data_layer_nodes) + "\n"
+            diagram += "    end\n"
 
         # Add connections
         diagram += """
@@ -349,6 +383,12 @@ class ArchitecturePlannerAgent:
                 diagram += "    MI -->|RBAC| SA\n"
             elif store == DataStore.COSMOS_DB:
                 diagram += "    MI -->|RBAC| CDB\n"
+            elif store == DataStore.REDIS:
+                diagram += "    MI -->|RBAC| REDIS\n"
+            elif store == DataStore.SQL:
+                diagram += "    MI -->|RBAC| SQLDB\n"
+            elif store == DataStore.TABLE_STORAGE:
+                diagram += "    MI -->|RBAC| TS\n"
 
         if spec.uses_ai:
             diagram += """

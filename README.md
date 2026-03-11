@@ -1,43 +1,34 @@
 ﻿# Enterprise DevEx Orchestrator
 
-Transform business intent into production-ready Azure solutions using a repeatable, intent-first workflow.
+Transform business intent into production-ready Azure infrastructure using a 4-agent orchestration pipeline.
 
-## What This Repository Is
+---
 
-This project is a CLI-driven orchestration framework that takes either:
-- An inline business intent string, or
-- A structured intent markdown file,
+## What This Does
 
-and generates a complete enterprise scaffold:
-- Azure Bicep infrastructure
-- Application scaffold
-- CI/CD workflows
-- Tests
-- Governance and WAF reports
-- Operations documentation
+Give the orchestrator a business description (plain text or a structured intent file) and it generates a complete, deployable enterprise scaffold:
 
-It is designed for iterative enterprise delivery:
-1. Define intent
-2. Scaffold
-3. Review governance and improvement suggestions
-4. Upgrade from a new intent version
+- **Azure Bicep infrastructure** (5-7 modules per scaffold)
+- **FastAPI application** with Dockerfile and health checks
+- **GitHub Actions CI/CD** (validate, deploy, CodeQL, Dependabot)
+- **Pytest test suite** (5 auto-generated test files)
+- **Governance validation** (25 enterprise policies)
+- **WAF assessment** (26 Azure Well-Architected Framework principles)
+- **Operations documentation** (7+ files including threat model, deployment guide, alerting runbook)
 
-## New User Starting Point
+Every scaffold enforces enterprise security baselines: Managed Identity, Key Vault with RBAC, non-root containers, OIDC for CI/CD, and HTTPS-only with TLS 1.2+.
 
-If you just cloned this repo, start in this order:
-1. Follow [QUICKSTART.md](QUICKSTART.md)
-2. Run `devex --help`
-3. Scaffold from an example intent in [examples](examples)
-4. Generate your own `intent.md` with `devex init`
+---
 
-## Prerequisites
+## Getting Started
+
+### Prerequisites
 
 - Python 3.11+
-- PowerShell (Windows) or a Unix shell
 - Git
-- Optional for deployment: Azure CLI (`az`) and active Azure subscription
+- PowerShell (Windows) or a Unix shell
 
-## Installation
+### Install
 
 ```powershell
 git clone https://github.com/Oluseyi-Kofoworola/enterprise-devex-orchestrator.git
@@ -49,104 +40,136 @@ python -m venv .venv
 pip install -e ".[dev]"
 ```
 
-Verify:
+### Verify
 
 ```powershell
 devex --help
 devex version
 ```
 
-## Intent-First Workflow
+### Run Tests
 
-### 1) Plan without writing files
+```powershell
+pytest tests/ -v
+```
+
+---
+
+## Usage
+
+### Preview a plan (no files written)
 
 ```powershell
 devex plan --file examples/intent.md
 ```
 
-### 2) Generate scaffold
+### Generate a scaffold
 
 ```powershell
-devex scaffold --file examples/intent.md -o ./my-project
+devex scaffold --file examples/intent.md -o ./my-output
 ```
 
-### 3) Validate generated scaffold
+### Validate a generated scaffold
 
 ```powershell
-devex validate ./my-project
+devex validate ./my-output
 ```
 
-### 4) Iterate with versioned intent
+### Create your own intent file
 
 ```powershell
-devex new-version ./my-project
-# edit ./my-project/intent.v2.md
-devex upgrade --file ./my-project/intent.v2.md -o ./my-project
-devex history ./my-project
+devex init -o ./my-project -p my-api-name
+# Edit my-project/intent.md with your requirements
+devex scaffold --file my-project/intent.md -o ./my-project
 ```
 
-## Example Intents
-
-Ready-to-run examples are in [examples](examples):
-- [examples/intent.md](examples/intent.md)
-- [examples/intent.v2.md](examples/intent.v2.md)
-- [examples/contract-review-intent.md](examples/contract-review-intent.md)
-- [examples/doc-intelligence-intent.md](examples/doc-intelligence-intent.md)
-
-## Output Structure (Generated)
-
-Each scaffold output contains:
-- `.devex/` metadata and versioning state
-- `.github/workflows/` CI/CD pipelines
-- `infra/bicep/` deployable infrastructure
-- `src/app/` generated application scaffold
-- `tests/` generated validation tests
-- `docs/` architecture, governance, WAF, deployment, and operations docs
-
-## Deploy to Azure (Optional)
+### Upgrade with a new intent version
 
 ```powershell
-az login
-az group create --name rg-my-project-dev --location eastus2
-devex deploy ./my-project -g rg-my-project-dev -r eastus2
+devex new-version ./my-output
+# Edit the generated intent.v2.md
+devex upgrade --file ./my-output/intent.v2.md -o ./my-output
+devex history ./my-output
 ```
 
-For a safe preview:
+---
 
-```powershell
-devex deploy ./my-project -g rg-my-project-dev -r eastus2 --dry-run
+## Example Intent Files
+
+Ready-to-run examples are in [`examples/`](examples/):
+
+| File | Description |
+|------|-------------|
+| [`intent.md`](examples/intent.md) | Healthcare voice agent (v1) |
+| [`intent.v2.md`](examples/intent.v2.md) | Voice agent upgrade (v2) |
+| [`contract-review-intent.md`](examples/contract-review-intent.md) | Legal contract review AI |
+| [`doc-intelligence-intent.md`](examples/doc-intelligence-intent.md) | Document processing service |
+
+See [`examples/README.md`](examples/README.md) for details on each example.
+
+---
+
+## Output Structure
+
+Each generated scaffold contains:
+
+```
+output-dir/
+  .devex/                     # State, versioning, and metadata
+  .github/workflows/          # CI/CD pipelines (validate, deploy, codeql, dependabot)
+  infra/bicep/                # Azure Bicep templates (main + modules + parameters)
+  src/app/                    # FastAPI application + Dockerfile
+  tests/                      # Auto-generated test suite (5 files)
+  docs/                       # Architecture, security, WAF, governance, deployment docs
 ```
 
-## CLI Command Reference
+---
 
-- `devex init` - Create a structured `intent.md` template
-- `devex plan` - Parse and plan architecture without generating scaffold files
-- `devex scaffold` - Run full pipeline and generate scaffold
-- `devex validate` - Validate a generated scaffold against governance checks
-- `devex deploy` - Deploy generated Bicep to Azure (staged deployment)
-- `devex upgrade` - Upgrade an existing scaffold with a versioned intent file
-- `devex history` - Show scaffold version history
-- `devex new-version` - Create next intent template from existing output
-- `devex version` - Show CLI and runtime details
+## CLI Reference
 
-## Testing and Quality Checks
+| Command | Purpose |
+|---------|---------|
+| `devex init` | Create a structured `intent.md` template |
+| `devex plan` | Preview architecture plan without generating files |
+| `devex scaffold` | Run full pipeline and generate scaffold |
+| `devex validate` | Validate a scaffold against 25 governance policies |
+| `devex deploy` | Deploy generated Bicep to Azure (staged) |
+| `devex upgrade` | Upgrade an existing scaffold from a versioned intent file |
+| `devex history` | Show scaffold version history |
+| `devex new-version` | Create next intent template from existing output |
+| `devex version` | Show CLI and runtime details |
 
-```powershell
-pytest tests/ -q
-ruff check src/ tests/
-mypy src/orchestrator/
+---
+
+## Architecture
+
+The orchestrator uses a **4-agent chain** with a governance feedback loop:
+
+```
+Intent --> [Intent Parser] --> [Architecture Planner] --> [Governance Reviewer] --> [Infrastructure Generator]
+                                        ^                         |
+                                        \--- feedback loop -------/
 ```
 
-## Notes for Contributors
+Each agent has a distinct role, instruction set, and tool access. See [`AGENTS.md`](AGENTS.md) for the full specification.
 
-- Keep the repository source clean. Treat generated folders as disposable outputs.
-- Reuse and version intent files in [examples](examples) rather than committing large generated outputs.
-- If you add new orchestration behavior, update both this file and [QUICKSTART.md](QUICKSTART.md).
+### Enterprise Standards Engine
 
-## License
+| Component | Description |
+|-----------|-------------|
+| NamingEngine | Azure CAF naming conventions (20 resource types, 34 region abbreviations) |
+| TaggingEngine | Enterprise tagging (7 required + 5 optional tags with regex validation) |
+| WAFAssessor | Azure Well-Architected Framework assessment (5 pillars, 26 principles) |
+| StateManager | Persistent state with drift detection, file manifests, audit trail |
 
-MIT
-| `devex version` | Show orchestrator version info |
+### Advanced Patterns
+
+| Pattern | Module |
+|---------|--------|
+| Skills registry | `src/orchestrator/skills/registry.py` -- 9 pluggable skills, 12 categories |
+| Subagent dispatcher | `src/orchestrator/agents/subagent_dispatcher.py` -- parallel fan-out |
+| Persistent planner | `src/orchestrator/planning/` -- 13-task DAG with checkpoints |
+| Deploy orchestrator | `src/orchestrator/agents/deploy_orchestrator.py` -- staged deployment |
 
 ---
 
@@ -154,64 +177,37 @@ MIT
 
 ```
 src/orchestrator/
-    agent.py              # 4-agent chain
-    config.py             # Configuration management
-    intent_file.py        # Markdown intent file parser (9 enterprise sections)
-    intent_schema.py      # Pydantic schemas
-    main.py               # CLI entrypoint (8 commands)
-    state.py              # State management + drift detection
-    versioning.py         # Version tracking + upgrade + rollback
-    agents/
-        deploy_orchestrator.py   # 4-stage Azure deployment
-        subagent_dispatcher.py   # Parallel subagent fan-out
-    generators/
-        infra.py          # BicepGenerator (7 modules)
-        cicd.py           # CICDGenerator (4 workflows)
-        app.py            # AppGenerator (FastAPI + Docker)
-        docs.py           # DocsGenerator (7 doc files)
-        tests.py          # TestGenerator (5 test files)
-        alerts.py         # AlertGenerator (Bicep alerts + runbook)
-    planning/
-        __init__.py       # Persistent planner (13-task DAG)
-    prompts/
-        generator.py      # Repo-aware prompt generation
-    skills/
-        registry.py       # Skills registry (9 skills, 12 categories)
-    standards/
-        __init__.py       # NamingEngine + TaggingEngine
-    tools/
-        azure.py          # Azure validation tools
-        governance.py     # Policy engine tools
-        generation.py     # Template rendering tools
+  agent.py                # 4-agent chain runtime
+  config.py               # Configuration management
+  intent_file.py          # Markdown intent file parser (9 enterprise sections)
+  intent_schema.py        # Pydantic schemas (IntentSpec, PlanOutput, GovernanceReport)
+  main.py                 # CLI entry point (9 commands)
+  state.py                # State management and drift detection
+  versioning.py           # Version tracking, upgrade, and rollback
+  agents/
+    architecture_planner.py
+    deploy_orchestrator.py
+    governance_reviewer.py
+    intent_parser.py
+    subagent_dispatcher.py
+  generators/
+    alert_generator.py    # Azure Monitor alert rules and runbook
+    app_generator.py      # FastAPI application and Dockerfile
+    bicep_generator.py    # Bicep IaC (7 modules)
+    cicd_generator.py     # GitHub Actions workflows (4 files)
+    cost_generator.py     # Cost estimation
+    docs_generator.py     # Documentation (7+ files)
+    test_generator.py     # Pytest test suite (5 files)
+  planning/               # Persistent planner (13-task DAG)
+  prompts/                # Repo-aware prompt generation
+  skills/                 # Pluggable skills registry
+  standards/              # NamingEngine, TaggingEngine, WAFAssessor
+  tools/                  # Azure validation, governance policies, template rendering
 
-tests/                    # 486 tests across 14 files
-infra/bicep/              # Bicep IaC templates
+tests/                    # Framework test suite (14 files)
+examples/                 # Example intent files
+docs/                     # Framework documentation
 standards.yaml            # Enterprise standards configuration
-```
-
----
-
-## Testing
-
-486 tests across 14 test files:
-
-| Test File | Tests | Coverage |
-|-----------|-------|---------|
-| `test_standards.py` | 67 | Azure CAF naming (20 types), tagging (7+5 tags) |
-| `test_waf.py` | 61 | WAF 5-pillar assessment, 26 principles |
-| `test_enterprise_features.py` | 37 | Enterprise intent model, completeness tracking |
-| `test_state.py` | 37 | State management, SHA-256 manifest, drift detection |
-| `test_intent_versioning.py` | 33 | Intent files, version tracking, CI/CD promotion |
-| `test_skills_registry.py` | 26 | 9 skills, dynamic discovery, priority routing |
-| `test_superpowers.py` | 24 | Test/alert/deploy generators |
-| `test_planning.py` | 22 | 13-task DAG, checkpoints, resume |
-| `test_deploy_orchestrator.py` | 19 | 4-stage deploy, error recovery |
-| `test_prompt_generator.py` | 18 | Repo scanning, context-enriched prompts |
-| `test_subagent_dispatcher.py` | 17 | Parallel fan-out, result aggregation |
-| (+ 3 more) | 123+ | Intent parsing, generators, governance |
-
-```bash
-pytest tests/ -v  # All 486 tests should pass
 ```
 
 ---
@@ -219,7 +215,7 @@ pytest tests/ -v  # All 486 tests should pass
 ## Security
 
 - **Managed Identity** for all service-to-service auth (no credentials in code)
-- **Key Vault** with RBAC access, soft-delete, purge protection
+- **Key Vault** with RBAC, soft-delete, and purge protection
 - **HTTPS-only** with TLS 1.2+ enforcement
 - **Non-root containers** with read-only filesystem
 - **OIDC** for CI/CD (no stored secrets)
@@ -229,84 +225,75 @@ pytest tests/ -v  # All 486 tests should pass
 
 ---
 
-## Examples
+## Deploy to Azure (Optional)
 
-See [`examples/`](examples/README.md) for production-ready applications built with this orchestrator:
+Deployment requires Azure CLI and an active subscription:
 
-| Example | Description | Deploy Time | Cost (Dev) |
-|---------|-------------|-------------|------------|
-| [SLHS Voice Agent](slhs-voice-agent/) | Voice-enabled patient information system | 12 min | ~$28/month |
-| [Contract Review AI](contract-review/) | Legal contract analysis with Document Intelligence + GPT-4-1 | 8 min | ~$120/month |
+```powershell
+az login
+az group create --name rg-my-project-dev --location eastus2
+devex deploy ./my-output -g rg-my-project-dev -r eastus2
+```
 
-Both examples include full source code, Bicep IaC, CI/CD, tests, and comprehensive documentation.
+For a safe preview:
 
----
+```powershell
+devex deploy ./my-output -g rg-my-project-dev -r eastus2 --dry-run
+```
 
-## Enterprise Guardrails
-
-| Guardrail | Enforcement |
-|-----------|------------|
-| No secrets in code | Key Vault references only |
-| No `:latest` tags | Explicit version tags required |
-| No admin credentials | Managed Identity + RBAC |
-| No access policies | RBAC over Key Vault access policies |
-| Non-root containers | Enforced in Dockerfile |
-| OIDC for CI/CD | No stored credentials in workflows |
-| CAF naming | NamingEngine validates all resource names |
-| Enterprise tags | TaggingEngine validates 7 required tags |
-| Diagnostic settings | Log Analytics configured for all resources |
-| Threat model | STRIDE analysis required for every scaffold |
+See [`QUICKSTART.md`](QUICKSTART.md) for the full deployment workflow including OIDC setup.
 
 ---
 
-## What Makes This 0.0001% Engineering
+## Quality
 
-1. **4-agent orchestration** with governance feedback loop -- not a single-agent chatbot
-2. **25 automated governance policies** validated on every scaffold -- not best-effort checklists
-3. **26/26 WAF principles** scored with evidence -- not hand-waved compliance
-4. **486 tests** across 14 files -- not "it works on my machine"
-5. **Enterprise standards engine** (naming + tagging + config) -- not ad-hoc conventions
-6. **Advanced patterns** (skills, subagents, persistent planning, deploy orchestrator) -- not MVP features
-7. **Intent-to-production pipeline** with a single command -- not a 20-step runbook
-8. **Versioned upgrades** with improvement suggestions -- not one-shot generation
+```powershell
+pytest tests/ -v          # Run all tests
+ruff check src/ tests/    # Lint
+ruff format --check src/  # Format check
+```
 
 ---
 
 ## Documentation
 
-- [`QUICKSTART.md`](QUICKSTART.md) -- Step-by-step installation and testing guide
-- [`AGENTS.md`](AGENTS.md) -- Complete agent architecture and tool bindings
-- [`examples/README.md`](examples/README.md) -- Production-ready example applications
-- [`docs/`](docs/) -- Framework architecture, security, deployment, scorecard
+| Document | Purpose |
+|----------|---------|
+| [`QUICKSTART.md`](QUICKSTART.md) | Step-by-step installation, scaffolding, and deployment guide |
+| [`AGENTS.md`](AGENTS.md) | Agent architecture, tool bindings, and orchestration flow |
+| [`examples/README.md`](examples/README.md) | Example intent files and usage |
+| [`docs/architecture.md`](docs/architecture.md) | Framework architecture overview |
+| [`docs/security.md`](docs/security.md) | Security controls and compliance |
+| [`docs/deployment.md`](docs/deployment.md) | Deployment patterns and procedures |
+| [`docs/scorecard.md`](docs/scorecard.md) | Enterprise challenge scorecard |
 
 ---
 
 ## Contributing
 
-Want to extend the orchestrator? See the contribution patterns:
+All changes must pass:
 
-- **Add a new generator** -- Extend `src/orchestrator/generators/`
-- **Add a new skill** -- Register in `src/orchestrator/skills/registry.py`
-- **Add a new governance policy** -- Update `src/orchestrator/tools/governance.py`
-- **Add a new example** -- Follow [`examples/README.md`](examples/README.md#contributing-new-examples)
+```powershell
+pytest tests/ -v
+ruff check src/ tests/
+```
 
-All changes must:
-- Pass `pytest tests/ -v` (486 tests)
-- Pass `ruff check src/ tests/`
-- Pass `mypy src/orchestrator/`
+Extension points:
+
+- **New generator** -- Add to `src/orchestrator/generators/`
+- **New skill** -- Register in `src/orchestrator/skills/registry.py`
+- **New governance policy** -- Update `src/orchestrator/tools/governance.py`
+- **New example** -- Add an intent file to `examples/`
 
 ---
 
 ## License
 
-MIT License. See `LICENSE` for details.
+MIT
 
 ---
 
-*Enterprise DevEx Orchestrator v1.1.0*  
-*Deployed on Azure Container Apps*  
-*486 tests | 25 governance policies | 26 WAF principles | 135/135 scorecard*  
-*Enterprise proof-of-concept*
+*Enterprise DevEx Orchestrator v1.1.0*
 
 
 
