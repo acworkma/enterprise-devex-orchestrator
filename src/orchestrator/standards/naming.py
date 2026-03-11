@@ -349,8 +349,8 @@ class NamingEngine:
             f"var identityName = 'id-${{projectName}}-${{environment}}-{region_abbrev}'",
             f"var kvName = take('kv-${{projectName}}-${{environment}}-{region_abbrev}', 24)",
             f"var crName = replace('cr${{projectName}}${{environment}}{region_abbrev}', '-', '')",
-            f"var caeName = 'cae-${{projectName}}-${{environment}}-{region_abbrev}'",
-            f"var caName = 'ca-${{projectName}}-${{environment}}-{region_abbrev}'",
+            f"var caeName = take('cae-${{projectName}}-${{environment}}-{region_abbrev}', 32)",
+            f"var caName = take('ca-${{projectName}}-${{environment}}-{region_abbrev}', 32)",
             f"var stName = take(replace(toLower('st${{projectName}}${{environment}}{region_abbrev}'), '-', ''), 24)",
         ]
 

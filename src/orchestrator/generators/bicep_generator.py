@@ -569,11 +569,11 @@ resource registry 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = 
   location: location
   tags: tags
   sku: {
-    name: 'Standard'
+    name: 'Premium'
   }
   properties: {
     adminUserEnabled: false
-    publicNetworkAccess: 'Enabled'
+    publicNetworkAccess: 'Disabled'
   }
 }
 
@@ -777,13 +777,13 @@ resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-02-15
 }
 
 // Grant Cosmos DB Built-in Data Contributor role to Managed Identity
-resource cosmosDataRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: cosmosAccount
+resource cosmosDataRole 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2024-02-15-preview' = {
+  parent: cosmosAccount
   name: guid(cosmosAccount.id, managedIdentityPrincipalId, '00000000-0000-0000-0000-000000000002')
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '00000000-0000-0000-0000-000000000002')
+    roleDefinitionId: '${cosmosAccount.id}/sqlRoleDefinitions/00000000-0000-0000-0000-000000000002'
+    scope: cosmosAccount.id
     principalId: managedIdentityPrincipalId
-    principalType: 'ServicePrincipal'
   }
 }
 
@@ -866,12 +866,12 @@ resource redis 'Microsoft.Cache/redis@2024-03-01' = {
   }
 }
 
-// Grant Redis Data Contributor role to Managed Identity
+// Grant Redis Cache Contributor role to Managed Identity
 resource redisDataRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: redis
-  name: guid(redis.id, managedIdentityPrincipalId, 'e12a1235-c1e0-4df4-bd93-48c3e0f1b4f9')
+  name: guid(redis.id, managedIdentityPrincipalId, 'e0f68234-74aa-48ed-b826-c38b57376e17')
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'e12a1235-c1e0-4df4-bd93-48c3e0f1b4f9')
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'e0f68234-74aa-48ed-b826-c38b57376e17')
     principalId: managedIdentityPrincipalId
     principalType: 'ServicePrincipal'
   }

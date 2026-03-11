@@ -1,0 +1,124 @@
+# ===================================================================
+# Deploy Workflow -- deploys infrastructure and application to Azure
+# Supports multi-environment deployment with approval gates
+# Triggered manually or on merge to main
+# ===================================================================
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+
+permissions:
+  id-token: write
+  contents: read
+  issues: write
+
+env:
+  AZURE_SUBSCRIPTION_ID: ${{{ secrets.AZURE_SUBSCRIPTION_ID }}}
+  AZURE_LOCATION: 'eastus2'
+  PROJECT_NAME: 'enterprise-grade-real-time'
+
+jobs:
+
+  deploy-dev:
+    name: Deploy to dev
+    runs-on: ubuntu-latest
+    if: inputs.environment == 'dev' || 'dev' == 'dev'
+    environment: dev
+    outputs:
+      containerAppFqdn: ${{{ steps.deploy.outputs.containerAppFqdn }}}
+      containerAppName: ${{{ steps.deploy.outputs.containerAppName }}}
+      containerRegistryName: ${{{ steps.deploy.outputs.containerRegistryName }}}
+      containerRegistryLoginServer: ${{{ steps.deploy.outputs.containerRegistryLoginServer }}}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Azure (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{{ secrets.AZURE_CLIENT_ID }}}
+          tenant-id: ${{{ secrets.AZURE_TENANT_ID }}}
+          subscription-id: ${{{ secrets.AZURE_SUBSCRIPTION_ID }}}
+
+      - name: Create resource group
+        run: |
+          az group create \
+            --name rg-enterprise-grade-real-time-dev \
+            --location ${{{ env.AZURE_LOCATION }}} \
+            --tags project=${{{ env.PROJECT_NAME }}} environment=dev managedBy=bicep
+
+      - name: Deploy Bicep
+        id: deploy
+        run: |
+          RESULT=$(az deployment group create \
+            --resource-group rg-enterprise-grade-real-time-dev \
+            --template-file infra/bicep/main.bicep \
+            --parameters infra/bicep/parameters/dev.parameters.json \
+            --query 'properties.outputs' \
+            --output json)
+
+          echo "containerAppFqdn=$(echo $RESULT | jq -r '.containerAppFqdn.value')" >> $GITHUB_OUTPUT
+          echo "containerAppName=$(echo $RESULT | jq -r '.containerAppName.value')" >> $GITHUB_OUTPUT
+          echo "containerRegistryName=$(echo $RESULT | jq -r '.containerRegistryName.value')" >> $GITHUB_OUTPUT
+          echo "containerRegistryLoginServer=$(echo $RESULT | jq -r '.containerRegistryLoginServer.value')" >> $GITHUB_OUTPUT
+
+      - name: Deployment summary
+        run: |
+          echo "## Deployment Summary (dev)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | dev |" >> $GITHUB_STEP_SUMMARY
+          echo "| Resource Group | rg-enterprise-grade-real-time-dev |" >> $GITHUB_STEP_SUMMARY
+          echo "| Container App | ${{{ steps.deploy.outputs.containerAppName }}} |" >> $GITHUB_STEP_SUMMARY
+          echo "| FQDN | ${{{ steps.deploy.outputs.containerAppFqdn }}} |" >> $GITHUB_STEP_SUMMARY
+
+  build-and-push:
+    name: Build & Push Container
+    needs: [deploy-dev]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Azure (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{{ secrets.AZURE_CLIENT_ID }}}
+          tenant-id: ${{{ secrets.AZURE_TENANT_ID }}}
+          subscription-id: ${{{ secrets.AZURE_SUBSCRIPTION_ID }}}
+
+      - name: Get ACR login server
+        id: acr
+        run: |
+          ACR_NAME="${{{ needs.deploy-dev.outputs.containerRegistryName }}}"
+          LOGIN_SERVER="${{{ needs.deploy-dev.outputs.containerRegistryLoginServer }}}"
+          echo "loginServer=$LOGIN_SERVER" >> $GITHUB_OUTPUT
+          echo "acrName=$ACR_NAME" >> $GITHUB_OUTPUT
+
+      - name: Login to ACR
+        run: az acr login --name ${{{ steps.acr.outputs.acrName }}}
+
+      - name: Build and push image
+        run: |
+          docker build -t ${{{ steps.acr.outputs.loginServer }}}/${{{ env.PROJECT_NAME }}}:${{{ github.sha }}} -f src/app/Dockerfile src/app/
+          docker push ${{{ steps.acr.outputs.loginServer }}}/${{{ env.PROJECT_NAME }}}:${{{ github.sha }}}
+
+      - name: Update Container App
+        run: |
+          az containerapp update \
+            --name ${{{ needs.deploy-dev.outputs.containerAppName }}} \
+            --resource-group rg-enterprise-grade-real-time-${{{ inputs.environment || 'dev' }}} \
+            --image ${{{ steps.acr.outputs.loginServer }}}/${{{ env.PROJECT_NAME }}}:${{{ github.sha }}}
+
+      - name: Verify application health
+        run: |
+          APP_FQDN="${{{ needs.deploy-dev.outputs.containerAppFqdn }}}"
+          curl --fail --retry 10 --retry-delay 10 "https://$APP_FQDN/health"

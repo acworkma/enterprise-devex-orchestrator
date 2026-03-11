@@ -168,8 +168,8 @@ class DeployOrchestrator:
 
     def deploy(
         self,
-        bicep_path: str = "infra/main.bicep",
-        parameters_path: str = "infra/main.parameters.json",
+        bicep_path: str = "infra/bicep/main.bicep",
+        parameters_path: str = "infra/bicep/parameters/dev.parameters.json",
         dry_run: bool = False,
     ) -> DeploymentResult:
         """Execute full deployment pipeline.
@@ -306,7 +306,9 @@ class DeployOrchestrator:
 
     def _build_az_cmd(self, *args: str) -> list[str]:
         """Build az CLI command with common flags."""
-        cmd = ["az"] + list(args)
+        import shutil
+        az_path = shutil.which("az") or "az"
+        cmd = [az_path] + list(args)
         if self.resource_group:
             cmd.extend(["--resource-group", self.resource_group])
         if self.subscription:

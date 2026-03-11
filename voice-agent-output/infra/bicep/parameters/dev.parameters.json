@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "projectName": {
+      "value": "enterprise-grade-real-time"
+    },
+    "environment": {
+      "value": "dev"
+    },
+    "containerPort": {
+      "value": 8000
+    },
+    "ownerEmail": {
+      "value": "platform-team@contoso.com"
+    },
+    "costCenter": {
+      "value": "DEFAULT-001"
+    }
+  }
+}
