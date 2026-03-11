@@ -98,7 +98,8 @@ class TestIntentParser:
 
     def test_resource_group_from_config(self) -> None:
         spec = self.parser.parse("Build an API")
-        assert spec.resource_group_name == "rg-test"
+        # Resource group should follow CAF naming: rg-{project_name}-{environment}
+        assert spec.resource_group_name == f"rg-{spec.project_name}-{spec.environment}"
 
     def test_environment_from_config(self) -> None:
         spec = self.parser.parse("Build an API")

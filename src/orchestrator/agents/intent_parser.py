@@ -188,10 +188,31 @@ class IntentParserAgent:
 
         # Detect networking
         networking = NetworkingModel.PRIVATE
-        if "public" in intent_lower:
+        if any(kw in intent_lower for kw in ["public endpoint", "public-facing", "public access", "publicly accessible"]):
             networking = NetworkingModel.PUBLIC_RESTRICTED
         elif "internal" in intent_lower:
             networking = NetworkingModel.INTERNAL
+
+        # Detect WAF
+        enable_waf = any(kw in intent_lower for kw in [
+            "waf", "web application firewall", "firewall",
+        ])
+
+        # Detect observability features from intent
+        enable_alerts = any(kw in intent_lower for kw in [
+            "alert", "alerts", "alerting", "monitoring", "notify", "notification",
+            "proactive", "on-call",
+        ])
+        enable_dashboard = any(kw in intent_lower for kw in [
+            "dashboard", "monitoring dashboard", "visibility", "real-time view",
+            "observability dashboard",
+        ])
+
+        # Detect CI/CD preferences
+        deploy_on_merge = any(kw in intent_lower for kw in [
+            "deploy on merge", "auto-deploy", "autodeploy", "automatic deployment",
+            "continuous deployment", "cd pipeline", "gitops",
+        ])
 
         return IntentSpec(
             project_name=project_name,
@@ -207,11 +228,16 @@ class IntentParserAgent:
                 auth_model=AuthModel.MANAGED_IDENTITY,
                 compliance_framework=compliance,
                 networking=networking,
+                enable_waf=enable_waf,
             ),
-            observability=ObservabilityRequirements(),
-            cicd=CICDRequirements(),
+            observability=ObservabilityRequirements(
+                alerts=enable_alerts,
+                dashboard=enable_dashboard,
+            ),
+            cicd=CICDRequirements(
+                deploy_on_merge=deploy_on_merge,
+            ),
             azure_region=self.config.azure.location,
-            resource_group_name=self.config.azure.resource_group,
             assumptions=[
                 f"Using {language.capitalize()} + {framework} as application stack",
                 f"Azure {compute_target.value.replace('_', ' ').title()} as compute target",
