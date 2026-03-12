@@ -22,6 +22,7 @@ from typing import Any
 from openai import AzureOpenAI, OpenAI
 
 from src.orchestrator.config import AppConfig, get_config
+from src.orchestrator.llm_client import AnthropicAdapter, create_llm_client
 from src.orchestrator.logging import get_logger
 
 logger = get_logger(__name__)
@@ -72,29 +73,12 @@ class AgentRuntime:
 
     def __init__(self, config: AppConfig | None = None) -> None:
         self.config = config or get_config()
-        self._client = self._create_client()
+        self._client = create_llm_client(self.config)
         self._tool_registry: dict[str, Tool] = {}
 
-    def _create_client(self) -> OpenAI | AzureOpenAI:
-        """Create the appropriate OpenAI client based on configuration."""
-        if self.config.llm.azure_openai_endpoint:
-            logger.info("agent.client", backend="azure_openai")
-            return AzureOpenAI(
-                azure_endpoint=self.config.llm.azure_openai_endpoint,
-                api_key=self.config.llm.azure_openai_api_key,
-                api_version="2024-10-21",
-            )
-
-        if self.config.copilot.github_token:
-            logger.info("agent.client", backend="copilot_sdk")
-            return OpenAI(
-                base_url="https://api.githubcopilot.com",
-                api_key=self.config.copilot.github_token,
-            )
-
-        # Fallback: local or mock mode
-        logger.warning("agent.client", backend="mock", msg="No API credentials -- running in template-only mode")
-        return OpenAI(api_key="mock-key", base_url="http://localhost:11434/v1")  # noqa: S106
+    def _create_client(self) -> OpenAI | AzureOpenAI | AnthropicAdapter:
+        """Create the appropriate LLM client based on configuration."""
+        return create_llm_client(self.config)
 
     def register_tool(self, tool: Tool) -> None:
         """Register a tool that the agent can call."""
@@ -142,7 +126,7 @@ class AgentRuntime:
 
             try:
                 response = self._client.chat.completions.create(
-                    model=self.config.llm.azure_openai_deployment,
+                    model=self.config.llm.model,
                     messages=messages,
                     tools=openai_tools if openai_tools else None,  # type: ignore[arg-type]
                     temperature=self.config.llm.temperature,

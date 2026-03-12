@@ -28,7 +28,7 @@ from src.orchestrator.agents.architecture_planner import ArchitecturePlannerAgen
 from src.orchestrator.agents.governance_reviewer import GovernanceReviewerAgent
 from src.orchestrator.agents.infra_generator import InfrastructureGeneratorAgent
 from src.orchestrator.agents.intent_parser import IntentParserAgent
-from src.orchestrator.config import AppConfig, get_config
+from src.orchestrator.config import AppConfig, get_config, __version__, SUPPORTED_PROVIDERS, SUPPORTED_MODELS, PROVIDER_DISPLAY_NAMES
 from src.orchestrator.intent_file import IntentFileParser, generate_intent_template, generate_upgrade_template
 from src.orchestrator.intent_schema import GovernanceReport, IntentSpec, PlanOutput
 from src.orchestrator.logging import get_logger, setup_logging
@@ -516,7 +516,7 @@ def _resolve_intent_with_meta(intent: str | None, intent_file: str | None) -> tu
 
 
 @click.group()
-@click.version_option(version="1.1.0", prog_name="Enterprise DevEx Orchestrator")
+@click.version_option(version="1.3.0", prog_name="Enterprise DevEx Orchestrator")
 def cli() -> None:
     """Enterprise DevEx Orchestrator Agent.
 
@@ -786,23 +786,51 @@ def validate(path: str) -> None:
 def version() -> None:
     """Show version and environment info."""
     console.print("[bold]Enterprise DevEx Orchestrator Agent[/]")
-    console.print("  Version:  1.0.0")
+    console.print(f"  Version:  {__version__}")
     console.print(f"  Python:   {sys.version.split()[0]}")
     console.print(f"  Platform: {sys.platform}")
 
     try:
         config = get_config()
-        console.print(
-            "  LLM:      azure_openai"
-            if config.llm.azure_openai_endpoint
-            else "  LLM:      copilot_sdk"
-            if config.copilot.github_token
-            else "  LLM:      template-only"
-        )
-        console.print(f"  Model:    {config.llm.azure_openai_deployment}")
+        provider = config.llm.provider
+        console.print(f"  Provider: {config.llm.provider_display_name}")
+        console.print(f"  Model:    {config.llm.model}")
         console.print(f"  Region:   {config.azure.location}")
+
+        if config.llm.is_template_only:
+            console.print(
+                "\n  [dim]Tip: Set LLM_PROVIDER and credentials to enable real LLM.[/]"
+            )
+            console.print("  [dim]Supported providers: azure_openai, openai, anthropic, copilot_sdk[/]")
+            console.print("  [dim]Example: LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-... LLM_MODEL=claude-opus-4-20250514[/]")
     except Exception:
         console.print("  [dim]Config not loaded (.env missing)[/]")
+
+
+@cli.command()
+def providers() -> None:
+    """List supported LLM providers and models."""
+    console.print("[bold]Supported LLM Providers & Models[/]\n")
+
+    for provider_id, display_name in PROVIDER_DISPLAY_NAMES.items():
+        if provider_id == "template-only":
+            continue
+        models = SUPPORTED_MODELS.get(provider_id, [])
+        console.print(f"  [bold cyan]{display_name}[/] ({provider_id})")
+        for model in models:
+            console.print(f"    - {model}")
+        console.print()
+
+    console.print("[dim]Set via environment variables or .env file:[/]")
+    console.print("  LLM_PROVIDER=anthropic")
+    console.print("  LLM_MODEL=claude-opus-4-20250514")
+    console.print("  ANTHROPIC_API_KEY=sk-ant-...")
+    console.print()
+    console.print("[dim]Or for OpenAI:[/]")
+    console.print("  LLM_PROVIDER=openai")
+    console.print("  LLM_MODEL=gpt-4o")
+    console.print("  OPENAI_API_KEY=sk-...")
+    console.print()
 
 
 @cli.command()

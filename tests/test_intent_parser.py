@@ -17,6 +17,8 @@ def _make_config() -> AppConfig:
         ),
         copilot=CopilotConfig(github_token=""),
         llm=LLMConfig(
+            provider="template-only",
+            model="none",
             azure_openai_endpoint="",
             azure_openai_api_key="",
             azure_openai_deployment="gpt-4o",
