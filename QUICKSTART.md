@@ -6,19 +6,20 @@ Step-by-step guide to install the orchestrator, generate your first scaffold, an
 
 ## 1. Clone and Install
 
-```powershell
+```bash
 git clone https://github.com/Oluseyi-Kofoworola/enterprise-devex-orchestrator.git
 cd enterprise-devex-orchestrator
 
 python -m venv .venv
-.venv\Scripts\Activate.ps1
+source .venv/bin/activate        # Linux / macOS
+# .venv\Scripts\Activate.ps1    # Windows PowerShell
 
 pip install -e ".[dev]"
 ```
 
 Verify the installation:
 
-```powershell
+```bash
 devex --help
 devex version
 ```
@@ -29,7 +30,7 @@ devex version
 
 Confirm everything works before generating scaffolds:
 
-```powershell
+```bash
 pytest tests/ -v
 ```
 
@@ -39,13 +40,13 @@ pytest tests/ -v
 
 See how the orchestrator interprets an intent file without writing any files:
 
-```powershell
+```bash
 devex plan --file examples/intent.md
 ```
 
 JSON output for automation:
 
-```powershell
+```bash
 devex plan --file examples/intent.md -F json
 ```
 
@@ -53,7 +54,7 @@ devex plan --file examples/intent.md -F json
 
 ## 4. Generate a Scaffold
 
-```powershell
+```bash
 devex scaffold --file examples/intent.md -o ./my-first-output
 ```
 
@@ -77,7 +78,7 @@ my-first-output/
 
 ## 5. Validate Governance
 
-```powershell
+```bash
 devex validate ./my-first-output
 ```
 
@@ -87,13 +88,13 @@ Runs 25 governance policy checks and drift-aware validation against the generate
 
 ## 6. Create Your Own Intent
 
-```powershell
+```bash
 devex init -o ./my-project -p my-enterprise-api
 ```
 
 Edit `./my-project/intent.md` with your business requirements, then:
 
-```powershell
+```bash
 devex scaffold --file ./my-project/intent.md -o ./my-project
 ```
 
@@ -103,7 +104,7 @@ devex scaffold --file ./my-project/intent.md -o ./my-project
 
 The [`examples/`](examples/) folder includes additional intent files:
 
-```powershell
+```bash
 devex scaffold --file examples/contract-review-intent.md -o ./contract-review
 devex scaffold --file examples/doc-intelligence-intent.md -o ./doc-intelligence
 ```
@@ -114,7 +115,7 @@ Each generates a full scaffold with CI/CD workflows ready to push and deploy.
 
 ## 8. Iterate with Versioned Intents
 
-```powershell
+```bash
 devex new-version ./my-first-output
 # Edit ./my-first-output/intent.v2.md with changes
 devex upgrade --file ./my-first-output/intent.v2.md -o ./my-first-output
@@ -134,7 +135,7 @@ Recommended iteration loop:
 
 Create a new repo on GitHub, then push the scaffold:
 
-```powershell
+```bash
 cd my-first-output
 git init
 git add .
@@ -163,7 +164,7 @@ Deployment requires Azure CLI (`az`) and an active Azure subscription.
 
 The generated workflows use **OpenID Connect (OIDC)** -- no stored credentials.
 
-```powershell
+```bash
 az login
 
 # Create an Entra ID App Registration
@@ -182,9 +183,9 @@ az ad app federated-credential create --id <appId> --parameters '{
 }'
 
 # Assign Contributor Role
-az role assignment create `
-  --assignee <appId> `
-  --role Contributor `
+az role assignment create \
+  --assignee <appId> \
+  --role Contributor \
   --scope /subscriptions/<subscription-id>
 ```
 
@@ -218,16 +219,19 @@ The deploy pipeline:
 
 Generated folders are disposable:
 
+```bash
+rm -rf ./my-first-output ./contract-review ./doc-intelligence ./my-project
+```
+
+On Windows PowerShell:
+
 ```powershell
-Remove-Item -Recurse -Force ./my-first-output -ErrorAction SilentlyContinue
-Remove-Item -Recurse -Force ./contract-review -ErrorAction SilentlyContinue
-Remove-Item -Recurse -Force ./doc-intelligence -ErrorAction SilentlyContinue
-Remove-Item -Recurse -Force ./my-project -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force ./my-first-output, ./contract-review, ./doc-intelligence, ./my-project -ErrorAction SilentlyContinue
 ```
 
 To delete Azure resources:
 
-```powershell
+```bash
 az group delete --name rg-<project-name>-dev --yes --no-wait
 ```
 
@@ -253,7 +257,7 @@ az group delete --name rg-<project-name>-dev --yes --no-wait
 
 | Problem | Solution |
 |---------|----------|
-| `devex` not found | Activate venv: `.venv\Scripts\Activate.ps1` |
+| `devex` not found | Activate venv: `source .venv/bin/activate` (Linux/macOS) or `.venv\Scripts\Activate.ps1` (Windows) |
 | "No intent provided" | Pass `--file` or quote inline: `devex scaffold "Build an API" -o ./out` |
 | LLM connection error | Expected -- falls back to template-only mode automatically |
 | pip install fails | Check Python 3.11+: `python --version` |

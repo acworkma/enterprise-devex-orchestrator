@@ -32,30 +32,30 @@ Generated applications include **domain-specific business logic** with real serv
 
 - Python 3.11+
 - Git
-- PowerShell (Windows) or a Unix shell
 
 ### Install
 
-```powershell
+```bash
 git clone https://github.com/Oluseyi-Kofoworola/enterprise-devex-orchestrator.git
 cd enterprise-devex-orchestrator
 
 python -m venv .venv
-.venv\Scripts\Activate.ps1
+source .venv/bin/activate        # Linux / macOS
+# .venv\Scripts\Activate.ps1    # Windows PowerShell
 
 pip install -e ".[dev]"
 ```
 
 ### Verify
 
-```powershell
+```bash
 devex --help
 devex version
 ```
 
 ### Run Tests
 
-```powershell
+```bash
 pytest tests/ -v
 ```
 
@@ -65,25 +65,25 @@ pytest tests/ -v
 
 ### Preview a plan (no files written)
 
-```powershell
+```bash
 devex plan --file examples/intent.md
 ```
 
 ### Generate a scaffold
 
-```powershell
+```bash
 devex scaffold --file examples/intent.md -o ./my-output
 ```
 
 ### Validate a generated scaffold
 
-```powershell
+```bash
 devex validate ./my-output
 ```
 
 ### Create your own intent file
 
-```powershell
+```bash
 devex init -o ./my-project -p my-api-name
 # Edit my-project/intent.md with your requirements
 devex scaffold --file my-project/intent.md -o ./my-project
@@ -91,7 +91,7 @@ devex scaffold --file my-project/intent.md -o ./my-project
 
 ### Upgrade with a new intent version
 
-```powershell
+```bash
 devex new-version ./my-output
 # Edit the generated intent.v2.md
 devex upgrade --file ./my-output/intent.v2.md -o ./my-output
