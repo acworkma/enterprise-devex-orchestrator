@@ -48,7 +48,7 @@ devex scaffold --intent "Build a healthcare voice agent API" --output-dir ./demo
 **What to highlight:**
 - Bicep templates (main.bicep + 7 modules)
 - GitHub Actions workflows (4 files)
-- FastAPI application + Dockerfile
+- FastAPI application + enterprise dashboard UI + Dockerfile
 - Auto-generated pytest test suite (5 test files)
 - Azure Monitor alert rules + runbook
 - 7 documentation files
@@ -126,7 +126,7 @@ curl https://$APP_URL/health
 ```bash
 # Show test coverage
 pytest tests/ -v --tb=short 2>&1 | tail -5
-# 486 passed
+# 543 passed
 ```
 
 ---
@@ -143,6 +143,7 @@ If demo environment is unavailable:
 ---
 
 *Full pipeline: intent -> parse -> plan -> govern -> generate -> deploy*
-*486 tests | 25 policies | 26 WAF principles | Live on Azure Container Apps*
+*543 tests | 25 policies | 26 WAF principles | Live on Azure Container Apps*
+*Multi-language scaffold: Python (FastAPI) · Node.js (Express) · .NET (ASP.NET Core)*
 
 

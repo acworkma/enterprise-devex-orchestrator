@@ -144,6 +144,6 @@ az containerapp ingress traffic set --name <app> --resource-group $RG \
 
 ---
 
-*Deployment patterns enforce enterprise security: OIDC auth, Managed Identity, RBAC over access policies*
+*Deployment patterns enforce enterprise security: OIDC auth, Managed Identity, RBAC over access policies.*\n*Scaffolds support Python (FastAPI), Node.js (Express), and .NET (ASP.NET Core) with enterprise dashboard UI.*
 
 

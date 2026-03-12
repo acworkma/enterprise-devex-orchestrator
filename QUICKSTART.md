@@ -64,10 +64,14 @@ my-first-output/
   .devex/                     # State and metadata
   .github/workflows/          # CI/CD pipelines (validate, deploy, codeql, dependabot)
   infra/bicep/                # Azure Bicep templates (main + modules + parameters)
-  src/app/                    # FastAPI application + Dockerfile
+  src/app/                    # Multi-language application (Python/Node.js/.NET) + Enterprise Dashboard UI + Dockerfile
   tests/                      # Auto-generated test suite
   docs/                       # Plan, security, WAF, governance, deployment docs
 ```
+
+> **Enterprise Dashboard UI** -- Every generated scaffold includes a production-grade
+> enterprise dashboard with live health monitoring, compliance badges, architecture
+> overview, and quick-action links -- out of the box.
 
 ---
 
@@ -258,6 +262,6 @@ az group delete --name rg-<project-name>-dev --yes --no-wait
 
 ---
 
-*Enterprise DevEx Orchestrator v1.1.0*
+*Enterprise DevEx Orchestrator v1.2.0*
 
 

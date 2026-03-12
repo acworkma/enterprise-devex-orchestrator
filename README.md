@@ -9,14 +9,18 @@ Transform business intent into production-ready Azure infrastructure using a 4-a
 Give the orchestrator a business description (plain text or a structured intent file) and it generates a complete, deployable enterprise scaffold:
 
 - **Azure Bicep infrastructure** (5-7 modules per scaffold)
-- **FastAPI application** with Dockerfile and health checks
+- **Multi-language application** scaffold (Python/FastAPI, Node.js/Express, .NET/ASP.NET Core) with enterprise dashboard UI
 - **GitHub Actions CI/CD** (validate, deploy, CodeQL, Dependabot)
-- **Pytest test suite** (5 auto-generated test files)
+- **Pytest test suite** (5 auto-generated test files per scaffold)
 - **Governance validation** (25 enterprise policies)
 - **WAF assessment** (26 Azure Well-Architected Framework principles)
+- **Azure Monitor alerts** with action groups and alerting runbook
+- **Cost estimation** for Azure resource consumption
 - **Operations documentation** (7+ files including threat model, deployment guide, alerting runbook)
 
 Every scaffold enforces enterprise security baselines: Managed Identity, Key Vault with RBAC, non-root containers, OIDC for CI/CD, and HTTPS-only with TLS 1.2+.
+
+Generated applications include a **production-grade enterprise dashboard** with live health monitoring, Key Vault status, architecture & compliance badges, and API endpoint directory -- all rendered dynamically from the intent specification.
 
 ---
 
@@ -170,6 +174,7 @@ Each agent has a distinct role, instruction set, and tool access. See [`AGENTS.m
 | Subagent dispatcher | `src/orchestrator/agents/subagent_dispatcher.py` -- parallel fan-out |
 | Persistent planner | `src/orchestrator/planning/` -- 13-task DAG with checkpoints |
 | Deploy orchestrator | `src/orchestrator/agents/deploy_orchestrator.py` -- staged deployment |
+| Enterprise dashboard | `src/orchestrator/generators/app_generator.py` -- multi-language enterprise UI |
 
 ---
 
@@ -192,10 +197,11 @@ src/orchestrator/
     subagent_dispatcher.py
   generators/
     alert_generator.py    # Azure Monitor alert rules and runbook
-    app_generator.py      # FastAPI application and Dockerfile
+    app_generator.py      # Multi-language application (Python, Node.js, .NET) with enterprise dashboard UI
     bicep_generator.py    # Bicep IaC (7 modules)
     cicd_generator.py     # GitHub Actions workflows (4 files)
-    cost_generator.py     # Cost estimation
+    cost_estimator.py     # Cost estimation
+    dashboard_generator.py # Azure Monitor dashboard queries
     docs_generator.py     # Documentation (7+ files)
     test_generator.py     # Pytest test suite (5 files)
   planning/               # Persistent planner (13-task DAG)
@@ -204,7 +210,7 @@ src/orchestrator/
   standards/              # NamingEngine, TaggingEngine, WAFAssessor
   tools/                  # Azure validation, governance policies, template rendering
 
-tests/                    # Framework test suite (14 files)
+tests/                    # Framework test suite (15 files, 543 tests)
 examples/                 # Example intent files
 docs/                     # Framework documentation
 standards.yaml            # Enterprise standards configuration
@@ -298,6 +304,18 @@ Extension points:
 
 ## Changelog
 
+### v1.2.0
+
+- **Feature**: Enterprise dashboard UI for all generated applications (Python, Node.js, .NET)
+  - Gradient topbar, hero header, status cards, live health polling
+  - Dynamic architecture & compliance badges from intent specification
+  - API endpoint directory with method badges
+  - JavaScript live polling for health and Key Vault status
+- **Feature**: Multi-language application scaffold (Python/FastAPI, Node.js/Express, .NET/ASP.NET Core)
+- **Feature**: `pydantic-settings` added to generated Python requirements
+- **Fix**: Node.js and .NET generators now produce HTML landing pages with KEY_VAULT_URI support
+- **Tests**: 543 tests across 15 test files (up from 486/14)
+
 ### v1.1.1
 
 - **Fix**: `devex deploy` now works on Windows (resolves `az.cmd` via `shutil.which`)
@@ -315,7 +333,7 @@ MIT
 
 ---
 
-*Enterprise DevEx Orchestrator v1.1.0*
+*Enterprise DevEx Orchestrator v1.2.0*
 
 
 

@@ -53,7 +53,7 @@ graph LR
     subgraph "Generators (6)"
         BG[Bicep Generator<br>7 modules]
         CG[CI/CD Generator<br>4 workflows]
-        AG[App Generator<br>FastAPI + Docker]
+        AG[App Generator<br>Python + Node.js + .NET<br>Enterprise Dashboard UI]
         DG[Docs Generator<br>7 doc files]
         TG[Test Generator<br>5 test files]
         ALG[Alert Generator<br>Bicep alerts + runbook]
@@ -184,7 +184,8 @@ graph TD
 
 ---
 
-*4-agent chain | 9 MCP tools | 6 generators | 25 policies | 486 tests*
+*4-agent chain | 9 MCP tools | 8 generators | 25 policies | 543 tests*
 *Azure CAF naming + enterprise tagging + WAF 5-pillar alignment*
+*Multi-language scaffold: Python (FastAPI) · Node.js (Express) · .NET (ASP.NET Core)*
 
 

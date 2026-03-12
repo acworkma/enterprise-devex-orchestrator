@@ -69,7 +69,8 @@ class ChatRequest(BaseModel):
 
 ```python
 # Secrets via Key Vault reference, never in environment variables
-KEY_VAULT_URL = os.environ.get("KEY_VAULT_URL")
+KEY_VAULT_URI = os.environ.get("KEY_VAULT_URI")
+KEY_VAULT_NAME = os.environ.get("KEY_VAULT_NAME")
 # Key Vault accessed via Managed Identity -- no credentials in code
 ```
 
