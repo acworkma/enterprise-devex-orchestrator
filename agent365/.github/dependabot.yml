@@ -1,0 +1,28 @@
+# Dependabot configuration for supply chain security
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - "enterprise-devex-team"
+    labels:
+      - "dependencies"
+      - "security"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "ci"
+
+  - package-ecosystem: "docker"
+    directory: "/src/app"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "container"

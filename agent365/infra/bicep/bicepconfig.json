@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/bicep/main/src/Bicep.Core/Configuration/bicepconfig.schema.json",
+  "moduleAliases": {
+    "br": {
+      "public": {
+        "registry": "mcr.microsoft.com",
+        "modulePath": "bicep"
+      }
+    }
+  },
+  "analyzers": {
+    "core": {
+      "enabled": true,
+      "rules": {
+        "no-hardcoded-env-urls": { "level": "warning" },
+        "no-unused-params": { "level": "warning" },
+        "no-unused-vars": { "level": "warning" },
+        "prefer-interpolation": { "level": "warning" },
+        "secure-parameter-default": { "level": "error" },
+        "simplify-interpolation": { "level": "warning" },
+        "use-stable-resource-identifiers": { "level": "warning" }
+      }
+    }
+  }
+}
